@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  ImageBackground,
+  StatusBar,
+  Image,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
@@ -45,66 +48,131 @@ const ForgotPassOTP = ({navigation, route}) => {
 
   const formatEmail = email => {
     const parts = email.split('@');
-    return `${parts[0].slice(0, 2)}........@${parts[1]}`;
+    return `${parts[0].slice(0, 2)}**********@${parts[1]}`;
   };
 
   return (
-    <ScrollView style={Styles.mainView}>
-      <Spinner visible={isLoading} />
-      <View>
-        <Text style={Styles.title}>Forgot Password</Text>
-        <Text style={Styles.subTitle}>We sent a code to your email</Text>
-        <Text style={Styles.subTitle}>{formatEmail(route.params.email)}</Text>
-
-        <View style={Styles.otpContainer}>
-          {otpValues.map((value, index) => (
-            <TextInput
-              key={index}
-              ref={input => {
-                inputRefs.current[index] = input;
-              }}
-              onChangeText={text => setOtpValue(text, index)}
-              value={value}
-              maxLength={1}
-              keyboardType="numeric"
-              style={Styles.otpInput}
-              onKeyPress={({nativeEvent}) => {
-                if (
-                  nativeEvent.key === 'Backspace' &&
-                  index !== 0 &&
-                  otpValues[index] === ''
-                ) {
-                  inputRefs.current[index - 1].focus();
-                }
-              }}
+    <>
+      <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
+      <ImageBackground
+        source={require('../../assets/png/LoginBg.png')}
+        style={Styles.backgroundImg}>
+        <ScrollView style={Styles.mainView}>
+          <Spinner visible={isLoading} />
+          <View style={Styles.logo}>
+            <Image
+              style={{width: 100, height: 53, resizeMode: 'cover'}}
+              source={require('../../assets/png/Actpal_logo.png')}
             />
-          ))}
-        </View>
+          </View>
+          <View style={[Styles.center, {marginTop: 20}]}>
+            <Text style={{fontSize: 22, fontWeight: '600', color: 'black'}}>
+              We sent a code to your email
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                marginTop: 26,
+                fontWeight: '400',
+                color: 'black',
+                textAlign: 'center',
+              }}>
+              We sent a code to your email {formatEmail(route.params.email)}
+              <Text
+                onPress={() => navigation.goBack()}
+                style={{fontSize: 16, color: '#1866B4', lineHeight: 20}}>
+                {' '}
+                .change e-mail address
+              </Text>
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                color: 'black',
+                marginTop: 18,
+                fontWeight: '500',
+              }}>
+              Your Code
+            </Text>
+          </View>
+          <View>
+            <View style={Styles.otpContainer}>
+              {otpValues.map((value, index) => (
+                <TextInput
+                  key={index}
+                  ref={input => {
+                    inputRefs.current[index] = input;
+                  }}
+                  onChangeText={text => setOtpValue(text, index)}
+                  value={value}
+                  maxLength={1}
+                  keyboardType="numeric"
+                  style={Styles.otpInput}
+                  onKeyPress={({nativeEvent}) => {
+                    if (
+                      nativeEvent.key === 'Backspace' &&
+                      index !== 0 &&
+                      otpValues[index] === ''
+                    ) {
+                      inputRefs.current[index - 1].focus();
+                    }
+                  }}
+                />
+              ))}
+            </View>
 
-        <TouchableOpacity onPress={handleResendOTP} style={{marginTop: 15}}>
-          <Text style={Styles.buttonStyle}>Resend Code</Text>
-        </TouchableOpacity>
+            <Text
+              style={{
+                color: 'black',
+                textAlign: 'center',
+                fontSize: 16,
+                marginTop: 18,
+              }}>
+              Security Code will be valid for{' '}
+              <Text style={{fontWeight: '500'}}>19:50</Text>
+            </Text>
 
-        <TouchableOpacity onPress={handleVerifyPress} style={{marginTop: 15}}>
-          <Text style={Styles.buttonStyle}>Submit</Text>
-        </TouchableOpacity>
+            <TouchableOpacity onPress={handleResendOTP} style={{marginTop: 18}}>
+              <Text
+                style={{color: '#1866B4', textAlign: 'center', fontSize: 16}}>
+                Security code sent !
+              </Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{marginTop: 15}}>
-          <Text style={Styles.buttonStyle}>Change e-mail Address</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+            <TouchableOpacity
+              style={Styles.blueBtn}
+              onPress={handleVerifyPress}>
+              <Text style={Styles.buttonStyle}>Send Security Code</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </>
   );
 };
 
 export default ForgotPassOTP;
 
 const Styles = StyleSheet.create({
+  backgroundImg: {
+    resizeMode: 'cover',
+    height: '100%',
+  },
+  container: {
+    flex: 1,
+  },
+  center: {
+    alignItems: 'center',
+    display: 'flex',
+  },
+  logo: {
+    justifyContent: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: 170,
+  },
   mainView: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 20,
   },
   title: {
@@ -119,17 +187,17 @@ const Styles = StyleSheet.create({
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 20,
   },
   otpInput: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
-    width: 40,
-    height: 40,
+    borderRadius: 10,
+    width: 50,
+    height: 50,
     textAlign: 'center',
     fontSize: 20,
     marginHorizontal: 5,
+    marginTop: 18,
   },
   timerText: {
     fontSize: 14,
@@ -140,12 +208,18 @@ const Styles = StyleSheet.create({
     marginBottom: 15,
   },
   buttonStyle: {
-    backgroundColor: '#1866B4',
     color: '#fff',
-    padding: 10,
-    textAlign: 'center',
-    borderRadius: 5,
-    width: '100%',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  blueBtn: {
+    backgroundColor: '#1866B4',
+    height: 45,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
+    marginTop: 20,
   },
   hide: {
     display: 'none',

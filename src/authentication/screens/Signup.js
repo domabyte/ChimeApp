@@ -49,7 +49,7 @@ const Signup = ({navigation}) => {
     const {data} = await axios.get(config.captchaURL);
     setCaptcha(data.SecurityCode1 + data.SecurityCode2);
     setEncryptedCaptcha(data.SecurityCodeEncrypt);
-  }
+  };
 
   useEffect(() => {
     fetchCaptcha();
@@ -152,9 +152,16 @@ const Signup = ({navigation}) => {
               }}>
               <View style={styles.captcha}>
                 <Text
-                  style={{fontSize: 20, color: '#ccc', textAlign: 'center'}}>
+                  style={{
+                    fontSize: 20,
+                    color: '#ccc',
+                    textAlign: 'center',
+                    position: 'relative',
+                    textDecorationLine: 'line-through',
+                  }}>
                   {captcha}
                 </Text>
+                <View sytle={styles.captchaLine}></View>
               </View>
               <View style={{width: '48%'}}>
                 <TextInput
@@ -173,29 +180,32 @@ const Signup = ({navigation}) => {
                   {isChecked && <View style={styles.checkmark}></View>}
                 </View>
                 <Text style={styles.label}>
-                  Terms and condition should be connected to ACTPAL's 
+                  Terms and condition should be connected to ACTPAL's
                   <Text style={{color: '#1866B4'}}>Terms & Conditions</Text>
                 </Text>
               </TouchableOpacity>
             </View>
             <View style={{marginHorizontal: 20}}>
-              <TouchableOpacity style={styles.blueBtn} 
-              onPress={() => {
-                register(
-                  firstName,
-                  lastName,
-                  email,
-                  newPassword,
-                  confirmPassword,
-                  encryptedCaptcha,
-                  confirmCaptcha,
-                  isChecked,
-                  (Mem_ID, message) => navigation.navigate('OtpVerification', { 
-                  Mem_ID, message})
-                );
-              }}>
-                <Text
-                  style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
+              <TouchableOpacity
+                style={styles.blueBtn}
+                onPress={() => {
+                  register(
+                    firstName,
+                    lastName,
+                    email,
+                    newPassword,
+                    confirmPassword,
+                    encryptedCaptcha,
+                    confirmCaptcha,
+                    isChecked,
+                    (Mem_ID, message) =>
+                      navigation.navigate('OtpVerification', {
+                        Mem_ID,
+                        message,
+                      }),
+                  );
+                }}>
+                <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
                   Continue
                 </Text>
               </TouchableOpacity>
@@ -283,6 +293,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: '#1866B4',
+    marginBottom: 25,
   },
   checkbtn: {
     flexDirection: 'row',
@@ -303,8 +314,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'White',
   },
   checkmark: {
-    width: 10,
-    height: 10,
+    width: 11,
+    height: 11,
     borderRadius: 20,
     backgroundColor: '#1866B4',
   },
@@ -312,5 +323,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
     color: 'black',
+  },
+  captchaLine: {
+    backgroundColor: 'black',
+    width: 45,
+    height: 1,
+    top: 1,
+    left: 1,
   },
 });

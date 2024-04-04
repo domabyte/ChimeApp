@@ -8,6 +8,7 @@ import {
   StatusBar,
   TextInput,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import passwordShow from '../../assets/png/eye-open.png';
 import passwordHide from '../../assets/png/eye-close.png';
@@ -30,98 +31,105 @@ const Login = ({navigation}) => {
       <ImageBackground
         source={require('../../assets/png/LoginBg.png')}
         style={styles.backgroundImg}>
-        <View sytle={styles.container}>
-          <Spinner visible={isLoading} />
-          <View style={styles.logo}>
-            <Image
-              style={{width: 100, height: 53, resizeMode: 'cover'}}
-              source={require('../../assets/png/Actpal_logo.png')}
-            />
-          </View>
-          <View style={[styles.center, {marginTop: 28}]}>
-            <Text style={{fontSize: 22, fontWeight: '400', color: 'black'}}>
-              Welcome Back!
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                marginTop: 6,
-                fontWeight: '400',
-                color: 'black',
-              }}>
-              Login to your account to continue
-            </Text>
-          </View>
-          <View style={{marginHorizontal: 20, marginTop: 60}}>
-            <TextInput
-              value={email}
-              placeholder="Enter Your Email Address"
-              onChangeText={text => setEmail(text)}
-              style={styles.inputBox}
-            />
-          </View>
-          <View
-            style={{marginHorizontal: 20, marginTop: 20, position: 'relative'}}>
-            <TextInput
-              value={password}
-              onChangeText={text => setPassword(text)}
-              placeholder="Password"
-              style={styles.inputBox}
-              secureTextEntry={!showPass}
-            />
-            <TouchableOpacity
-              style={{position: 'absolute', top: 11, right: 15}}
-              onPress={() => setShowPass(!showPass)}>
+        <ScrollView>
+          <View sytle={styles.container}>
+            <Spinner visible={isLoading} />
+            <View style={styles.logo}>
               <Image
-                source={showPass ? passwordShow : passwordHide}
-                style={{width: 26, height: 26}}
+                style={{width: 100, height: 53, resizeMode: 'cover'}}
+                source={require('../../assets/png/Actpal_logo.png')}
               />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginHorizontal: 35,
-              marginTop: 10,
-            }}>
-            <TouchableOpacity onPress={toggleCheckbox} style={styles.checkbtn}>
-              <View style={[styles.checkbox, isChecked && styles.checked]}>
-                {isChecked && <View style={styles.checkmark}></View>}
-              </View>
-              <Text style={styles.label}>Remember me</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-            onPress={()=> navigation.navigate('forgotPassword')}>
-              <Text style={{color: '#1866B4', fontSize: 16}}>
-                Forgot Password ?
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={{marginHorizontal: 20}}>
-            <TouchableOpacity
-              style={styles.blueBtn}
-              onPress={() => {
-                login(email, password);
-              }}>
-              <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
-                Sign In
-              </Text>
-            </TouchableOpacity>
-            <View style={styles.orText}>
-              <View style={styles.line}></View>
-              <Text style={{color: '#CCCCCC'}}>Or</Text>
-              <View style={styles.line}></View>
             </View>
-            <TouchableOpacity
-              style={styles.whiteBtn}
-              onPress={() => navigation.navigate('Register')}>
-              <Text style={{color: '#1866B4', fontWeight: '500', fontSize: 18}}>
-                Create An Account
+            <View style={[styles.center, {marginTop: 28}]}>
+              <Text style={{fontSize: 22, fontWeight: '400', color: 'black'}}>
+                Welcome Back!
               </Text>
-            </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 16,
+                  marginTop: 6,
+                  fontWeight: '400',
+                  color: 'black',
+                }}>
+                Login to your account to continue
+              </Text>
+            </View>
+            <View style={{marginHorizontal: 20, marginTop: 60}}>
+              <TextInput
+                value={email}
+                placeholder="Enter Your Email Address"
+                onChangeText={text => setEmail(text)}
+                style={styles.inputBox}
+              />
+            </View>
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginTop: 20,
+                position: 'relative',
+              }}>
+              <TextInput
+                value={password}
+                onChangeText={text => setPassword(text)}
+                placeholder="Password"
+                style={styles.inputBox}
+                secureTextEntry={!showPass}
+              />
+              <TouchableOpacity
+                style={{position: 'absolute', top: 11, right: 15}}
+                onPress={() => setShowPass(!showPass)}>
+                <Image
+                  source={showPass ? passwordShow : passwordHide}
+                  style={{width: 26, height: 26}}
+                />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 35,
+                marginTop: 10,
+              }}>
+              <TouchableOpacity
+                onPress={toggleCheckbox}
+                style={styles.checkbtn}>
+                <View style={[styles.checkbox, isChecked && styles.checked]}>
+                  {isChecked && <View style={styles.checkmark}></View>}
+                </View>
+                <Text style={styles.label}>Remember me</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('forgotPassword')}>
+                <Text style={{color: '#1866B4', fontSize: 16}}>
+                  Forgot Password ?
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{marginHorizontal: 20}}>
+              <TouchableOpacity
+                style={styles.blueBtn}
+                onPress={() => {
+                  login(email, password);
+                }}>
+                <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.orText}>
+                <Text style={{color: 'black'}}>Don’t have an account?</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.whiteBtn}
+                onPress={() => navigation.navigate('Register')}>
+                <Text
+                  style={{color: '#1866B4', fontWeight: '500', fontSize: 18}}>
+                  Create An Account
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </ImageBackground>
     </>
   );
@@ -213,5 +221,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: '#1866B4',
+    marginBottom: 25,
   },
 });
