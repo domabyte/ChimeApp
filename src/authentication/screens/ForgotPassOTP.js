@@ -1,4 +1,4 @@
-import React, {useState, useRef, createRef, useContext} from 'react';
+import React, {useState, useEffect, useRef, createRef, useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,12 +14,27 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
 
 const ForgotPassOTP = ({navigation, route}) => {
-  const {Mem_ID, message, email} = route.params;
+  const {Mem_ID, email} = route.params;
   const [otpValues, setOtpValues] = useState(Array(6).fill(''));
-  const {isLoading, forgotOTPVerification, forgotPassword, error} =
+  const [timer, setTimer] = useState(60);
+  const [securityCodeTimer, setSecurityCodeTimer] = useState(20 * 60);
+  const {isLoading, forgotOTPVerification, forgotPassword, error, setError} =
     useContext(AuthContext);
 
   const inputRefs = useRef(otpValues.map(() => createRef()));
+
+  useEffect(() => {
+    setError('');
+    const timerId = timer > 0 && setInterval(() => setTimer(timer - 1), 1000);
+    return () => clearInterval(timerId);
+  }, [timer]);
+
+  useEffect(() => {
+    const securityTimerId =
+      securityCodeTimer > 0 &&
+      setInterval(() => setSecurityCodeTimer(securityCodeTimer - 1), 1000);
+    return () => clearInterval(securityTimerId);
+  }, [securityCodeTimer]);
 
   const setOtpValue = (text, index) => {
     const newOtpValues = [...otpValues];
@@ -38,17 +53,25 @@ const ForgotPassOTP = ({navigation, route}) => {
         navigation.navigate('changePassword', {Mem_ID: Mem_ID});
       }
     } else {
-      Alert.alert('Error', 'Please fill in all OTP fields.');
+      setError('Please fill in all OTP fields');
     }
   };
 
-  const handleResendOTP = () => {
-    forgotPassword(email);
+  const handleResendOTP = async () => {
+    await forgotPassword(email);
+    setTimer(60);
+    setSecurityCodeTimer(20 * 60);
   };
 
   const formatEmail = email => {
     const parts = email.split('@');
     return `${parts[0].slice(0, 2)}**********@${parts[1]}`;
+  };
+
+  const formatTimer = time => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   return (
@@ -77,7 +100,7 @@ const ForgotPassOTP = ({navigation, route}) => {
                 color: 'black',
                 textAlign: 'center',
               }}>
-              We sent a code to your email {formatEmail(route.params.email)}
+              We sent a code to your email {formatEmail(email)}
               <Text
                 onPress={() => navigation.goBack()}
                 style={{fontSize: 16, color: '#1866B4', lineHeight: 20}}>
@@ -129,16 +152,32 @@ const ForgotPassOTP = ({navigation, route}) => {
                 marginTop: 18,
               }}>
               Security Code will be valid for{' '}
-              <Text style={{fontWeight: '500'}}>19:50</Text>
+              <Text style={{fontWeight: '500'}}>
+                {formatTimer(securityCodeTimer)}
+              </Text>
             </Text>
 
-            <TouchableOpacity onPress={handleResendOTP} style={{marginTop: 18}}>
+            {timer > 0 ? (
               <Text
-                style={{color: '#1866B4', textAlign: 'center', fontSize: 16}}>
-                Security code sent !
+                style={{
+                  color: '#666',
+                  textAlign: 'center',
+                  fontSize: 16,
+                  marginTop: 10,
+                }}>
+                <Text style={{color: '#1866B4'}}>Security code sent.</Text>{' '}
+                Resend in <Text style={{color: '#111'}}>{timer}</Text> seconds
               </Text>
-            </TouchableOpacity>
-
+            ) : (
+              <TouchableOpacity style={{marginTop: 18}}>
+                <Text
+                  style={{color: '#1866B4', textAlign: 'center', fontSize: 16}}
+                  onPress={handleResendOTP}>
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
+            )}
+            {error ? <Text style={Styles.errorText}>{error}</Text> : null}
             <TouchableOpacity
               style={Styles.blueBtn}
               onPress={handleVerifyPress}>
@@ -150,7 +189,6 @@ const ForgotPassOTP = ({navigation, route}) => {
     </>
   );
 };
-
 export default ForgotPassOTP;
 
 const Styles = StyleSheet.create({
@@ -170,6 +208,11 @@ const Styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     marginTop: 170,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
   },
   mainView: {
     flex: 1,

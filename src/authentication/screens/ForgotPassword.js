@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,12 +15,38 @@ import {AuthContext} from '../../context/AuthContext';
 
 const ForgotPassword = ({navigation}) => {
   const [email, setEmail] = useState(null);
-  const {isLoading, forgotPassword, error} = useContext(AuthContext);
+  const {isLoading, forgotPassword, error, setError} = useContext(AuthContext);
+
+  useEffect(() => {
+    setError('');
+    return () => {
+      setError('');
+    };
+  }, []);
+
+  const validateInputs = () => {
+    let valid = true;
+    switch (true) {
+      case !email:
+        setError('Email is required');
+        valid = false;
+        break;
+      default:
+        break;
+    }
+    return valid;
+  };
 
   const sendSecurityCode = async () => {
-    const {id, message} = await forgotPassword(email);
-    if (id) {
-      navigation.navigate('forgotPassOTP', {Mem_ID: id, message, email: email});
+    if (validateInputs()) {
+      const response = await forgotPassword(email);
+      if (response) {
+        navigation.navigate('forgotPassOTP', {
+          Mem_ID: response.id,
+          message: response.message,
+          email: response.email,
+        });
+      }
     }
   };
 
@@ -59,7 +85,7 @@ const ForgotPassword = ({navigation}) => {
               placeholder="Enter Your Email Address"
               style={Styles.inputBox}
             />
-
+            {error && <Text style={Styles.errorMsg}>{error}</Text>}
             <TouchableOpacity style={Styles.blueBtn} onPress={sendSecurityCode}>
               <Text style={Styles.buttonStyle}>Send Security Code</Text>
             </TouchableOpacity>
@@ -102,6 +128,11 @@ const Styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     marginTop: 170,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
   },
   mainView: {
     flex: 1,

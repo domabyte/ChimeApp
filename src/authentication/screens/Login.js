@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import passwordShow from '../../assets/png/eye-open.png';
 import passwordHide from '../../assets/png/eye-close.png';
 import {AuthContext} from '../../context/AuthContext';
 import Spinner from 'react-native-loading-spinner-overlay';
+import * as Keychain from 'react-native-keychain';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState(null);
@@ -23,7 +24,46 @@ const Login = ({navigation}) => {
   const toggleCheckbox = () => {
     setIsChecked(!isChecked);
   };
-  const {isLoading, login, error} = useContext(AuthContext);
+  const {isLoading, login, error, setError} = useContext(AuthContext);
+
+  useEffect(() => {
+    setError('');
+    const checkCredentials = async () => {
+      const credentials = await Keychain.getGenericPassword();
+      if (credentials) {
+        setEmail(credentials.username);
+        setPassword(credentials.password);
+        setIsChecked(true);
+      }
+    };
+    checkCredentials();
+    return () => {
+      setError('');
+    };
+  }, []);
+
+  const validateInputs = (email, password) => {
+    let valid = true;
+    switch (true) {
+      case !email:
+        setError('Email is required');
+        valid = false;
+        break;
+      case !password:
+        setError('Password is required');
+        valid = false;
+        break;
+      default:
+        break;
+    }
+    return valid;
+  };
+
+  const handleLogin = () => {
+    if (validateInputs(email, password)) {
+      login(email, password, isChecked);
+    }
+  };
 
   return (
     <>
@@ -60,6 +100,7 @@ const Login = ({navigation}) => {
                 placeholder="Enter Your Email Address"
                 onChangeText={text => setEmail(text)}
                 style={styles.inputBox}
+                required
               />
             </View>
             <View
@@ -106,12 +147,9 @@ const Login = ({navigation}) => {
                 </Text>
               </TouchableOpacity>
             </View>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
             <View style={{marginHorizontal: 20}}>
-              <TouchableOpacity
-                style={styles.blueBtn}
-                onPress={() => {
-                  login(email, password);
-                }}>
+              <TouchableOpacity style={styles.blueBtn} onPress={handleLogin}>
                 <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
                   Sign In
                 </Text>
@@ -190,6 +228,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     color: 'black',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
   },
   blueBtn: {
     backgroundColor: '#1866B4',
