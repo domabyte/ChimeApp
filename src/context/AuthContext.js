@@ -2,6 +2,8 @@ import React, {createContext, useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config/config';
 import axios from 'axios';
+import * as Keychain from 'react-native-keychain';
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
@@ -65,7 +67,7 @@ export const AuthProvider = ({children}) => {
         AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
         setIsLoading(false);
       } else {
-        setError(data.message);
+        setError(data.errorText);
         setIsLoading(false);
       }
     } catch (err) {
@@ -74,7 +76,7 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe) => {
     setIsLoading(true);
     const url = config.loginURL + email + '&password=' + password;
     try {
@@ -90,9 +92,12 @@ export const AuthProvider = ({children}) => {
         let userInfo = value;
         setUserInfo(userInfo);
         AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+        if (rememberMe) {
+          await Keychain.setGenericPassword(email, password);
+        }
         setIsLoading(false);
       } else {
-        setError(data.message);
+        setError(data.errorText);
         setIsLoading(false);
       }
     } catch (error) {
@@ -114,8 +119,11 @@ export const AuthProvider = ({children}) => {
           email,
         };
         return value;
+      } else {
+        setError(data.errorText);
+        setIsLoading(false);
+        return null;
       }
-      return false;
     } catch (err) {
       setIsLoading(false);
       console.log(error);
@@ -138,7 +146,7 @@ export const AuthProvider = ({children}) => {
       if (data.Mem_ID && data.Mem_ID > 0) {
         return true;
       } else {
-        setError(data.message);
+        setError(data.errorText);
         setIsLoading(false);
       }
     } catch (err) {
@@ -156,7 +164,7 @@ export const AuthProvider = ({children}) => {
         Confirm_password: confirmPassword,
       });
       setIsLoading(false);
-      return data.code === 1 ? true : setError(data.message);
+      return data.code === 1 ? true : setError(data.errorText);
     } catch (err) {
       setIsLoading(false);
       console.log(err.error);
@@ -203,6 +211,7 @@ export const AuthProvider = ({children}) => {
         userInfo,
         splashLoading,
         error,
+        setError,
         register,
         otpVerify,
         login,
