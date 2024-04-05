@@ -23,15 +23,15 @@ const Signup = ({navigation}) => {
   const [firstName, setFirstName] = useState(null);
   const [lastName, setLastName] = useState(null);
   const [email, setEmail] = useState(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState(null);
+  const [confirmPassword, setConfirmPassword] = useState(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [captcha, setCaptcha] = useState('');
-  const [encryptedCaptcha, setEncryptedCaptcha] = useState('');
+  const [captcha, setCaptcha] = useState(null);
+  const [encryptedCaptcha, setEncryptedCaptcha] = useState(null);
   const [confirmCaptcha, setConfirmCaptcha] = useState(null);
   const [isChecked, setIsChecked] = useState(false);
-  const {isLoading, register, error} = useContext(AuthContext);
+  const {isLoading, register, error, setError} = useContext(AuthContext);
 
   const toggleNewPasswordVisibility = () => {
     setShowNewPassword(!showNewPassword);
@@ -52,9 +52,75 @@ const Signup = ({navigation}) => {
   };
 
   useEffect(() => {
+    setError('');
+    return () => {
+      setError('');
+    };
+  }, []);
+
+  const validateInputs = () => {
+    let valid = true;
+    switch (true) {
+      case !firstName:
+        setError('First name is required');
+        valid = false;
+        break;
+      case !lastName:
+        setError('Last name is required');
+        valid = false;
+        break;
+      case !email:
+        setError('Email is required');
+        valid = false;
+        break;
+      case !newPassword:
+        setError('Password is required');
+        valid = false;
+        break;
+      case newPassword !== confirmPassword:
+        setError('Passwords do not match');
+        valid = false;
+        break;
+      case !confirmCaptcha:
+        setError('Captcha is required');
+        valid = false;
+        break;
+      case !isChecked:
+        setError('Please agree to the terms and conditions');
+        valid = false;
+        break;
+      default:
+        break;
+    }
+
+    return valid;
+  };
+
+  useEffect(() => {
     fetchCaptcha();
   }, []);
 
+  const handleSignup = () => {
+    if (validateInputs()) {
+      if (isChecked) {
+        register(
+          firstName,
+          lastName,
+          email,
+          newPassword,
+          confirmPassword,
+          encryptedCaptcha,
+          confirmCaptcha,
+          isChecked,
+          (Mem_ID, message) =>
+            navigation.navigate('OtpVerification', {
+              Mem_ID,
+              message,
+            }),
+        );
+      }
+    }
+  };
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
@@ -185,26 +251,9 @@ const Signup = ({navigation}) => {
                 </Text>
               </TouchableOpacity>
             </View>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
             <View style={{marginHorizontal: 20}}>
-              <TouchableOpacity
-                style={styles.blueBtn}
-                onPress={() => {
-                  register(
-                    firstName,
-                    lastName,
-                    email,
-                    newPassword,
-                    confirmPassword,
-                    encryptedCaptcha,
-                    confirmCaptcha,
-                    isChecked,
-                    (Mem_ID, message) =>
-                      navigation.navigate('OtpVerification', {
-                        Mem_ID,
-                        message,
-                      }),
-                  );
-                }}>
+              <TouchableOpacity style={styles.blueBtn} onPress={handleSignup}>
                 <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
                   Continue
                 </Text>
@@ -267,6 +316,11 @@ const styles = StyleSheet.create({
     width: '48%',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
   },
   blueBtn: {
     backgroundColor: '#1866B4',

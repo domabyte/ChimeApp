@@ -1,4 +1,4 @@
-import React, {useState, useContext, useRef, createRef} from 'react';
+import React, {useState, useContext, useRef, createRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,17 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
 
 const OtpVerification = ({route}) => {
-  const {Mem_ID,message} = route.params;
+  const {Mem_ID, message} = route.params;
   const [otpValues, setOtpValues] = useState(Array(6).fill(''));
-  const {isLoading, otpVerify, error} = useContext(AuthContext);
+  const {isLoading, otpVerify, error, setError} = useContext(AuthContext);
   const inputRefs = useRef(otpValues.map(() => createRef()));
+
+  useEffect(() => {
+    setError('');
+    return () => {
+      setError('');
+    };
+  }, []);
 
   const setOtpValue = (text, index) => {
     const newOtpValues = [...otpValues];
@@ -30,7 +37,7 @@ const OtpVerification = ({route}) => {
     if (otpString.length === 6) {
       otpVerify(Mem_ID, otpString);
     } else {
-      Alert.alert("Error", "Please fill in all OTP fields.");
+      setError('Please fill in all OTP fields');
     }
   };
 
@@ -62,9 +69,8 @@ const OtpVerification = ({route}) => {
           />
         ))}
       </View>
-      <TouchableOpacity
-        style={styles.verifyButton}
-        onPress={handleVerifyPress}>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyPress}>
         <Text style={styles.buttonText}>Verify</Text>
       </TouchableOpacity>
     </View>
@@ -86,6 +92,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
   },
   otpInput: {
     width: 40,
