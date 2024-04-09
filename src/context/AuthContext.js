@@ -21,6 +21,7 @@ export const AuthProvider = ({children}) => {
     encryptedCaptcha,
     confirmCaptcha,
     isChecked,
+    resend,
     navigationCallback,
   ) => {
     setIsLoading(true);
@@ -30,13 +31,27 @@ export const AuthProvider = ({children}) => {
     try {
       const {data} = await axios.post(queryString);
       if (data.Mem_ID && data.Mem_ID > 0) {
-        navigationCallback(data.Mem_ID, data.message);
+        if (!resend) {
+          navigationCallback(
+            data.Mem_ID,
+            data.message,
+            firstName,
+            lastName,
+            email,
+            newPassword,
+            confirmPassword,
+            encryptedCaptcha,
+            confirmCaptcha,
+            isChecked,
+          );
+        } else {
+          return data.message;
+        }
       } else {
         setError(data.errorText || 'Registration failed.');
       }
     } catch (err) {
       setError(`Registration error: ${error}`);
-      Alert.alert('Registration Error', `An error occurred: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
