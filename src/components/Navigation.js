@@ -9,6 +9,7 @@ import OtpVerification from '../authentication/screens/OTPVerification.js';
 import ForgotPassword from '../authentication/screens/ForgotPassword.js';
 import ForgotPassOTP from '../authentication/screens/ForgotPassOTP.js';
 import ChangePassword from '../authentication/screens/ChangePassword.js';
+import SuccessPassword from '../authentication/screens/SuccessPassword.js';
 import { AuthContext } from '../context/AuthContext.js';
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,11 @@ const Navigation = () => {
             <Stack.Screen 
               name='changePassword'
               component={ChangePassword}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen 
+              name='successPassword'
+              component={SuccessPassword}
               options={{headerShown: false}}
             />
             </>

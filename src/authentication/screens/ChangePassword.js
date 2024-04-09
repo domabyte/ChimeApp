@@ -1,4 +1,4 @@
-import React, {useState, useRef, useContext} from 'react';
+import React, { useState, useRef, useContext } from 'react';
 
 import {
   StyleSheet,
@@ -12,30 +12,35 @@ import {
   Image,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import passwordShow from '../../assets/png/eye-open.png';
-import passwordHide from '../../assets/png/eye-close.png';
+import passwordHide from '../../assets/png/eye-close.png'
 
-const ChangePassword = ({navigation, route}) => {
+const ChangePassword = ({ navigation, route }) => {
   const {Mem_ID} = route.params;
-  const [newPassword, setNewPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const {isLoading, error, changePassword} = useContext(AuthContext);
-
-  const handleResetPassword = async () => {
-    if (newPassword === confirmPassword) {
-      const response = await changePassword(
-        Mem_ID,
-        newPassword,
-        confirmPassword,
-      );
-      if (response) {
-        navigation.navigate('Login');
-      }
-    }
-  };
+  const [strength, setStrength] = useState('');
+  const [statusColor, setStatusColor] = useState('#ccc');
+  const [statusWidth, setStatusWidth] = useState('0%');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const {isLoading, error, setError, changePassword} = useContext(AuthContext);
+
+  const handleResetPassword = async () => {
+    if (password === confirmPassword) {
+      const response = await changePassword(
+        Mem_ID,
+        password,
+        confirmPassword,
+      )
+      if (response) {
+        navigation.navigate('successPassword');
+      }
+    } else {
+      setError("Password does not match");
+    }
+  };
 
   const toggleNewPasswordVisibility = () => {
     setShowNewPassword(!showNewPassword);
@@ -45,44 +50,36 @@ const ChangePassword = ({navigation, route}) => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const [password, setPassword] = useState('');
-  const [strength, setStrength] = useState(0);
-  const passwordInputRef = useRef(null);
+  const calculateStrength = (password) => {
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const mediumRegex = /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
-  const calculateStrength = password => {
-    const minLength = 8;
-    const hasUppercase = /[A-Z]/.test(password);
-    const hasLowercase = /[a-z]/.test(password);
-    const hasDigit = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*()_+[\]{};:'"\\|,.<>/?]+/.test(password);
-
-    let strength = 0;
-    if (password.length >= minLength) strength++;
-    if (hasUppercase) strength++;
-    if (hasLowercase) strength++;
-    if (hasDigit) strength++;
-    if (hasSpecialChar) strength++;
-
-    return strength;
-  };
-
-  const handlePasswordChange = value => {
-    setPassword(value);
-    const passwordStrength = calculateStrength(value);
-    setStrength(passwordStrength);
-  };
-
-  const getPasswordColor = strength => {
-    switch (strength) {
-      case 0:
-        return 'red';
-      case 1:
-        return 'orange';
-      case 2:
-        return 'green';
-      default:
-        return 'black';
+    if (strongRegex.test(password)) {
+      setStrength('Very Good');
+      setStatusColor('#4CAF50'); 
+      setStatusWidth('100%');
+    } else if (mediumRegex.test(password)) {
+      setStrength('Good');
+      setStatusColor('#8BC34A'); 
+      setStatusWidth('75%');
+    } else if (password.length >= 8) {
+      setStrength('Fair');
+      setStatusColor('#FFEB3B'); 
+      setStatusWidth('50%');
+    } else if (password.length > 0) {
+      setStrength('Weak');
+      setStatusColor('#F44336'); 
+      setStatusWidth('25%');
+    } else {
+      setStrength('');
+      setStatusColor('#ccc'); 
+      setStatusWidth('0%');
     }
+  };
+
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    calculateStrength(text);
   };
 
   return (
@@ -95,13 +92,13 @@ const ChangePassword = ({navigation, route}) => {
           <Spinner visible={isLoading} />
           <View style={Styles.logo}>
             <Image
-              style={{width: 100, height: 53, resizeMode: 'cover'}}
+              style={{ width: 100, height: 53, resizeMode: 'cover' }}
               source={require('../../assets/png/Actpal_logo.png')}
             />
           </View>
           <View>
-            <View style={[Styles.center, {marginTop: 20}]}>
-              <Text style={{fontSize: 22, fontWeight: '600', color: 'black'}}>
+            <View style={[Styles.center, { marginTop: 20 }]}>
+              <Text style={{ fontSize: 22, fontWeight: '600', color: 'black' }}>
                 Create A New Password
               </Text>
               <Text
@@ -118,37 +115,30 @@ const ChangePassword = ({navigation, route}) => {
               </Text>
             </View>
 
-            <View style={{marginTop: 30, position: 'relative'}}>
+            <View style={{ marginTop: 30, position: 'relative' }}>
               <TextInput
-                ref={passwordInputRef}
-                value={password}
-                onChangeText={setNewPassword}
-                placeholder="New Password"
                 style={Styles.inputBox}
+                placeholder="Enter your password"
+                onChangeText={handlePasswordChange}
+                value={password}
                 secureTextEntry={!showNewPassword}
-                key="passwordInput"
               />
               <TouchableOpacity
                 style={Styles.viewBtn}
                 onPress={toggleNewPasswordVisibility}>
                 <Image
                   source={showNewPassword ? passwordShow : passwordHide}
-                  style={{width: 26, height: 26}}
+                  style={{ width: 26, height: 26 }}
                 />
               </TouchableOpacity>
             </View>
 
-            <View
-              style={[
-                Styles.progressBar,
-                {
-                  width: `${(strength + 1) * 10}%`,
-                  backgroundColor: getPasswordColor(strength),
-                },
-              ]}
-            />
+            <View style={{marginHorizontal: 12}}>
+              <View style={[Styles.statusBar, { backgroundColor: statusColor, width: statusWidth }]} />
+              {strength !== '' && <Text style={Styles.strength}>{strength}</Text>}
+            </View>
 
-            <View style={{marginTop: 20, position: 'relative'}}>
+            <View style={{ marginTop: 12, position: 'relative' }}>
               <TextInput
                 secureTextEntry={!showConfirmPassword}
                 placeholder="Confirm Password"
@@ -161,10 +151,11 @@ const ChangePassword = ({navigation, route}) => {
                 onPress={toggleConfirmPasswordVisibility}>
                 <Image
                   source={showConfirmPassword ? passwordShow : passwordHide}
-                  style={{width: 26, height: 26}}
+                  style={{ width: 26, height: 26 }}
                 />
               </TouchableOpacity>
             </View>
+            {error ? <Text style={Styles.errorText}>{error}</Text> : null}
             <TouchableOpacity
               style={Styles.blueBtn}
               onPress={handleResetPassword}>
@@ -196,6 +187,11 @@ const Styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     marginTop: 170,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
   },
   mainView: {
     flex: 1,
@@ -252,9 +248,15 @@ const Styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
   },
-  progressBar: {
-    width: '80%',
-    height: 10,
-    marginTop: 10,
+  statusBar: {
+    height: 8,
+    borderRadius: 5,
+    marginTop: 5,
+  },
+  strength: {
+    color: '#333',
+    fontWeight: 'bold',
+    textAlign: 'right',
+
   },
 });

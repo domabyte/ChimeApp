@@ -112,10 +112,19 @@ const Signup = ({navigation}) => {
           encryptedCaptcha,
           confirmCaptcha,
           isChecked,
-          (Mem_ID, message) =>
+          resend=false,
+          (Mem_ID, message, firstName, lastName, email, newPassword, confirmPassword, encryptedCaptcha, confirmCaptcha, isChecked) =>
             navigation.navigate('OtpVerification', {
               Mem_ID,
               message,
+              firstName,
+              lastName,
+              email,
+              newPassword,
+              confirmPassword,
+              encryptedCaptcha,
+              confirmCaptcha,
+              isChecked,
             }),
         );
       }
