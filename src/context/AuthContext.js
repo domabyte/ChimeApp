@@ -76,20 +76,92 @@ export const AuthProvider = ({children}) => {
           friendid: data.FriendId,
           memberToken: data.MemberToken,
           LoginToken: data.LoginToken,
+          encryptToken: data.EncryptMemId,
         };
         let userInfo = value;
-        setUserInfo(userInfo);
-        AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+        // setUserInfo(userInfo);
+        // AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
         setIsLoading(false);
+        return userInfo;
       } else {
         setError(data.errorText);
         setIsLoading(false);
+        return false;
       }
     } catch (err) {
       setIsLoading(false);
       console.log(err.error);
     }
   };
+
+  const basicInfo = async (
+    location,
+    countryValue,
+    id,
+    stateValue,
+    postalCode,
+    name,
+  ) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(config.basicInfoURL, {
+        Mem_Address: location,
+        Mem_CountryID: countryValue,
+        Mem_ID: id,
+        Mem_StateID: stateValue,
+        Mem_ZipCode: postalCode,
+        Mem_DOB: '1900-01-01',
+        Mem_Name: name.split(' ')[0],
+        Mem_LName: name.split(' ')[1],
+      });
+      if (data) {
+        if (data.code === 1) {
+          setIsLoading(false);
+          return data;
+        }
+      } else {
+        setIsLoading(false);
+        setError(data.errorText);
+        return false;
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log(err.error);
+    }
+  };
+
+  const updatePhotoInfo = async (image, userInfo) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('Photo', {
+        uri: image.uri?.uri,
+        name: image.uri?.fileName,
+        type: image.uri?.type,
+      });
+      formData.append('Mem_id', userInfo.encryptToken);
+      formData.append('MemberToken', userInfo.encryptToken);
+      const {data} = await axios.post(config.uploadPhotoURL, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          MemberToken: userInfo.encryptToken,
+        },
+      });
+      if (data) {
+        if (data.code === 1) {
+          setIsLoading(false);
+          return data;
+        }
+      } else {
+        setIsLoading(false);
+        setError(data.errorText);
+        return false;
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log(err.error);
+    }
+  }
 
   const login = async (email, password, rememberMe) => {
     setIsLoading(true);
@@ -224,11 +296,14 @@ export const AuthProvider = ({children}) => {
       value={{
         isLoading,
         userInfo,
+        setUserInfo,
         splashLoading,
         error,
         setError,
         register,
         otpVerify,
+        basicInfo,
+        updatePhotoInfo,
         login,
         forgotPassword,
         forgotOTPVerification,

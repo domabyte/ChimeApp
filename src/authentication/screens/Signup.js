@@ -92,7 +92,6 @@ const Signup = ({navigation}) => {
       default:
         break;
     }
-
     return valid;
   };
 

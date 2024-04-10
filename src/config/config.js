@@ -11,5 +11,9 @@ const configURL = {
     sendPvtMsgURL: baseURL + 'message/sendPrivateMessage',
     chatHistoryURL: baseURL + 'message/_chat_history?MemberToken=',
     captchaURL: baseURL + 'account/GetSecurityCode',
+    countryListURL: baseURL + 'location/GetCountryList',
+    stateListURL: baseURL + 'location/GetStateList?CountryId=',
+    basicInfoURL: baseURL + 'account/BasicInfo',
+    uploadPhotoURL: baseURL + 'account/_upload_profile_photo',
 };
 export default configURL;

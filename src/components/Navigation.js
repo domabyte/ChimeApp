@@ -1,4 +1,4 @@
-import React ,{lazy, useContext} from 'react';
+import React, {useContext} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import FriendScreen from '../screens/Friends.js';
@@ -10,7 +10,9 @@ import ForgotPassword from '../authentication/screens/ForgotPassword.js';
 import ForgotPassOTP from '../authentication/screens/ForgotPassOTP.js';
 import ChangePassword from '../authentication/screens/ChangePassword.js';
 import SuccessPassword from '../authentication/screens/SuccessPassword.js';
-import { AuthContext } from '../context/AuthContext.js';
+import AddProfile from '../authentication/screens/addProfile.js';
+import Information from '../authentication/screens/Information.js';
+import {AuthContext} from '../context/AuthContext.js';
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
@@ -18,16 +20,16 @@ const Navigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-      {splashLoading ? (
+        {splashLoading ? (
           <Stack.Screen
             name="Splash Screen"
             component={SplashScreen}
             options={{headerShown: false}}
           />
-          ) : userInfo.memberToken ? (
+        ) : userInfo.memberToken ? (
           <Stack.Screen name="Friends" component={FriendScreen} />
-          ) : (
-            <>
+        ) : (
+          <>
             <Stack.Screen
               name="Login"
               component={LoginScreen}
@@ -43,28 +45,38 @@ const Navigation = () => {
               component={OtpVerification}
               options={{headerShown: false}}
             />
-            <Stack.Screen 
-              name='forgotPassword'
+            <Stack.Screen
+              name="forgotPassword"
               component={ForgotPassword}
               options={{headerShown: false}}
             />
-            <Stack.Screen 
-              name='forgotPassOTP'
+            <Stack.Screen
+              name="forgotPassOTP"
               component={ForgotPassOTP}
               options={{headerShown: false}}
             />
-            <Stack.Screen 
-              name='changePassword'
+            <Stack.Screen
+              name="changePassword"
               component={ChangePassword}
               options={{headerShown: false}}
             />
-            <Stack.Screen 
-              name='successPassword'
+            <Stack.Screen
+              name="successPassword"
               component={SuccessPassword}
               options={{headerShown: false}}
             />
-            </>
-          )} 
+            <Stack.Screen
+              name="addProfile"
+              component={AddProfile}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="information"
+              component={Information}
+              options={{headerShown: false}}
+            />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
