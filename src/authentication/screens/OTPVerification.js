@@ -47,7 +47,10 @@ const OtpVerification = ({ navigation, route }) => {
   const handleVerifyPress = async () => {
     const otpString = otpValues.join('');
     if (otpString.length === 6) {
-      await otpVerify(Mem_ID, otpString);
+      const userInfo = await otpVerify(Mem_ID, otpString);
+      if(userInfo){
+        navigation.navigate('information', {userInfo});
+      }
     } else {
       setError('Please fill in all OTP fields');
     }

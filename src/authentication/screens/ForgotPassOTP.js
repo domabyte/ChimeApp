@@ -181,7 +181,7 @@ const ForgotPassOTP = ({navigation, route}) => {
             <TouchableOpacity
               style={Styles.blueBtn}
               onPress={handleVerifyPress}>
-              <Text style={Styles.buttonStyle}>Send Security Code</Text>
+              <Text style={Styles.buttonStyle}>Confirm Security Code</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -233,7 +233,7 @@ const Styles = StyleSheet.create({
   },
   otpInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'black',
     borderRadius: 10,
     width: 50,
     height: 50,

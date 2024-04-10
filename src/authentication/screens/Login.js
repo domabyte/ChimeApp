@@ -59,9 +59,9 @@ const Login = ({navigation}) => {
     return valid;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (validateInputs(email, password)) {
-      login(email, password, isChecked);
+      await login(email, password, isChecked);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 
 import {
   StyleSheet,
@@ -88,8 +88,8 @@ const ChangePassword = ({ navigation, route }) => {
       <ImageBackground
         source={require('../../assets/png/LoginBg.png')}
         style={Styles.backgroundImg}>
-        <ScrollView style={Styles.mainView}>
           <Spinner visible={isLoading} />
+        <ScrollView style={Styles.mainView}>
           <View style={Styles.logo}>
             <Image
               style={{ width: 100, height: 53, resizeMode: 'cover' }}
