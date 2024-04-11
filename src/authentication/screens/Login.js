@@ -17,6 +17,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import * as Keychain from 'react-native-keychain';
 
 const Login = ({navigation}) => {
+  const [credentials, setCredentials] = useState({email: null, password: null});
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [showPass, setShowPass] = useState(false);
@@ -29,8 +30,8 @@ const Login = ({navigation}) => {
   useEffect(() => {
     setError('');
     const checkCredentials = async () => {
-      const credentials = await Keychain.getGenericPassword();
-      if (credentials) {
+      const storedCredentials = await Keychain.getGenericPassword();
+      if (storedCredentials) {
         setEmail(credentials.username);
         setPassword(credentials.password);
         setIsChecked(true);
@@ -60,8 +61,8 @@ const Login = ({navigation}) => {
   };
 
   const handleLogin = async () => {
-    if (validateInputs(email, password)) {
-      await login(email, password, isChecked);
+    if (validateInputs(credentials.email, credentials.password)) {
+      await login(credentials.email, credentials.password, isChecked);
     }
   };
 
@@ -98,7 +99,7 @@ const Login = ({navigation}) => {
               <TextInput
                 value={email}
                 placeholder="Enter Your Email Address"
-                onChangeText={text => setEmail(text)}
+                onChangeText={text => setCredentials({...credentials, email: text})}
                 style={styles.inputBox}
                 required
               />
@@ -111,7 +112,7 @@ const Login = ({navigation}) => {
               }}>
               <TextInput
                 value={password}
-                onChangeText={text => setPassword(text)}
+                onChangeText={text => setCredentials({...credentials, password: text})}
                 placeholder="Password"
                 style={styles.inputBox}
                 secureTextEntry={!showPass}
