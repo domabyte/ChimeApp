@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Friends from "../screens/Friends.js";
 import SplashScreen from '../authentication/screens/SplashScreen.js';
 import LoginScreen from '../authentication/screens/Login.js';
 import RegisterScreen from '../authentication/screens/Signup.js';
@@ -31,11 +32,38 @@ const Navigation = () => {
             options={{headerShown: false}}
           />
         ) : userInfo.memberToken ? (
+          <>
           <Stack.Screen
             name="myFriend"
             component={MyFriends}
             options={{headerShown: false}}
           />
+          <Stack.Screen
+              name="findFriends"
+              component={FindFriends}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="suggestedFriends"
+              component={SuggestedFriends}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="sentRequest"
+              component={SentRequest}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="receivedRequest"
+              component={ReceivedRequest}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="myFriends"
+              component={MyFriends}
+              options={{headerShown: false}}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen
@@ -81,31 +109,6 @@ const Navigation = () => {
             <Stack.Screen
               name="information"
               component={Information}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="findFriends"
-              component={FindFriends}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="suggestedFriends"
-              component={SuggestedFriends}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="sentRequest"
-              component={SentRequest}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="receivedRequest"
-              component={ReceivedRequest}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="myFriends"
-              component={MyFriends}
               options={{headerShown: false}}
             />
           </>
