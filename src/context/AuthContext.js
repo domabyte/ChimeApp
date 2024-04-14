@@ -515,6 +515,71 @@ export const AuthProvider = ({children}) => {
       setIsLoading(false);
     }
   };
+
+  const getAllFriends = async (memberToken, MemId, loginToken, keywords) => {
+    setIsLoading(true);
+    const url = keywords
+      ? configURL.getSentFriendRequestURL +
+        memberToken +
+        '&MemId=' +
+        MemId +
+        '&page=1&pageSize=40&keywords=' +
+        keywords
+      : configURL.getSentFriendRequestURL +
+        memberToken +
+        '&MemId=' +
+        MemId +
+        '&page=1&pageSize=40';
+    try {
+      const {data} = await axios.get(
+        url,
+        {
+          headers: {
+            MemberToken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      if (data.length > 0) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setError('No friend found.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(`Error getting all friends : ${err.error}`);
+      setIsLoading(false);
+    }
+  };
+
+  const unFriendRequest = async (id, memberToken, loginToken) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(configURL.unFriendRequestURL, {
+        FriendList_Id: id,
+        MemberToken: memberToken,
+      },
+      {
+        headers: {
+          Membertoken: memberToken,
+          LoginToken: loginToken,
+        },
+      });
+      if (data.errorText) {
+        setError(data.errorText);
+        setIsLoading(false);
+        return false;
+      } else {
+        setIsLoading(false);
+        return true;
+      }
+    } catch (err) {
+      console.log(`Error unfriend request : ${err}`);
+      setIsLoading(false);
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -542,6 +607,8 @@ export const AuthProvider = ({children}) => {
         receiveFriendRequest,
         getReceiveFriendRequest,
         acceptFriendRequest,
+        getAllFriends,
+        unFriendRequest,
       }}>
       {children}
     </AuthContext.Provider>

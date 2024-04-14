@@ -21,5 +21,8 @@ const configURL = {
     cancelFriendRequestURL: baseURL + 'User/RejectRequest',
     getSentFriendRequestURL: baseURL + 'user/GetFriendList?MemberToken=',
     receiveFriendRequestURL: baseURL + 'User/_FriendRequest?userid=',
+    getReceiveFriendRequestURL: baseURL + 'user/GetFriendList?MemberToken=',
+    acceptFriendRequestURL: baseURL + 'User/AcceptFriendRequest',
+    unFriendRequestURL: baseURL + 'User/UnFriendRequest',
 };
 export default configURL;
