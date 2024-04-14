@@ -30,7 +30,7 @@ const SentRequest = ({navigation}) => {
   } = useContext(AuthContext);
 
   useEffect(() => {
-    const fetchSentRequest = async () => {
+    const fetchSentFriendRequest = async () => {
       try {
         const response = await getSentFriendRequest(
           userInfo.memberToken,
@@ -46,7 +46,7 @@ const SentRequest = ({navigation}) => {
         console.log('Problem fetching sent friend');
       }
     };
-    fetchSentRequest();
+    fetchSentFriendRequest();
   }, []);
 
   const handleCancelFriendRequest = async (FriendList_Id, index) => {
