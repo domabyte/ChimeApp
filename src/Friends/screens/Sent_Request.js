@@ -180,7 +180,7 @@ const SentRequest = ({navigation}) => {
                         />
                       </View>
                       <Text style={{color: 'black'}}>
-                        {item.FriendsCount} mutual connections
+                        {item.MutualFriends} mutual connections
                       </Text>
                     </View>
                     <View style={styles.buttonArea}>
@@ -266,7 +266,7 @@ const SentRequest = ({navigation}) => {
                       />
                     </View>
                     <Text style={{color: 'black'}}>
-                      {item.FriendsCount} mutual connections
+                      {item.MutualFriends} mutual connections
                     </Text>
                   </View>
                   <View style={styles.buttonArea}>

@@ -14,7 +14,7 @@ import Header from '../../components/Header';
 import {AuthContext} from '../../context/AuthContext';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const ReceivedRequest = ({text, lines}) => {
+const ReceivedRequest = ({navigation}) => {
   const [showButtons, setShowButtons] = useState(true);
   const [receiveRequest, setReceiveRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -200,7 +200,7 @@ const ReceivedRequest = ({text, lines}) => {
                         />
                       </View>
                       <Text style={{color: 'black'}}>
-                        {item.FriendsCount} mutual connections
+                        {item.MutualFriends} mutual connections
                       </Text>
                     </View>
                     <View style={styles.buttonArea}>
@@ -288,7 +288,7 @@ const ReceivedRequest = ({text, lines}) => {
                       />
                     </View>
                     <Text style={{color: 'black'}}>
-                      {item.FriendsCount} mutual connections
+                      {item.MutualFriends} mutual connections
                     </Text>
                   </View>
                   <View style={styles.buttonArea}>
