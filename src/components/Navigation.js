@@ -10,8 +10,12 @@ import ForgotPassword from '../authentication/screens/ForgotPassword.js';
 import ForgotPassOTP from '../authentication/screens/ForgotPassOTP.js';
 import ChangePassword from '../authentication/screens/ChangePassword.js';
 import SuccessPassword from '../authentication/screens/SuccessPassword.js';
-import AddProfile from '../authentication/screens/addProfile.js';
+import AddProfile from '../authentication/screens/AddProfile.js';
 import Information from '../authentication/screens/Information.js';
+import FindFriends from '../Friends/screens/Find_Friends.js';
+import SuggestedFriends from '../Friends/screens/SuggestedFriends.js';
+import SentRequest from '../Friends/screens/Sent_Request.js';
+import ReceivedRequest from '../Friends/screens/Received_Request.js';
 import {AuthContext} from '../context/AuthContext.js';
 const Stack = createNativeStackNavigator();
 
@@ -27,7 +31,11 @@ const Navigation = () => {
             options={{headerShown: false}}
           />
         ) : userInfo.memberToken ? (
-          <Stack.Screen name="Friends" component={FriendScreen} />
+          <Stack.Screen
+            name="findFriends"
+            component={ReceivedRequest}
+            options={{headerShown: false}}
+          />
         ) : (
           <>
             <Stack.Screen
@@ -73,6 +81,11 @@ const Navigation = () => {
             <Stack.Screen
               name="information"
               component={Information}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="findFriends"
+              component={FindFriends}
               options={{headerShown: false}}
             />
           </>

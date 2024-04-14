@@ -15,5 +15,11 @@ const configURL = {
     stateListURL: baseURL + 'location/GetStateList?CountryId=',
     basicInfoURL: baseURL + 'account/BasicInfo',
     uploadPhotoURL: baseURL + 'account/_upload_profile_photo',
+    suggestedUserURL: baseURL + 'User/GetSuggestedUsers', 
+    findFriendsURL: baseURL + 'User/_get_all_members?userid=',
+    sentFriendRequestURL: baseURL + 'User/SendFriendRequest',
+    cancelFriendRequestURL: baseURL + 'User/RejectRequest',
+    getSentFriendRequestURL: baseURL + 'user/GetFriendList?MemberToken=',
+    receiveFriendRequestURL: baseURL + 'User/_FriendRequest?userid=',
 };
 export default configURL;

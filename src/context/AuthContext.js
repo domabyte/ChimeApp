@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config/config';
 import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
+import configURL from '../config/config';
 
 export const AuthContext = createContext();
 
@@ -79,8 +80,6 @@ export const AuthProvider = ({children}) => {
           encryptToken: data.EncryptMemId,
         };
         let userInfo = value;
-        // setUserInfo(userInfo);
-        // AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
         setIsLoading(false);
         return userInfo;
       } else {
@@ -161,7 +160,7 @@ export const AuthProvider = ({children}) => {
       setIsLoading(false);
       console.log(err.error);
     }
-  }
+  };
 
   const login = async (email, password, rememberMe) => {
     setIsLoading(true);
@@ -169,6 +168,7 @@ export const AuthProvider = ({children}) => {
     try {
       const {data} = await axios.get(url);
       if (data.Mem_ID && data.Mem_ID > 0) {
+        console.log('Data is : ', data);
         const value = {
           name: data.Mem_Name + ' ' + data.Mem_LName,
           id: data.Mem_ID,
@@ -272,9 +272,8 @@ export const AuthProvider = ({children}) => {
   };
 
   const isLoggedIn = async () => {
+    setSplashLoading(true);
     try {
-      setSplashLoading(true);
-
       let userInfo = await AsyncStorage.getItem('userInfo');
       userInfo = JSON.parse(userInfo);
 
@@ -291,10 +290,172 @@ export const AuthProvider = ({children}) => {
     isLoggedIn();
   }, []);
 
+  const getSuggestedUsers = async id => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.get(configURL.suggestedUserURL, {
+        Mem_ID: id,
+      });
+      setIsLoading(false);
+      if (data.length > 0) {
+        return data;
+      } else {
+        setError('Sorry could not find the requested users');
+        return false;
+      }
+    } catch (err) {
+      console.log(`Error getting suggestedUsers : ${err.error}`);
+      setIsLoading(false);
+    }
+  };
+
+  const searchFriends = async (userId, page, pageSize, keywords) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(
+        configURL.findFriendsURL +
+          userId +
+          '&page=' +
+          page +
+          '&pageSize=' +
+          pageSize +
+          '&keywords=' +
+          keywords,
+      );
+      setIsLoading(false);
+      if (data.length > 0) {
+        return data;
+      } else {
+        setError('Sorry could not find the requested users');
+        return false;
+      }
+    } catch (err) {
+      console.log(`Error finding Friends : ${err.error}`);
+      setIsLoading(false);
+    }
+  };
+
+  const sendFriendRequest = async (id, memberToken, loginToken) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(
+        configURL.sentFriendRequestURL,
+        {
+          Mem_ID: id,
+          MemberToken: memberToken,
+        },
+        {
+          headers: {
+            Membertoken: memberToken,
+            loginToken: loginToken,
+          },
+        },
+      );
+      if (data.sendre === 1) {
+        setIsLoading(false);
+        return true;
+      } else {
+        setError(data.errorText);
+        setIsLoading(false);
+        return false;
+      }
+    } catch (err) {
+      console.log(`Error sending friend request : ${err.error}`);
+      setIsLoading(false);
+    }
+  };
+
+  const getSentFriendRequest = async (
+    memberToken,
+    MemId,
+    loginToken,
+    keywords,
+  ) => {
+    setIsLoading(true);
+    const url = keywords
+      ? configURL.getSentFriendRequestURL +
+        memberToken +
+        '&MemId=' +
+        MemId +
+        '&page=1&pageSize=40&Status=4&IsSenderId=1&keywords=' +
+        keywords
+      : configURL.getSentFriendRequestURL +
+        memberToken +
+        '&MemId=' +
+        MemId +
+        '&page=1&pageSize=40&Status=4&IsSenderId=1';
+    try {
+      const {data} = await axios.get(url, {
+        headers: {
+          MemberToken: memberToken,
+          LoginToken: loginToken,
+        },
+      });
+      if (data.length > 0) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setError('No any friend request sent.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(`Error getting sent friend request : ${err}`);
+      setIsLoading(false);
+    }
+  };
+
+  const cancelFriendRequest = async (id, memberToken, loginToken) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(
+        configURL.cancelFriendRequestURL,
+        {
+          FriendList_Id: id,
+          MemberToken: memberToken,
+        },
+        {
+          headers: {
+            Membertoken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      if (data.errorText) {
+        setError(data.errorText);
+        setIsLoading(false);
+        return false;
+      } else {
+        setIsLoading(false);
+        return true;
+      }
+    } catch (err) {
+      console.log(`Error canceling friend request : ${err.error}`);
+      setIsLoading(false);
+    }
+  };
+
+  const receiveFriendRequest = async id => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(configURL.receiveFriendRequestURL + id);
+      if (data.length > 0) {
+        setIsLoading(false);
+        return true;
+      } else {
+        setError('No any friend request sent.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(`Error getting sent friend request : ${err}`);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         isLoading,
+        setIsLoading,
         userInfo,
         setUserInfo,
         splashLoading,
@@ -309,6 +470,12 @@ export const AuthProvider = ({children}) => {
         forgotOTPVerification,
         changePassword,
         logout,
+        getSuggestedUsers,
+        searchFriends,
+        sendFriendRequest,
+        getSentFriendRequest,
+        cancelFriendRequest,
+        receiveFriendRequest,
       }}>
       {children}
     </AuthContext.Provider>
