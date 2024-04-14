@@ -440,7 +440,7 @@ export const AuthProvider = ({children}) => {
       const {data} = await axios.post(configURL.receiveFriendRequestURL + id);
       if (data.length > 0) {
         setIsLoading(false);
-        return true;
+        return data;
       } else {
         setError('No any friend request sent.');
         setIsLoading(false);
@@ -451,6 +451,70 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const getReceiveFriendRequest = async (
+    memberToken,
+    MemId,
+    loginToken,
+    keywords,
+  ) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.get(
+        configURL.getSentFriendRequestURL +
+          memberToken +
+          '&MemId=' +
+          MemId +
+          '&page=1&Status=4&IsSenderId=0&pageSize=40&keywords=' +
+          keywords,
+        {
+          headers: {
+            MemberToken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      if (data.length > 0) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setError('No any friend request received.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(`Error getting sent friend request : ${err}`);
+      setIsLoading(false);
+    }
+  };
+
+  const acceptFriendRequest = async (memberToken, id, loginToken) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.post(
+        configURL.acceptFriendRequestURL,
+        {
+          FriendList_Id: id,
+          MemberToken: memberToken,
+        },
+        {
+          headers: {
+            Membertoken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      if (data.errorText) {
+        setError(data.errorText);
+        setIsLoading(false);
+        return false;
+      } else {
+        setIsLoading(false);
+        return true;
+      }
+    } catch (err) {
+      console.log(`Error accepting friend request : ${err}`);
+      setIsLoading(false);
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -476,6 +540,8 @@ export const AuthProvider = ({children}) => {
         getSentFriendRequest,
         cancelFriendRequest,
         receiveFriendRequest,
+        getReceiveFriendRequest,
+        acceptFriendRequest,
       }}>
       {children}
     </AuthContext.Provider>

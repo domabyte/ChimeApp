@@ -16,7 +16,6 @@ const default_photo = require('../../assets/png/default-profile.png');
 
 const SentRequest = ({navigation}) => {
   const [sentRequest, setSentRequest] = useState([]);
-  const [sentRequestCount, setSentRequestCount] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
@@ -40,7 +39,6 @@ const SentRequest = ({navigation}) => {
         );
         if (response) {
           setSentRequest(response);
-          setSentRequestCount(response[0].RecordCount);
         }
       } catch (err) {
         console.log('Problem fetching sent friend');
@@ -164,9 +162,7 @@ const SentRequest = ({navigation}) => {
                         color: '#1866B4',
                         fontWeight: '500',
                       }}>
-                      {!item.Mem_Designation.trim() === 'Not Added'
-                        ? item.Mem_Designation
-                        : ''}
+                      {item.Mem_Designation.trim() === 'Not Added' ? "": item.Mem_Designation.trim()}
                     </Text>
                     <View style={styles.mutualBox}>
                       <View style={{flexDirection: 'row'}}>
@@ -252,9 +248,7 @@ const SentRequest = ({navigation}) => {
                   </Text>
                   <Text
                     style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
-                    {!item.Mem_Designation.trim() === 'Not Added'
-                      ? item.Mem_Designation
-                      : ''}
+                    {item.Mem_Designation.trim() === 'Not Added' ? "": item.Mem_Designation.trim()}
                   </Text>
                   <View style={styles.mutualBox}>
                     <View style={{flexDirection: 'row'}}>
