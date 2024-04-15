@@ -168,7 +168,6 @@ export const AuthProvider = ({children}) => {
     try {
       const {data} = await axios.get(url);
       if (data.Mem_ID && data.Mem_ID > 0) {
-        console.log('Data is : ', data);
         const value = {
           name: data.Mem_Name + ' ' + data.Mem_LName,
           id: data.Mem_ID,

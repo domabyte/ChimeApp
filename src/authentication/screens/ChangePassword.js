@@ -88,8 +88,8 @@ const ChangePassword = ({ navigation, route }) => {
       <ImageBackground
         source={require('../../assets/png/LoginBg.png')}
         style={Styles.backgroundImg}>
-          <Spinner visible={isLoading} />
         <ScrollView style={Styles.mainView}>
+          <Spinner visible={isLoading} />
           <View style={Styles.logo}>
             <Image
               style={{ width: 100, height: 53, resizeMode: 'cover' }}
