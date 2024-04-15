@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {Image, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 
-const Header = () => {
+const Header = ({navigation}) => {
   const [selectTab, setselectTab] = useState(0);
   return (
     <>
@@ -32,7 +32,10 @@ const Header = () => {
               styles.icon2,
               {backgroundColor: selectTab == 1 ? '#192334' : '#1E293C'},
             ]}
-            onPress={() => setselectTab(1)}>
+            onPress={() => {
+              setselectTab(1);
+              navigation.navigate('findFriends');
+            }}>
             <Image
               style={{width: 22, height: 22}}
               source={require('../assets/png/FindFriend.png')}
@@ -43,13 +46,18 @@ const Header = () => {
               styles.icon2,
               {backgroundColor: selectTab == 2 ? '#192334' : '#1E293C'},
             ]}
-            onPress={() => setselectTab(2)}>
+            onPress={() => {
+              setselectTab(2);
+              navigation.navigate('myFriends');
+            }}>
             <Image
               style={{width: 22, height: 22}}
               source={require('../assets/png/my-friend.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.profile}>
+          <TouchableOpacity
+            style={styles.profile}
+            onPress={() => navigation.navigate('myProfile')}>
             <Image
               style={{width: '100%', height: '100%', resizeMode: 'cover'}}
               source={require('../assets/png/user4.png')}

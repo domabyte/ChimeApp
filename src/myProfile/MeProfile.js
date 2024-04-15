@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 
-const UserProfile = ({navigation}) => {
+const Myprofile = ({navigation}) => {
   const longText =
     'Your long paragraph goes here. Lorem ipsum dolLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate ';
   const [expanded, setExpanded] = useState(false);
@@ -29,6 +29,25 @@ const UserProfile = ({navigation}) => {
               source={require('../assets/png/leftArrow2.png')}
             />
           </TouchableOpacity>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 5,
+            }}>
+            <Image
+              style={{width: 30, height: 16}}
+              source={require('../assets/png/Actpal_logo.png')}
+            />
+            <Text style={{color: '#212E3D'}}>Actpal</Text>
+          </View>
+          <TouchableOpacity>
+            <Image
+              style={styles.topIcon}
+              source={require('../assets/png/share.png')}
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.profileSection}>
           <Text
@@ -38,7 +57,7 @@ const UserProfile = ({navigation}) => {
               fontSize: 18,
               fontWeight: '500',
             }}>
-            User Profile
+            My Profile
           </Text>
           <View style={styles.imgBox}>
             <Image
@@ -46,12 +65,8 @@ const UserProfile = ({navigation}) => {
               source={require('../assets/png/user9.png')}
             />
           </View>
-          <Text numberOfLines={1} style={styles.userName}>
-            Brooklyn Simmons
-          </Text>
-          <Text numberOfLines={1} style={styles.userTitle}>
-            Developer
-          </Text>
+          <Text style={styles.userName}>Brooklyn Simmons</Text>
+          <Text style={styles.userTitle}>Developer</Text>
           <View
             style={{
               width: 280,
@@ -74,8 +89,8 @@ const UserProfile = ({navigation}) => {
         </View>
         <View style={styles.followerDetail}>
           <View style={styles.followerBox}>
-            <Text style={styles.counts}>35</Text>
-            <Text style={styles.label}>Posts</Text>
+            <Text style={styles.counts}>356</Text>
+            <Text style={styles.label}>Post</Text>
           </View>
           <View style={styles.line}></View>
           <View style={styles.followerBox}>
@@ -87,19 +102,6 @@ const UserProfile = ({navigation}) => {
             <Text style={styles.counts}>2K</Text>
             <Text style={styles.label}>Followings</Text>
           </View>
-        </View>
-        <View style={styles.followingBtnArea}>
-          <TouchableOpacity
-            style={[styles.followingBtn, {backgroundColor: '#1866B4'}]}>
-            <Text style={{color: 'white'}}>Following</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.followingBtn,
-              {borderColor: '#1866B4', borderWidth: 1},
-            ]}>
-            <Text style={{color: '#1866B4'}}>Message</Text>
-          </TouchableOpacity>
         </View>
         <View style={styles.posts}>
           <Image
@@ -192,14 +194,10 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: '500',
     marginTop: 10,
-    width: 340,
-    textAlign: 'center',
   },
   userTitle: {
     fontSize: 14,
     color: '#1866B4',
-    width: 340,
-    textAlign: 'center',
   },
   followerDetail: {
     flexDirection: 'row',
@@ -236,19 +234,6 @@ const styles = StyleSheet.create({
   followerBox: {
     width: 100,
   },
-  followingBtnArea: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  followingBtn: {
-    height: 35,
-    width: '45%',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
 });
 
-export default UserProfile;
+export default Myprofile;
