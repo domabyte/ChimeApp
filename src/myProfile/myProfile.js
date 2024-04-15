@@ -18,10 +18,10 @@ const Myprofile = () => {
             <ScrollView>
                 <View style={styles.profileHead}>
                     <TouchableOpacity>
-                        <Image style={styles.topIcon} source={require('../../assets/png/leftArrow2.png')} />
+                        <Image style={styles.topIcon} source={require('../assets/png/leftArrow2.png')} />
                     </TouchableOpacity>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                        <Image style={{ width: 30, height: 16 }} source={require('../../assets/png/Actpal_logo.png')} />
+                        <Image style={{ width: 30, height: 16 }} source={require('../assets/png/Actpal_logo.png')} />
                         <Text style={{ color: '#212E3D' }}>Actpal</Text>
                     </View>
                     <TouchableOpacity>

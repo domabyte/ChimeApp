@@ -13,6 +13,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import Header from '../../components/Header';
 import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
+import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const ReceivedRequest = ({navigation}) => {
@@ -31,8 +32,9 @@ const ReceivedRequest = ({navigation}) => {
     error,
     setError,
   } = useContext(AuthContext);
-
+  const isFocused = useIsFocused();
   useEffect(() => {
+    setError('');
     const fetchReceiveFriendRequest = async () => {
       try {
         const response = await receiveFriendRequest(userInfo.id);
@@ -44,7 +46,10 @@ const ReceivedRequest = ({navigation}) => {
       }
     };
     fetchReceiveFriendRequest();
-  }, []);
+    return () => {
+      setError('');
+    };
+  }, [isFocused]);
 
   const handleIgnore = index => {
     const newSearchResults = searchResults.filter((_, i) => i !== index);
@@ -110,7 +115,7 @@ const ReceivedRequest = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header />
+      <Header navigation={navigation}/>
       <View style={styles.container}>
         <Spinner visible={isLoading} />
         <View style={{marginHorizontal: 16, marginVertical: 10}}>

@@ -60,6 +60,7 @@ const SuggestedFriends = ({navigation}) => {
   };
 
   useEffect(() => {
+    setError('');
     const fetchSuggestedUsers = async () => {
       const result = await getSuggestedUsers(userInfo.id);
       if (result) {
@@ -67,6 +68,9 @@ const SuggestedFriends = ({navigation}) => {
       }
     };
     fetchSuggestedUsers();
+    return () => {
+      setError('');
+    };
   }, []);
 
   const handleSearchKeyword = async () => {

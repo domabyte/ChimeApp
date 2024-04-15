@@ -12,6 +12,7 @@ import {
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
+import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const FindFriends = ({navigation}) => {
@@ -60,15 +61,20 @@ const FindFriends = ({navigation}) => {
     setSelectedItemIndex(prev => prev.filter(itemIndex => itemIndex !== index));
   };
 
+  const isFocused = useIsFocused();
   useEffect(() => {
+    setError('');
     const fetchSuggestedUsers = async () => {
-      const result = await getSuggestedUsers(userInfo.id);
+      const result = await searchFriends(userInfo.id, 1, 100, null);
       if (result) {
         setSuggestedFriendsData(result);
       }
     };
     fetchSuggestedUsers();
-  }, []);
+    return () => {
+      setError('');
+    };
+  }, [isFocused]);
 
   const handleSearchKeyword = async () => {
     try {
@@ -105,18 +111,23 @@ const FindFriends = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header />
+      <Header navigation={navigation} />
       <View style={styles.container}>
         <Spinner visible={isLoading} />
-        <View style={{marginHorizontal: 16, marginVertical: 10, flexDirection: 'row'}}>
-        {searchButtonClicked && (
-              <TouchableOpacity onPress={handleGoBack}>
-                <Image
-                  style={{width: 30, height: 30}}
-                  source={require('../../assets/png/leftArrow.png')}
-                />
-              </TouchableOpacity>
-            )}
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginVertical: 10,
+            flexDirection: 'row',
+          }}>
+          {searchButtonClicked && (
+            <TouchableOpacity onPress={handleGoBack}>
+              <Image
+                style={{width: 30, height: 30}}
+                source={require('../../assets/png/leftArrow.png')}
+              />
+            </TouchableOpacity>
+          )}
           <Text style={styles.FriendTex}>Find Friend</Text>
         </View>
         <View style={styles.searchSection}>
@@ -154,6 +165,16 @@ const FindFriends = ({navigation}) => {
                     <Text
                       style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
                       {item.Mem_name}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: '#1866B4',
+                        fontWeight: '500',
+                      }}>
+                      {item.Mem_Designation.trim() === 'Not Added'
+                        ? ''
+                        : item.Mem_Designation.trim()}
                     </Text>
                     <View style={styles.mutualBox}>
                       <View style={{flexDirection: 'row'}}>
@@ -222,8 +243,8 @@ const FindFriends = ({navigation}) => {
                   <Image
                     style={{width: '100%', height: '100%'}}
                     source={
-                      item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                        ? {uri: item.Mem_Photo}
+                      item.Mem_photo && typeof item.Mem_photo === 'string'
+                        ? {uri: item.Mem_photo}
                         : default_photo
                     }
                   />
@@ -231,7 +252,17 @@ const FindFriends = ({navigation}) => {
                 <View>
                   <Text
                     style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                    {item.Mem_Name}
+                    {item.Mem_name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: '#1866B4',
+                      fontWeight: '500',
+                    }}>
+                    {item.Mem_Designation.trim() === 'Not Added'
+                      ? ''
+                      : item.Mem_Designation.trim()}
                   </Text>
                   <View style={styles.mutualBox}>
                     <View style={{flexDirection: 'row'}}>

@@ -310,17 +310,21 @@ export const AuthProvider = ({children}) => {
 
   const searchFriends = async (userId, page, pageSize, keywords) => {
     setIsLoading(true);
+    const url = (keywords)? configURL.findFriendsURL +
+    userId +
+    '&page=' +
+    page +
+    '&pageSize=' +
+    pageSize +
+    '&keywords=' +
+    keywords : configURL.findFriendsURL +
+    userId +
+    '&page=' +
+    page +
+    '&pageSize=' +
+    pageSize;
     try {
-      const {data} = await axios.post(
-        configURL.findFriendsURL +
-          userId +
-          '&page=' +
-          page +
-          '&pageSize=' +
-          pageSize +
-          '&keywords=' +
-          keywords,
-      );
+      const {data} = await axios.post(url);
       setIsLoading(false);
       if (data.length > 0) {
         return data;

@@ -13,6 +13,7 @@ import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
+import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const MyFriends = ({navigation}) => {
@@ -23,7 +24,9 @@ const MyFriends = ({navigation}) => {
   const {isLoading, userInfo, getAllFriends, unFriendRequest, error, setError} =
     useContext(AuthContext);
 
+  const isFocused = useIsFocused();
   useEffect(() => {
+    setError('');
     const fetchMyFriend = async () => {
       try {
         const response = await getAllFriends(
@@ -39,7 +42,10 @@ const MyFriends = ({navigation}) => {
       }
     };
     fetchMyFriend();
-  }, []);
+    return () => {
+      setError('');
+    };
+  }, [isFocused]);
 
   const handleMyFriendRequest = async () => {
     try {
@@ -88,11 +94,11 @@ const MyFriends = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header />
+      <Header navigation={navigation}/>
       <View style={styles.container}>
         <Spinner visible={isLoading} />
         <View style={{marginHorizontal: 16, marginVertical: 10}}>
-          <FriendHeader navigation={navigation} index={0} />
+          <FriendHeader navigation={navigation} index={0}/>
         </View>
         <View
           style={{
