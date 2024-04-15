@@ -105,7 +105,7 @@ const SentRequest = ({navigation}) => {
               marginHorizontal: 16,
               marginVertical: 10,
             }}>
-              <FriendHeader navigation={navigation}/>
+              <FriendHeader navigation={navigation} index={2}/>
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image

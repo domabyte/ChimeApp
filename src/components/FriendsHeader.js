@@ -1,18 +1,11 @@
-import {useState} from 'react';
-import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import {AuthContext} from '../../context/AuthContext';
+import { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
+// import { ScrollView } from 'react-native-gesture-handler';
 
-const FriendHeader = ({navigation}) => {
-  const [isSelect, setisSelect] = useState(0);
-
+const FriendHeader = ({ navigation , index }) => {
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        gap: 10,
-        borderBottomColor: '#ddd',
-        borderBottomWidth: 1,
-      }}>
+    <>
       <Text
         style={{
           color: 'black',
@@ -21,41 +14,51 @@ const FriendHeader = ({navigation}) => {
         }}>
         My Friends
       </Text>
-      <TouchableOpacity
-        style={[
-          styles.buttons,
-          {backgroundColor: isSelect == 0 ? '#1866B4' : '#EAEAEA'},
-        ]}
-        // onPress={() => setisSelect(0)}
-        onPress={() => navigation.navigate('myFriends')}>
-        <Text
-          style={{fontWeight: '500', color: isSelect == 0 ? 'white' : 'black'}}>
-          All Members
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.buttons,
-          {backgroundColor: isSelect == 1 ? '#1866B4' : '#EAEAEA'},
-        ]}
-        onPress={() => navigation.navigate('receivedRequest')}>
-        <Text
-          style={{fontWeight: '500', color: isSelect == 0 ? 'white' : 'black'}}>
-          Received Request
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.buttons,
-          {backgroundColor: isSelect == 2 ? '#1866B4' : '#EAEAEA'},
-        ]}
-        onPress={() => navigation.navigate('sentRequest')}>
-        <Text
-          style={{fontWeight: '500', color: isSelect == 0 ? 'white' : 'black'}}>
-          Send Request
-        </Text>
-      </TouchableOpacity>
-    </View>
+      <ScrollView
+        horizontal
+        style={{
+          flexDirection: 'row',
+          borderBottomColor: '#ddd',
+          maxHeight: 50,
+          borderBottomWidth: 1,
+        }}>
+
+        <TouchableOpacity
+          style={[
+            styles.buttons,
+            { backgroundColor: index == 0 ? '#1866B4' : '#EAEAEA' },
+          ]}
+          // onPress={() => setisSelect(0)}
+          onPress={() => {navigation.navigate('myFriends')}}>
+          <Text
+            style={{ fontWeight: '500', color: index == 0 ? 'white' : 'black' }}>
+            All Members
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.buttons,
+            { backgroundColor: index == 1 ? '#1866B4' : '#EAEAEA' },
+          ]}
+          onPress={() =>{navigation.navigate('receivedRequest')}}>
+          <Text
+            style={{ fontWeight: '500', color: index == 1 ? 'white' : 'black' }}>
+            Received Request
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.buttons,
+            { backgroundColor: index == 2 ? '#1866B4' : '#EAEAEA' },
+          ]}
+          onPress={() =>{navigation.navigate('sentRequest')}}>
+          <Text
+            style={{ fontWeight: '500', color: index == 2 ? 'white' : 'black' }}>
+            Send Request
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </>
   );
 };
 
@@ -65,7 +68,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    marginVertical: 12,
+    marginLeft: 10,
+    marginVertical: 10,
   },
 });
 export default FriendHeader;

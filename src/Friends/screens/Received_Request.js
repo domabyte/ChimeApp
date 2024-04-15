@@ -113,7 +113,9 @@ const ReceivedRequest = ({navigation}) => {
       <Header />
       <View style={styles.container}>
         <Spinner visible={isLoading} />
-      <FriendHeader navigation={navigation}/>
+        <View style={{marginHorizontal: 16, marginVertical: 10}}>
+          <FriendHeader navigation={navigation} index={1} />
+        </View>
         <View
           style={{
             marginHorizontal: 16,

@@ -92,7 +92,7 @@ const MyFriends = ({navigation}) => {
       <View style={styles.container}>
         <Spinner visible={isLoading} />
         <View style={{marginHorizontal: 16, marginVertical: 10}}>
-          <FriendHeader navigation={navigation} />
+          <FriendHeader navigation={navigation} index={0} />
         </View>
         <View
           style={{
