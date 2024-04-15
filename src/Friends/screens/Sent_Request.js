@@ -12,6 +12,7 @@ import React, {useEffect, useState, useContext} from 'react';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
+import FriendHeader from '../../components/FriendsHeader';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const SentRequest = ({navigation}) => {
@@ -101,10 +102,10 @@ const SentRequest = ({navigation}) => {
         <Spinner visible={isLoading} />
         <View
           style={{
-            marginHorizontal: 16,
-            marginVertical: 10,
-            flexDirection: 'row',
-          }}>
+              marginHorizontal: 16,
+              marginVertical: 10,
+            }}>
+              <FriendHeader navigation={navigation}/>
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
@@ -398,6 +399,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 20,
     fontWeight: '700',
+    paddingTop: 10,
   },
   buttons: {
     backgroundColor: '#EAEAEA',

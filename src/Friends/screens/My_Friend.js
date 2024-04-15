@@ -12,6 +12,7 @@ import {
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
+import FriendHeader from '../../components/FriendsHeader';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const MyFriends = ({navigation}) => {
@@ -21,7 +22,7 @@ const MyFriends = ({navigation}) => {
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const {isLoading, userInfo, getAllFriends, unFriendRequest, error, setError} =
     useContext(AuthContext);
-    
+
   useEffect(() => {
     const fetchMyFriend = async () => {
       try {
@@ -91,36 +92,7 @@ const MyFriends = ({navigation}) => {
       <View style={styles.container}>
         <Spinner visible={isLoading} />
         <View style={{marginHorizontal: 16, marginVertical: 10}}>
-          <Text style={styles.FriendTex}>My Friends</Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              gap: 10,
-              borderBottomColor: '#ddd',
-              borderBottomWidth: 1,
-            }}>
-            <TouchableOpacity
-              style={styles.buttons}
-              onPress={() => navigation.navigate('findFriends')}>
-              <Text style={{color: 'black', fontWeight: '500'}}>
-                All Members
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttons}
-              onPress={() => navigation.navigate('receivedRequest')}>
-              <Text style={{color: 'black', fontWeight: '500'}}>
-                Received Request
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttons}
-              onPress={() => navigation.navigate('sentRequest')}>
-              <Text style={{color: 'black', fontWeight: '500'}}>
-                Send Request
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <FriendHeader navigation={navigation} />
         </View>
         <View
           style={{
@@ -136,7 +108,7 @@ const MyFriends = ({navigation}) => {
               />
             </TouchableOpacity>
           )}
-          <Text style={styles.FriendText}>
+          <Text style={styles.FriendTex}>
             {' '}
             Friends{' '}
             <Text style={{color: '#1866B4'}}>
@@ -212,12 +184,15 @@ const MyFriends = ({navigation}) => {
                     </View>
                     <View style={styles.buttonArea}>
                       <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]} onPress={()=> handleUnfriend(item?.FriendList_Id, index)}>
-                        <Text style={{color: 'black'}}>UnFriend</Text>
+                        style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}
+                        onPress={() =>
+                          handleUnfriend(item?.FriendList_Id, index)
+                        }>
+                        <Text style={{color: 'white'}}>UnFriend</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}>
-                        <Text style={{color: 'white'}}>Message</Text>
+                        style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}>
+                        <Text style={{color: 'black'}}>Message</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -297,7 +272,10 @@ const MyFriends = ({navigation}) => {
                   </View>
                   <View style={styles.buttonArea}>
                     <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#192334'}]} onPress={()=> handleUnfriend(item?.FriendList_Id, index)}>
+                      style={[styles.blueBtn, {backgroundColor: '#192334'}]}
+                      onPress={() =>
+                        handleUnfriend(item?.FriendList_Id, index)
+                      }>
                       <Text style={{color: 'white'}}>UnFriend</Text>
                     </TouchableOpacity>
                     <TouchableOpacity

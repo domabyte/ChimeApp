@@ -12,10 +12,10 @@ import {
 import Spinner from 'react-native-loading-spinner-overlay';
 import Header from '../../components/Header';
 import {AuthContext} from '../../context/AuthContext';
+import FriendHeader from '../../components/FriendsHeader';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const ReceivedRequest = ({navigation}) => {
-  const [showButtons, setShowButtons] = useState(true);
   const [receiveRequest, setReceiveRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -113,6 +113,7 @@ const ReceivedRequest = ({navigation}) => {
       <Header />
       <View style={styles.container}>
         <Spinner visible={isLoading} />
+      <FriendHeader navigation={navigation}/>
         <View
           style={{
             marginHorizontal: 16,
@@ -420,6 +421,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 20,
     fontWeight: '700',
+    paddingTop: 10,
   },
   buttons: {
     backgroundColor: '#EAEAEA',
