@@ -21,7 +21,7 @@ const MyFriends = ({navigation}) => {
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const {isLoading, userInfo, getAllFriends, unFriendRequest, error, setError} =
     useContext(AuthContext);
-
+    
   useEffect(() => {
     const fetchMyFriend = async () => {
       try {

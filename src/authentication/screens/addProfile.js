@@ -15,7 +15,7 @@ import {AuthContext} from '../../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AddProfile = ({navigation, route}) => {
-  const {response, countryName, stateName, encryptToken} = route.params;
+  const {response, countryName, stateName, encryptToken, loginToken, memberToken} = route.params;
   const [selectedImage, setSelectedImage] = useState(null);
   const {isLoading, setUserInfo, updatePhotoInfo} = useContext(AuthContext);
 
@@ -23,8 +23,8 @@ const AddProfile = ({navigation, route}) => {
     name: response.Mem_Name + ' ' + response.Mem_LName,
     id: response.Mem_ID,
     friendid: response.FriendId,
-    memberToken: response.MemberToken,
-    LoginToken: response.LoginToken,
+    memberToken: memberToken,
+    LoginToken: loginToken,
     encryptToken: encryptToken,
   };
 

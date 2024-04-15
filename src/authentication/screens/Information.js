@@ -106,8 +106,10 @@ const Information = ({navigation, route}) => {
       }else {
        const response = await basicInfo(location, countryValue, userInfo.id, stateValue, postalCode, userInfo.name);
        const encryptToken = userInfo.encryptToken;
+       const loginToken = userInfo.LoginToken;
+       const memberToken = userInfo.memberToken;
        if(response) {
-         navigation.navigate('addProfile', {response, countryName, stateName, encryptToken});
+         navigation.navigate('addProfile', {response,countryName, stateName, encryptToken, loginToken, memberToken});
        }
       }
     }
