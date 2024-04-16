@@ -1,3 +1,4 @@
+import React, {useContext, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -6,10 +7,13 @@ import {
   Text,
   StatusBar,
   ScrollView,
+  Button,
 } from 'react-native';
-import React, {useState} from 'react';
+import Spinner from 'react-native-loading-spinner-overlay';
+import {AuthContext} from '../context/AuthContext';
 
 const Myprofile = ({navigation}) => {
+  const {isLoading, logout} = useContext(AuthContext);
   const longText =
     'Your long paragraph goes here. Lorem ipsum dolLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate ';
   const [expanded, setExpanded] = useState(false);
@@ -22,6 +26,7 @@ const Myprofile = ({navigation}) => {
     <View style={styles.container}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <ScrollView>
+        <Spinner visible={isLoading} />
         <View style={styles.profileHead}>
           <TouchableOpacity onPress={()=> navigation.goBack()}>
             <Image
@@ -67,6 +72,7 @@ const Myprofile = ({navigation}) => {
           </View>
           <Text style={styles.userName}>Brooklyn Simmons</Text>
           <Text style={styles.userTitle}>Developer</Text>
+          <Button title="Logout" color="red" onPress={logout} />
           <View
             style={{
               width: 280,
