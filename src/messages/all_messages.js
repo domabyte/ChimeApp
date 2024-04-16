@@ -18,7 +18,7 @@ const AllMessages = () => {
                         style={styles.searchBox}
                     />
                     <TouchableOpacity style={styles.searchbtn}>
-                        <Image style={{ width: 24, height: 24, }} source={require('../../assets/png/search.png')} />
+                        <Image style={{ width: 24, height: 24, }} source={require('../assets/png/search.png')} />
                     </TouchableOpacity>
                 </View>
                 <View  style={styles.navbtnbox}>
@@ -32,7 +32,7 @@ const AllMessages = () => {
                 <ScrollView>
                     <TouchableOpacity style={styles.listBox}>
                         <View style={styles.userImg}>
-                            <Image style={{ width: '100%', height: '100%', }} source={require('../../assets/png/user4.png')} />
+                            <Image style={{ width: '100%', height: '100%', }} source={require('../assets/png/user4.png')} />
                         </View>
                         <View>
                             <Text numberOfLines={1} style={styles.userName}>Theresasdf Webb</Text>
@@ -45,7 +45,7 @@ const AllMessages = () => {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.listBox}>
                         <View style={styles.userImg}>
-                            <Image style={{ width: '100%', height: '100%', }} source={require('../../assets/png/user4.png')} />
+                            <Image style={{ width: '100%', height: '100%', }} source={require('../assets/png/user4.png')} />
                         </View>
                         <View>
                             <Text style={styles.userName}>Theresa Webb</Text>
@@ -58,7 +58,7 @@ const AllMessages = () => {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.listBox}>
                         <View style={styles.userImg}>
-                            <Image style={{ width: '100%', height: '100%', }} source={require('../../assets/png/user4.png')} />
+                            <Image style={{ width: '100%', height: '100%', }} source={require('../assets/png/user4.png')} />
                         </View>
                         <View>
                             <Text style={styles.userName}>Theresa Webb</Text>

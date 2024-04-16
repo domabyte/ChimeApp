@@ -14,7 +14,7 @@ import {
     TouchableWithoutFeedback,
     Touchable
 } from "react-native"
-import LongPressPopup from "./forwordMsg";
+import LongPressPopup from "./ForwordMsg";
 
 
 const ChatSection = () => {
@@ -80,10 +80,10 @@ const ChatSection = () => {
             <View style={styles.chatHead}>
                 <View style={styles.chatTop}>
                     <TouchableOpacity >
-                        <Image style={{ width: 25, height: 25 }} source={require('../../assets/png/leftArrow2.png')} />
+                        <Image style={{ width: 25, height: 25 }} source={require('../assets/png/leftArrow2.png')} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.userImag}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </TouchableOpacity>
                     <View>
                         <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '600', color: 'black', width: 190 }}>Theresa Webb</Text>
@@ -92,17 +92,17 @@ const ChatSection = () => {
                 </View>
                 <View style={styles.callSection}>
                     <TouchableOpacity>
-                        <Image style={{ width: 22, height: 22 }} source={require('../../assets/png/videoCall.png')} />
+                        <Image style={{ width: 22, height: 22 }} source={require('../assets/png/videoCall.png')} />
                     </TouchableOpacity>
                     <TouchableOpacity>
-                        <Image style={{ width: 22, height: 22 }} source={require('../../assets/png/call.png')} />
+                        <Image style={{ width: 22, height: 22 }} source={require('../assets/png/call.png')} />
                     </TouchableOpacity>
                 </View>
             </View>
             <ScrollView style={{ flex: 1 }}>
                 <View style={styles.recvMsgBox}>
                     <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </View>
                     <TouchableWithoutFeedback onLongPress={handleLongPress}>
                         <Text style={styles.recvMsg}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</Text>
@@ -113,7 +113,7 @@ const ChatSection = () => {
                         <Text style={styles.sendMsg}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</Text>
                     </TouchableWithoutFeedback>
                     <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </View>
                 </View>
                 <View style={styles.sendMsgBox}>
@@ -121,23 +121,23 @@ const ChatSection = () => {
                         <Text style={styles.sendMsg}>Lorem ipsum dolor</Text>
                     </TouchableWithoutFeedback>
                     <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </View>
                 </View>
                 <View style={styles.sendMsgBox}>
                     <TouchableWithoutFeedback onLongPress={imghandleLongPress}>
-                        <Image style={styles.img} source={require('../../assets/png/Rectangle1.png')} />
+                        <Image style={styles.img} source={require('../assets/png/Rectangle1.png')} />
                     </TouchableWithoutFeedback>
                     <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </View>
                 </View>
                 <View style={styles.recvMsgBox}>
                     <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </View>
                     <TouchableWithoutFeedback onLongPress={imghandleLongPress}>
-                        <Image style={styles.img} source={require('../../assets/png/Rectangle1.png')} />
+                        <Image style={styles.img} source={require('../assets/png/Rectangle1.png')} />
                     </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.sendMsgBox}>
@@ -145,7 +145,7 @@ const ChatSection = () => {
                         <Text style={styles.sendMsg}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</Text>
                     </TouchableWithoutFeedback>
                     <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../../assets/png/user8.png')} />
+                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
                     </View>
                 </View>
             </ScrollView>
@@ -153,10 +153,10 @@ const ChatSection = () => {
                 {showButtons &&
                     <View style={styles.leftAreaBtn}>
                         <TouchableOpacity style={styles.leftBtn}>
-                            <Image style={{ width: 25, height: 25 }} source={require('../../assets/png/AddDocument.png')} />
+                            <Image style={{ width: 25, height: 25 }} source={require('../assets/png/AddDocument.png')} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.leftBtn}>
-                            <Image style={{ width: 25, height: 25 }} source={require('../../assets/png/AddImage.png')} />
+                            <Image style={{ width: 25, height: 25 }} source={require('../assets/png/AddImage.png')} />
                         </TouchableOpacity>
                     </View>
                 }
@@ -172,11 +172,11 @@ const ChatSection = () => {
                         placeholderTextColor="#888"
                     />
                     <TouchableOpacity style={styles.emojiBtn}>
-                        <Image style={{ width: 26, height: 26 }} source={require('../../assets/png/emojiBtn.png')} />
+                        <Image style={{ width: 26, height: 26 }} source={require('../assets/png/emojiBtn.png')} />
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity style={styles.sendBtn}>
-                    <Image style={{ width: 24, height: 24 }} source={require('../../assets/png/SendBtn.png')} />
+                    <Image style={{ width: 24, height: 24 }} source={require('../assets/png/SendBtn.png')} />
                 </TouchableOpacity>
             </View>
             <Modal
@@ -190,15 +190,15 @@ const ChatSection = () => {
                 </TouchableWithoutFeedback>
                 <View style={styles.modalContainer}>
                     <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../../assets/png/delete.png')} />
+                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/delete.png')} />
                         <Text style={{ color: 'black' }}>Delete</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../../assets/png/edit.png')} />
+                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/edit.png')} />
                         <Text style={{ color: 'black' }}>Edit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.popupBtn} onPress={handlePress}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../../assets/png/forward.png')} />
+                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/forward.png')} />
                         <Text style={{ color: 'black' }}>Forward</Text>
                     </TouchableOpacity>
                 </View>
@@ -214,15 +214,15 @@ const ChatSection = () => {
                 </TouchableWithoutFeedback>
                 <View style={styles.modalContainer}>
                     <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../../assets/png/delete.png')} />
+                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/delete.png')} />
                         <Text style={{ color: 'black' }}>Delete</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../../assets/png/Download.png')} />
+                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/Download.png')} />
                         <Text style={{ color: 'black' }}>Download</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.popupBtn} onPress={handlePress}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../../assets/png/forward.png')} />
+                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/forward.png')} />
                         <Text style={{ color: 'black' }}>Forward</Text>
                     </TouchableOpacity>
                 </View>

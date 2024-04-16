@@ -16,59 +16,59 @@ const LongPressPopup = ({ isVisible, onClose }) => {
 
     const data = [
         {
-            userImg: require('../../assets/png/user8.png'),
+            userImg: require('../assets/png/user8.png'),
             userName: 'Theresa Webb Dianne Russell Courtney Henry'
         },
         {
-            userImg: require('../../assets/png/user1.png'),
+            userImg: require('../assets/png/user1.png'),
             userName: 'Devon Lane'
         },
         {
-            userImg: require('../../assets/png/user2.png'),
+            userImg: require('../assets/png/user2.png'),
             userName: 'Dianne Russell'
         },
         {
-            userImg: require('../../assets/png/user3.png'),
+            userImg: require('../assets/png/user3.png'),
             userName: 'Courtney Henry'
         },
         {
-            userImg: require('../../assets/png/user4.png'),
+            userImg: require('../assets/png/user4.png'),
             userName: 'Brooklyn Simmons'
         },
         {
-            userImg: require('../../assets/png/user5.png'),
+            userImg: require('../assets/png/user5.png'),
             userName: 'Leslie Alexander'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
         {
-            userImg: require('../../assets/png/user6.png'),
+            userImg: require('../assets/png/user6.png'),
             userName: 'Esther Howard'
         },
     ]
@@ -101,7 +101,7 @@ const LongPressPopup = ({ isVisible, onClose }) => {
                             style={styles.searchBox}
                         />
                         <TouchableOpacity style={styles.searchbtn}>
-                            <Image style={{ width: 24, height: 24, }} source={require('../../assets/png/search.png')} />
+                            <Image style={{ width: 24, height: 24, }} source={require('../assets/png/search.png')} />
                         </TouchableOpacity>
                     </View>
                     {data.map((item, index) => (
