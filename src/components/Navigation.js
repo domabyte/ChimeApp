@@ -18,10 +18,10 @@ import ReceivedRequest from '../Friends/screens/Received_Request.js';
 import MyFriends from '../Friends/screens/My_Friend.js';
 import MyProfile from '../myProfile/MeProfile.js';
 import UserProfile from '../myProfile/UserProfile.js';
+import {AuthContext} from '../context/AuthContext.js';
 import AllMessages from '../messages/All_messages.js';
 import ChatSection from '../messages/ChatSection.js';
 import LongPressPopup from '../messages/ForwordMsg.js';
-import {AuthContext} from '../context/AuthContext.js';
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
@@ -68,14 +68,29 @@ const Navigation = () => {
               options={{headerShown: false}}
             />
             <Stack.Screen
-            name="myProfile"
-            component={MyProfile}
-            options={{headerShown: false}}
+              name="myProfile"
+              component={MyProfile}
+              options={{headerShown: false}}
             />
             <Stack.Screen
-            name="userProfile"
-            component={UserProfile}
-            options={{headerShown: false}}
+              name="userProfile"
+              component={UserProfile}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="allMessages"
+              component={AllMessages}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="chatSection"
+              component={ChatSection}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="longPressPopup"
+              component={LongPressPopup}
+              options={{headerShown: false}}
             />
           </>
         ) : (
