@@ -1,7 +1,6 @@
 import React, {useContext} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import Friends from '../screens/Friends.js';
 import SplashScreen from '../authentication/screens/SplashScreen.js';
 import LoginScreen from '../authentication/screens/Login.js';
 import RegisterScreen from '../authentication/screens/Signup.js';
