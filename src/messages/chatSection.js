@@ -17,7 +17,7 @@ import {
 import LongPressPopup from "./ForwordMsg";
 
 
-const ChatSection = () => {
+const ChatSection = ({navigation}) => {
     const { width } = Dimensions.get('window');
 
     const [height, setHeight] = useState(40);
@@ -386,4 +386,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default ChatSection
+export default ChatSection;

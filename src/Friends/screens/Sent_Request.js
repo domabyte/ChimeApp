@@ -44,7 +44,7 @@ const SentRequest = ({navigation}) => {
           setSentRequest(response);
         }
       } catch (err) {
-        console.log('Problem fetching sent friend');
+        console.log('Problem fetching sent friend',err);
       }
     };
     fetchSentFriendRequest();
