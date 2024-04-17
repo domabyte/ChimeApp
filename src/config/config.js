@@ -24,5 +24,6 @@ const configURL = {
     getReceiveFriendRequestURL: baseURL + 'user/GetFriendList?MemberToken=',
     acceptFriendRequestURL: baseURL + 'User/AcceptFriendRequest',
     unFriendRequestURL: baseURL + 'User/UnFriendRequest',
+    groupURL: baseURL + 'post/_view_group_list?MemberToken=',
 };
 export default configURL;

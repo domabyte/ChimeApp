@@ -310,19 +310,21 @@ export const AuthProvider = ({children}) => {
 
   const searchFriends = async (userId, page, pageSize, keywords) => {
     setIsLoading(true);
-    const url = (keywords)? configURL.findFriendsURL +
-    userId +
-    '&page=' +
-    page +
-    '&pageSize=' +
-    pageSize +
-    '&keywords=' +
-    keywords : configURL.findFriendsURL +
-    userId +
-    '&page=' +
-    page +
-    '&pageSize=' +
-    pageSize;
+    const url = keywords
+      ? configURL.findFriendsURL +
+        userId +
+        '&page=' +
+        page +
+        '&pageSize=' +
+        pageSize +
+        '&keywords=' +
+        keywords
+      : configURL.findFriendsURL +
+        userId +
+        '&page=' +
+        page +
+        '&pageSize=' +
+        pageSize;
     try {
       const {data} = await axios.post(url);
       setIsLoading(false);
@@ -534,15 +536,12 @@ export const AuthProvider = ({children}) => {
         MemId +
         '&page=1&pageSize=40';
     try {
-      const {data} = await axios.get(
-        url,
-        {
-          headers: {
-            MemberToken: memberToken,
-            LoginToken: loginToken,
-          },
+      const {data} = await axios.get(url, {
+        headers: {
+          MemberToken: memberToken,
+          LoginToken: loginToken,
         },
-      );
+      });
       if (data.length > 0) {
         setIsLoading(false);
         return data;
@@ -559,16 +558,19 @@ export const AuthProvider = ({children}) => {
   const unFriendRequest = async (id, memberToken, loginToken) => {
     setIsLoading(true);
     try {
-      const {data} = await axios.post(configURL.unFriendRequestURL, {
-        FriendList_Id: id,
-        MemberToken: memberToken,
-      },
-      {
-        headers: {
-          Membertoken: memberToken,
-          LoginToken: loginToken,
+      const {data} = await axios.post(
+        configURL.unFriendRequestURL,
+        {
+          FriendList_Id: id,
+          MemberToken: memberToken,
         },
-      });
+        {
+          headers: {
+            Membertoken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
       if (data.errorText) {
         setError(data.errorText);
         setIsLoading(false);
@@ -581,7 +583,54 @@ export const AuthProvider = ({children}) => {
       console.log(`Error unfriend request : ${err}`);
       setIsLoading(false);
     }
-  }
+  };
+
+  const messageFriends = async (memberToken, keywords) => {
+    setIsLoading(true);
+    const url = keywords
+      ? configURL.friendListURL +
+        memberToken +
+        '&page=1&pageSize=30&keywords=' +
+        keywords
+      : configURL.friendListURL + memberToken + '&page=1&pageSize=30';
+    try {
+      const {data} = await axios.get(url);
+      if (data.length > 0) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setError('No friend found.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(`Error getting friend list : ${err}`);
+      setIsLoading(false);
+    }
+  };
+
+  const getGroups = async (memberToken, keywords) => {
+    setIsLoading(true);
+    try {
+      const url = keywords
+        ? config.groupURL +
+          memberToken +
+          '&page=1&pageSize=10&Group_Id=0&keyword=' +
+          keywords
+        : config.groupURL + memberToken + '&page=1&pageSize=10&Group_Id=0';
+
+      const {data} = await axios.get(url);
+      if (data.length > 0) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setError('No group found.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log(`Error getting groups : ${err}`);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -612,6 +661,8 @@ export const AuthProvider = ({children}) => {
         acceptFriendRequest,
         getAllFriends,
         unFriendRequest,
+        messageFriends,
+        getGroups,
       }}>
       {children}
     </AuthContext.Provider>

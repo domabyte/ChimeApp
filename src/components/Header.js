@@ -21,7 +21,10 @@ const Header = ({navigation}) => {
               styles.icon2,
               {backgroundColor: selectTab == 0 ? '#192334' : '#1E293C'},
             ]}
-            onPress={() => setselectTab(0)}>
+            onPress={() => {
+              setselectTab(0);
+              navigation.navigate('allMessages')
+            }}>
             <Image
               style={{width: 22, height: 22}}
               source={require('../assets/png/message.png')}
