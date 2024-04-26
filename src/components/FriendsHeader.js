@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
-// import { ScrollView } from 'react-native-gesture-handler';
 
 const FriendHeader = ({ navigation , index }) => {
   return (
@@ -28,7 +27,6 @@ const FriendHeader = ({ navigation , index }) => {
             styles.buttons,
             { backgroundColor: index == 0 ? '#1866B4' : '#EAEAEA' },
           ]}
-          // onPress={() => setisSelect(0)}
           onPress={() => {navigation.navigate('myFriends')}}>
           <Text
             style={{ fontWeight: '500', color: index == 0 ? 'white' : 'black' }}>

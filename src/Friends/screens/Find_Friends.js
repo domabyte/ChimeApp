@@ -1,26 +1,28 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
   Image,
-  ScrollView,
   StyleSheet,
   StatusBar,
   TouchableOpacity,
   TextInput,
+  FlatList,
 } from 'react-native';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const FindFriends = ({navigation}) => {
+const FindFriends = ({ navigation }) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState([]);
   const [suggestedFriendsData, setSuggestedFriendsData] = useState([]);
   const [searchKeywords, setSearchKeywords] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
 
   const {
     isLoading,
@@ -65,7 +67,7 @@ const FindFriends = ({navigation}) => {
   useEffect(() => {
     setError('');
     const fetchSuggestedUsers = async () => {
-      const result = await searchFriends(userInfo.id, 1, 100, null);
+      const result = await searchFriends(userInfo.id, 1, 20, null);
       if (result) {
         setSuggestedFriendsData(result);
       }
@@ -80,7 +82,7 @@ const FindFriends = ({navigation}) => {
     try {
       if (searchKeywords) {
         setIsLoading(true);
-        const result = await searchFriends(userInfo.id, 1, 100, searchKeywords);
+        const result = await searchFriends(userInfo.id, 1, 20, searchKeywords);
         setIsLoading(false);
         setSearchResults(result || []);
         setSearchButtonClicked(true);
@@ -108,6 +110,93 @@ const FindFriends = ({navigation}) => {
     setSearchButtonClicked(false);
   };
 
+  const fetchMoreData = async () => {
+    if (isLoadingMore) return;
+    try {
+      setIsLoadingMore(true);
+      const nextPage = page + 1;
+      const result = await searchFriends(
+        userInfo.id,
+        nextPage,
+        20,
+        searchKeywords || null
+      );
+      if (result && result.length > 0) {
+        if (searchButtonClicked) {
+          setSearchResults(prevResults => [...prevResults, ...result]);
+        } else {
+          setSuggestedFriendsData(prevData => [...prevData, ...result]);
+        }
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.log('Error fetching more data:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  const renderFriendItem = ({ item, index }) => (
+    <View key={index} style={styles.friendList}>
+      <View style={styles.userImage}>
+        <Image
+          style={{ width: '100%', height: '100%' }}
+          source={
+            item.Mem_photo && typeof item.Mem_photo === 'string'
+              ? { uri: item.Mem_photo }
+              : default_photo
+          }
+        />
+      </View>
+      <View>
+        <Text style={{ fontSize: 18, color: 'black', fontWeight: '500' }}>
+          {item.Mem_name}
+        </Text>
+        <Text
+          style={{
+            fontSize: 12,
+            color: '#1866B4',
+            fontWeight: '500',
+          }}>
+          {item.Mem_Designation.trim() === 'Not Added'
+            ? ''
+            : item.Mem_Designation.trim()}
+        </Text>
+        <View style={styles.mutualBox}>
+          <View style={{ flexDirection: 'row' }}>
+            <Image
+              style={styles.mutualImg}
+              source={require('../../assets/png/user1.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user4.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user2.png')}
+            />
+          </View>
+          <Text style={{ color: 'black' }}>
+            {item.MutualFriends} mutual connections
+          </Text>
+        </View>
+        <View style={styles.buttonArea}>
+          <TouchableOpacity
+            style={styles.blueBtn}
+            onPress={() => handleAddFriend(index, item.Mem_ID)}>
+            <Text style={{ color: 'white' }}>Add Friend</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
+            onPress={() => handleIgnore(index)}>
+            <Text style={{ color: 'black' }}>Ignore</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
@@ -123,7 +212,7 @@ const FindFriends = ({navigation}) => {
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
-                style={{width: 30, height: 30}}
+                style={{ width: 30, height: 30 }}
                 source={require('../../assets/png/leftArrow.png')}
               />
             </TouchableOpacity>
@@ -141,165 +230,45 @@ const FindFriends = ({navigation}) => {
             style={styles.searchbtn}
             onPress={handleSearchKeyword}>
             <Image
-              style={{width: 24, height: 24}}
+              style={{ width: 24, height: 24 }}
               source={require('../../assets/png/search.png')}
             />
           </TouchableOpacity>
         </View>
-        <ScrollView>
-          {searchButtonClicked ? (
-            searchResults.length > 0 ? (
-              searchResults.map((item, index) => (
-                <View key={index} style={styles.friendList}>
-                  <View style={styles.userImage}>
-                    <Image
-                      style={{width: '100%', height: '100%'}}
-                      source={
-                        item.Mem_photo && typeof item.Mem_photo === 'string'
-                          ? {uri: item.Mem_photo}
-                          : default_photo
-                      }
-                    />
-                  </View>
-                  <View>
-                    <Text
-                      style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                      {item.Mem_name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: '#1866B4',
-                        fontWeight: '500',
-                      }}>
-                      {item.Mem_Designation.trim() === 'Not Added'
-                        ? ''
-                        : item.Mem_Designation.trim()}
-                    </Text>
-                    <View style={styles.mutualBox}>
-                      <View style={{flexDirection: 'row'}}>
-                        <Image
-                          style={styles.mutualImg}
-                          source={require('../../assets/png/user1.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user4.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user2.png')}
-                        />
-                      </View>
-                      <Text style={{color: 'black'}}>
-                        {item.MutualFriends} mutual connections
-                      </Text>
-                    </View>
-                    <View style={styles.buttonArea}>
-                      <TouchableOpacity
-                        style={styles.blueBtn}
-                        onPress={() => handleAddFriend(index, item.Mem_ID)}>
-                        <Text style={{color: 'white'}}>Add Friend</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
-                        onPress={() => handleIgnore(index)}>
-                        <Text style={{color: 'black'}}>Ignore</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View style={styles.noResults}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
+        <FlatList
+          data={searchButtonClicked ? searchResults : suggestedFriendsData}
+          renderItem={renderFriendItem}
+          keyExtractor={(item, index) => index.toString()}
+          ListEmptyComponent={() => (
+            <View style={styles.noResults}>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                }}>
+                <Image
+                  style={{ width: 200, height: 200 }}
+                  source={require('../../assets/png/no-post.png')}
+                />
+              </View>
+              <View>
+                <Text>Here is no more member!</Text>
+                <Text>Please wait for some days.</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchButtonClicked(false);
+                    setSearchKeywords('');
                   }}>
-                  <Image
-                    style={{width: 200, height: 200}}
-                    source={require('../../assets/png/no-post.png')}
-                  />
-                </View>
-                <View>
-                  <Text>Here is no more member!</Text>
-                  <Text>Please wait for some days.</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchButtonClicked(false);
-                      setSearchKeywords('');
-                    }}>
-                    <Text style={styles.goBackText}>Go Back</Text>
-                  </TouchableOpacity>
-                </View>
+                  <Text style={styles.goBackText}>Go Back</Text>
+                </TouchableOpacity>
               </View>
-            )
-          ) : (
-            suggestedFriendsData.map((item, index) => (
-              <View key={index} style={styles.friendList}>
-                <View style={styles.userImage}>
-                  <Image
-                    style={{width: '100%', height: '100%'}}
-                    source={
-                      item.Mem_photo && typeof item.Mem_photo === 'string'
-                        ? {uri: item.Mem_photo}
-                        : default_photo
-                    }
-                  />
-                </View>
-                <View>
-                  <Text
-                    style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                    {item.Mem_name}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: '#1866B4',
-                      fontWeight: '500',
-                    }}>
-                    {item.Mem_Designation.trim() === 'Not Added'
-                      ? ''
-                      : item.Mem_Designation.trim()}
-                  </Text>
-                  <View style={styles.mutualBox}>
-                    <View style={{flexDirection: 'row'}}>
-                      <Image
-                        style={styles.mutualImg}
-                        source={require('../../assets/png/user1.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user4.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user2.png')}
-                      />
-                    </View>
-                    <Text style={{color: 'black'}}>
-                      {item.MutualFriends} mutual connections
-                    </Text>
-                  </View>
-                  <View style={styles.buttonArea}>
-                    <TouchableOpacity
-                      style={styles.blueBtn}
-                      onPress={() => handleAddFriend(index, item.Mem_ID)}>
-                      <Text style={{color: 'white'}}>Add Friend</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
-                      onPress={() => handleIgnore(index)}>
-                      <Text style={{color: 'black'}}>Ignore</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
+            </View>
           )}
-        </ScrollView>
+          onEndReached={fetchMoreData}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => isLoadingMore && <Spinner visible={true} />}
+        />
       </View>
     </>
   );
@@ -393,13 +362,6 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 20,
     fontWeight: '700',
-  },
-  buttons: {
-    backgroundColor: '#EAEAEA',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginVertical: 12,
   },
 });
 

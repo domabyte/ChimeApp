@@ -21,6 +21,7 @@ import UserProfile from '../myProfile/UserProfile.js';
 import {AuthContext} from '../context/AuthContext.js';
 import AllMessages from '../messages/All_messages.js';
 import ChatSection from '../messages/ChatSection.js';
+import ChatSection1 from '../messages/Chats.js';
 import LongPressPopup from '../messages/ForwordMsg.js';
 const Stack = createNativeStackNavigator();
 
