@@ -174,6 +174,7 @@ export const AuthProvider = ({children}) => {
           friendid: data.FriendId,
           memberToken: data.MemberToken,
           LoginToken: data.LoginToken,
+          memberPhoto: data.Mem_photo,
         };
         let userInfo = value;
         setUserInfo(userInfo);
@@ -632,6 +633,29 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const fetchChatHistory = async (memberToken, memID, page) => {
+    if (page < 1) {
+      setIsLoading(true);
+    }
+    try {
+      const {data} = await axios.get(
+        configURL.chatHistoryURL +
+          `${memberToken}&MemId=${memID}&pageSize=30&page=${page}`,
+      );
+      if (data.length > 0) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setError('No chat history found.');
+        setIsLoading(false);
+        return null;
+      }
+    } catch (err) {
+      console.log(`Error fetching chat history : ${err}`);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -663,6 +687,7 @@ export const AuthProvider = ({children}) => {
         unFriendRequest,
         messageFriends,
         getGroups,
+        fetchChatHistory,
       }}>
       {children}
     </AuthContext.Provider>
