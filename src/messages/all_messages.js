@@ -21,8 +21,7 @@ const AllMessages = ({navigation}) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
-  const {isLoading, userInfo, messageFriends, error, setError} =
-    useContext(AuthContext);
+  const {isLoading, userInfo, messageFriends, error, setError} = useContext(AuthContext);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -123,10 +122,84 @@ const AllMessages = ({navigation}) => {
           </TouchableOpacity>
         </View>
         <ScrollView>
-          {isNavBtn === 0 ? searchButtonClicked ? (
-            searchResults.length > 0 ? (
-              searchResults.map((item, index) => (
-                <TouchableOpacity style={styles.listBox} key={index}>
+          {isNavBtn === 0 ? (
+            searchButtonClicked ? (
+              searchResults.length > 0 ? (
+                searchResults.map((item, index) => (
+                  <TouchableOpacity
+                    style={styles.listBox}
+                    key={index}
+                    onPress={() => navigation.navigate('chatSection', {
+                      friendId: item?.Mem_ID,
+                      friendName: item?.Mem_Name,
+                      friendPhoto: item?.Mem_Photo
+                    })}>
+                    <View style={styles.userImg}>
+                      <Image
+                        style={{width: '100%', height: '100%'}}
+                        source={
+                          item.Mem_Photo && typeof item.Mem_Photo === 'string'
+                            ? {uri: item.Mem_Photo}
+                            : default_photo
+                        }
+                      />
+                    </View>
+                    <View>
+                      <Text numberOfLines={3} style={styles.userName}>
+                        {item.Mem_Name}
+                      </Text>
+                      <View style={styles.magtextarea}>
+                        <Text
+                          numberOfLines={1}
+                          style={[styles.msgText, {width: '50%'}]}>
+                          Lorem ipsum dolor sit Lorem ipsum dolor sit
+                        </Text>
+                        <View style={styles.dot}></View>
+                        <Text style={styles.msgText}>20 Jun, 2024</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.noResults}>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignContent: 'center',
+                    }}>
+                    <Image
+                      style={{width: 200, height: 200}}
+                      source={require('../assets/png/no-post.png')}
+                    />
+                  </View>
+                  <View>
+                    <Text>Here is no more member!</Text>
+                    <Text>Please wait for some days.</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSearchButtonClicked(false);
+                        setSearchKeyword('');
+                      }}>
+                      <Text style={styles.goBackText} onPress={handleGoBack}>
+                        Go Back
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )
+            ) : friendList.length > 0 ? (
+              friendList.map((item, index) => (
+                <TouchableOpacity
+                  style={styles.listBox}
+                  key={index}
+                  onPress={() =>
+                    navigation.navigate('chatSection', {
+                      friendId: item?.Mem_ID,
+                      friendName: item?.Mem_Name,
+                      friendPhoto: item?.Mem_Photo,
+                    })
+                  }>
                   <View style={styles.userImg}>
                     <Image
                       style={{width: '100%', height: '100%'}}
@@ -181,62 +254,6 @@ const AllMessages = ({navigation}) => {
                 </View>
               </View>
             )
-          ) : friendList.length > 0 ? (
-            friendList.map((item, index) => (
-              <TouchableOpacity style={styles.listBox} key={index}>
-                <View style={styles.userImg}>
-                  <Image
-                    style={{width: '100%', height: '100%'}}
-                    source={
-                      item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                        ? {uri: item.Mem_Photo}
-                        : default_photo
-                    }
-                  />
-                </View>
-                <View>
-                  <Text numberOfLines={3} style={styles.userName}>
-                    {item.Mem_Name}
-                  </Text>
-                  <View style={styles.magtextarea}>
-                    <Text
-                      numberOfLines={1}
-                      style={[styles.msgText, {width: '50%'}]}>
-                      Lorem ipsum dolor sit Lorem ipsum dolor sit
-                    </Text>
-                    <View style={styles.dot}></View>
-                    <Text style={styles.msgText}>20 Jun, 2024</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View style={styles.noResults}>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                }}>
-                <Image
-                  style={{width: 200, height: 200}}
-                  source={require('../assets/png/no-post.png')}
-                />
-              </View>
-              <View>
-                <Text>Here is no more member!</Text>
-                <Text>Please wait for some days.</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSearchButtonClicked(false);
-                    setSearchKeyword('');
-                  }}>
-                  <Text style={styles.goBackText} onPress={handleGoBack}>
-                    Go Back
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           ) : (
             <View>
               <Text>group section</Text>

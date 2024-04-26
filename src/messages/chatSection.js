@@ -1,389 +1,680 @@
-import { useState } from "react";
+import React, {useContext, useState, useEffect, useRef} from 'react';
 import {
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    StyleSheet,
-    ImageBackground,
-    StatusBar,
-    ScrollView,
-    TextInput,
-    Dimensions,
-    Modal,
-    TouchableWithoutFeedback,
-    Touchable
-} from "react-native"
-import LongPressPopup from "./ForwordMsg";
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Modal,
+  TouchableWithoutFeedback,
+  FlatList,
+  StatusBar,
+  TextInput,
+} from 'react-native';
+import Spinner from 'react-native-loading-spinner-overlay';
+import YoutubePlayer from 'react-native-youtube-iframe';
+import LongPressPopup from './ForwordMsg';
+import VideoThumbnail from '../utils/Video';
+import {AuthContext} from '../context/AuthContext';
+import {
+  allowMedia,
+  downloadFile,
+  extractYouTubeID,
+  formatDateString,
+  getDocType,
+  getTimeFromDateByZone,
+  isYoutubeUrl,
+  openURL,
+  urlRegex,
+} from '../utils/helper';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import VideoPlayer from '../utils/VideoPlayer';
+import Orientation from 'react-native-orientation-locker';
+import AudioPlayer from '../utils/AudioPlayer';
 
+const default_photo = require('../assets/png/default-profile.png');
+const doc_photo = require('../assets/png/doc.png');
+const cross_photo = require('../assets/png/Cross.png');
 
-const ChatSection = ({navigation}) => {
-    const { width } = Dimensions.get('window');
+const ChatSection = ({navigation, route}) => {
+  const {friendId, friendName, friendPhoto} = route.params;
+  const {width} = Dimensions.get('window');
+  const {isLoading, userInfo, fetchChatHistory} = useContext(AuthContext);
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [showButtons, setShowButtons] = useState(true);
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const maxHeight = 100;
+  const [height, setHeight] = useState(40);
+  const [isPopupForward, setPopupForward] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [documentPath, setDocumentPath] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const curPage = useRef(1);
+  const flatListRef = useRef(null);
 
-    const [height, setHeight] = useState(40);
-    const maxHeight = 100;
-    const [isPopupVisible, setPopupVisible] = useState(false);
-    const [imgPopupVisible, setimgPopupVisible] = useState(false);
+  const fetchMessages = async () => {
+    try {
+      const result = await fetchChatHistory(
+        userInfo.memberToken,
+        friendId,
+        curPage.current,
+      );
+      if (result) {
+        setMessages(prevMessages => [...result, ...prevMessages]);
+        curPage.current += 1;
+      }
+    } catch (err) {
+      console.log('Failed to fetch chat history');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
-    const handleContentSizeChange = (event) => {
-        const newHeight = event.nativeEvent.contentSize.height;
-        setHeight(newHeight > maxHeight ? maxHeight : newHeight);
-    };
+  useEffect(() => {
+    fetchMessages();
+  }, []);
 
-    const [inputValue, setInputValue] = useState('');
-    const [showButtons, setShowButtons] = useState(true);
+  const handleContentSizeChange = event => {
+    const newHeight = event.nativeEvent.contentSize.height;
+    setHeight(newHeight > maxHeight ? maxHeight : newHeight);
+  };
 
-    const handleInputChange = (text) => {
-        setInputValue(text);
-        setShowButtons(text.length === 0);
-    };
+  useEffect(() => {
+    if (messages && curPage.current === 2 && flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToEnd({animated: false});
+      }, 1000);
+    }
+  }, [messages, flatListRef.current, curPage.current == 2]);
 
-    const handleLongPress = () => {
-        setPopupVisible(true);
-    };
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchMessages();
+  };
 
-    const handleClosePopup = () => {
-        setPopupVisible(false);
-    };
+  const handleLongPress = () => {
+    setPopupVisible(true);
+  };
 
-    const imghandleLongPress = () => {
-        setimgPopupVisible(true);
-    };
+  const handleClosePopup2 = () => {
+    setPopupForward(false);
+  };
 
-    const imghandleClosePopup = () => {
-        setimgPopupVisible(false);
-    };
+  const handleInputChange = text => {
+    setInputValue(text);
+    setShowButtons(text.length === 0);
+  };
 
-    const handleOverlayPress = () => {
-        handleClosePopup();
-    };
+  const handleOpenModal = item => {
+    setDocumentPath(item);
+    if (
+      allowMedia(item) === 'image' ||
+      allowMedia(item) === 'video' ||
+      allowMedia(item) === 'audio'
+    ) {
+      setOpenModal(true);
+    } else {
+      console.log('Reach for documents is limited');
+    }
+  };
 
-    const [isPopupForward, setPopupForward] = useState(false);
+  const handleCloseModal = () => {
+    Orientation.lockToPortrait();
+    setOpenModal(false);
+  };
 
-    const handleLongPress1 = () => {
-        setPopupForward(true);
-    };
-
-    const handleClosePopup2 = () => {
-        setPopupForward(false);
-    };
-
-    const handlePress = () => {
-        handleLongPress1();
-        handleOverlayPress();
-    };
-
+  const renderItem = ({item, index}) => {
+    const isCurrentUser = item.SenderID === userInfo?.id;
+    const isMedia = !!item.MediaPath;
+    const messageType = isMedia ? allowMedia(item.MediaPath) : null;
+    const messageTime = getTimeFromDateByZone(item.EntryDate);
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-            <View style={styles.chatHead}>
-                <View style={styles.chatTop}>
-                    <TouchableOpacity >
-                        <Image style={{ width: 25, height: 25 }} source={require('../assets/png/leftArrow2.png')} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.userImag}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </TouchableOpacity>
-                    <View>
-                        <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '600', color: 'black', width: 190 }}>Theresa Webb</Text>
-                        <Text style={{ alignItems: 'center', color: 'black' }}>Online <View style={styles.liveBtn}></View></Text>
-                    </View>
-                </View>
-                <View style={styles.callSection}>
-                    <TouchableOpacity>
-                        <Image style={{ width: 22, height: 22 }} source={require('../assets/png/videoCall.png')} />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Image style={{ width: 22, height: 22 }} source={require('../assets/png/call.png')} />
-                    </TouchableOpacity>
-                </View>
+      <>
+        {item.IsDateShow == item.Id && (
+          <Text style={styles1.date}>{formatDateString(item.EntryDate)}</Text>
+        )}
+        <View
+          style={{
+            display: 'flex',
+            paddingLeft: isCurrentUser ? 0 : 10,
+            paddingRight: isCurrentUser ? 10 : 0,
+            flexDirection: 'row',
+            alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+          }}>
+          {!isCurrentUser && (
+            <View style={styles.recvImg}>
+              <Image
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  resizeMode: 'cover',
+                  alignSelf: 'baseline',
+                  backgroundColor: 'white',
+                }}
+                source={isCurrentUser ? {uri: userInfo.memberPhoto} : friendPhoto ? {uri: friendPhoto} : default_photo}
+              />
             </View>
-            <ScrollView style={{ flex: 1 }}>
-                <View style={styles.recvMsgBox}>
-                    <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </View>
-                    <TouchableWithoutFeedback onLongPress={handleLongPress}>
-                        <Text style={styles.recvMsg}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</Text>
-                    </TouchableWithoutFeedback>
-                </View>
-                <View style={styles.sendMsgBox}>
-                    <TouchableWithoutFeedback onLongPress={handleLongPress}>
-                        <Text style={styles.sendMsg}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</Text>
-                    </TouchableWithoutFeedback>
-                    <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </View>
-                </View>
-                <View style={styles.sendMsgBox}>
-                    <TouchableWithoutFeedback onLongPress={handleLongPress}>
-                        <Text style={styles.sendMsg}>Lorem ipsum dolor</Text>
-                    </TouchableWithoutFeedback>
-                    <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </View>
-                </View>
-                <View style={styles.sendMsgBox}>
-                    <TouchableWithoutFeedback onLongPress={imghandleLongPress}>
-                        <Image style={styles.img} source={require('../assets/png/Rectangle1.png')} />
-                    </TouchableWithoutFeedback>
-                    <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </View>
-                </View>
-                <View style={styles.recvMsgBox}>
-                    <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </View>
-                    <TouchableWithoutFeedback onLongPress={imghandleLongPress}>
-                        <Image style={styles.img} source={require('../assets/png/Rectangle1.png')} />
-                    </TouchableWithoutFeedback>
-                </View>
-                <View style={styles.sendMsgBox}>
-                    <TouchableWithoutFeedback onLongPress={handleLongPress}>
-                        <Text style={styles.sendMsg}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</Text>
-                    </TouchableWithoutFeedback>
-                    <View style={styles.recvImg}>
-                        <Image style={{ width: '100%', height: '100%', resizeMode: 'cover' }} source={require('../assets/png/user8.png')} />
-                    </View>
-                </View>
-            </ScrollView>
-            <View style={[styles.sendBox, { width: width }]}>
-                {showButtons &&
-                    <View style={styles.leftAreaBtn}>
-                        <TouchableOpacity style={styles.leftBtn}>
-                            <Image style={{ width: 25, height: 25 }} source={require('../assets/png/AddDocument.png')} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.leftBtn}>
-                            <Image style={{ width: 25, height: 25 }} source={require('../assets/png/AddImage.png')} />
-                        </TouchableOpacity>
-                    </View>
-                }
-
-                <View style={{ position: 'relative', width: showButtons ? '65%' : '86.4%' }}>
-                    <TextInput
-                        multiline
-                        value={inputValue}
-                        onChangeText={handleInputChange}
-                        onContentSizeChange={handleContentSizeChange}
-                        style={[styles.messageBox, { height: Math.min(height, maxHeight) }]}
-                        placeholder="Type message..."
-                        placeholderTextColor="#888"
+          )}
+          <View
+            style={[
+              styles1.messageContainer,
+              isCurrentUser && styles.sendMsg,
+              isYoutubeUrl(item?.Message) && {
+                backgroundColor: 'white',
+              },
+              isMedia && {
+                backgroundColor: 'white',
+              },
+            ]}>
+            {isMedia ? (
+              <TouchableWithoutFeedback onLongPress={handleLongPress}>
+                <View>
+                  {messageType === 'video' ? (
+                    <VideoThumbnail
+                      thumbnailUri={
+                        messageType === 'image'
+                          ? item.MediaPath
+                          : item.Media_Thumbnail
+                      }
+                      onPress={() => handleOpenModal(item.MediaPath)}
                     />
-                    <TouchableOpacity style={styles.emojiBtn}>
-                        <Image style={{ width: 26, height: 26 }} source={require('../assets/png/emojiBtn.png')} />
+                  ) : messageType === 'image' ? (
+                    <TouchableOpacity
+                      onPress={() => handleOpenModal(item.MediaPath)}>
+                      <Image
+                        style={styles1.media}
+                        source={{uri: item.MediaPath}}
+                      />
                     </TouchableOpacity>
+                  ) : messageType === 'audio' ? (
+                    <AudioPlayer documentPath={item?.MediaPath} />
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() =>
+                        downloadFile(item?.MediaPath, getDocType(item))
+                      }>
+                      <Image style={styles1.media1} source={doc_photo} />
+                    </TouchableOpacity>
+                  )}
                 </View>
-                <TouchableOpacity style={styles.sendBtn}>
-                    <Image style={{ width: 24, height: 24 }} source={require('../assets/png/SendBtn.png')} />
-                </TouchableOpacity>
+              </TouchableWithoutFeedback>
+            ) : (
+              <TouchableWithoutFeedback onLongPress={handleLongPress}>
+                <View style={{flexDirection: 'row'}}>
+                  {isYoutubeUrl(item?.Message) ? (
+                    <View style={{flexDirection: 'column'}}>
+                      <View
+                        style={{
+                          backgroundColor: 'white',
+                          height: 150,
+                          width: 250,
+                          padding: 5,
+                        }}>
+                        <View
+                          style={{
+                            borderRadius: 10,
+                          }}>
+                          <YoutubePlayer
+                            key={index}
+                            height={150}
+                            width={250}
+                            videoId={extractYouTubeID(item?.Message)}
+                            play={false}
+                            onChangeState={event => console.log(event)}
+                          />
+                        </View>
+                      </View>
+                      <Text
+                        key={`${index}` + 1}
+                        style={styles.sendMsg}
+                        onPress={() => openURL(item?.Message)}>
+                        {item?.Message}
+                      </Text>
+                      {/* <Text style={styles1.messageTime}>{messageTime}</Text> */}
+                    </View>
+                  ) : (
+                    item?.Message.split(urlRegex).map((messagePart, idx) => {
+                      if (urlRegex.test(messagePart)) {
+                        return (
+                          <Text
+                            key={`${index}_${idx}`}
+                            style={[
+                              styles1.messageText,
+                              styles1.link,
+                              {color: isCurrentUser ? 'white' : 'blue'},
+                            ]}
+                            onPress={() => openURL(messagePart)}>
+                            {messagePart}
+                          </Text>
+                        );
+                      } else {
+                        return (
+                          <Text
+                            style={{color: isCurrentUser ? 'white' : 'black'}}
+                            key={`${index}_${idx}`}>
+                            {messagePart}
+                          </Text>
+                        );
+                      }
+                    })
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            )}
+          </View>
+
+          {isCurrentUser && (
+            <View style={styles.recvImg}>
+              <Image
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  resizeMode: 'cover',
+                  alignSelf: 'baseline',
+                  backgroundColor: 'white',
+                }}
+                source={isCurrentUser ? {uri: userInfo.memberPhoto} : friendPhoto ? {uri: friendPhoto} : default_photo}
+              />
             </View>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={isPopupVisible}
-                onRequestClose={handleClosePopup}
-            >
-                <TouchableWithoutFeedback onPress={handleOverlayPress}>
-                    <View style={styles.overlay} />
-                </TouchableWithoutFeedback>
-                <View style={styles.modalContainer}>
-                    <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/delete.png')} />
-                        <Text style={{ color: 'black' }}>Delete</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/edit.png')} />
-                        <Text style={{ color: 'black' }}>Edit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.popupBtn} onPress={handlePress}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/forward.png')} />
-                        <Text style={{ color: 'black' }}>Forward</Text>
-                    </TouchableOpacity>
-                </View>
-            </Modal>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={imgPopupVisible}
-                onRequestClose={handleClosePopup}
-            >
-                <TouchableWithoutFeedback onPress={imghandleClosePopup}>
-                    <View style={styles.overlay} />
-                </TouchableWithoutFeedback>
-                <View style={styles.modalContainer}>
-                    <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/delete.png')} />
-                        <Text style={{ color: 'black' }}>Delete</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.popupBtn}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/Download.png')} />
-                        <Text style={{ color: 'black' }}>Download</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.popupBtn} onPress={handlePress}>
-                        <Image style={{ width: 40, height: 40 }} source={require('../assets/png/forward.png')} />
-                        <Text style={{ color: 'black' }}>Forward</Text>
-                    </TouchableOpacity>
-                </View>
-            </Modal>
-            <LongPressPopup isVisible={isPopupForward} onClose={handleClosePopup2} />
+          )}
         </View>
-    )
-}
+        <View>
+          <Text
+            style={[
+              styles1.messageTime,
+              {
+                marginRight: 50,
+                alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+                marginLeft: !isCurrentUser ? 50 : 0,
+              },
+            ]}>
+            {messageTime} {isCurrentUser && '✔️'}
+          </Text>
+        </View>
+      </>
+    );
+  };
+
+  return (
+    <View style={styles1.container}>
+      <View style={styles.chatHead}>
+        <Spinner visible={isLoading} />
+        <View style={styles.chatTop}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image
+              style={{width: 25, height: 25}}
+              source={require('../assets/png/leftArrow2.png')}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.userImag}>
+            <Image
+              style={{width: '100%', height: '100%', resizeMode: 'cover'}}
+              source={
+                friendPhoto && typeof friendPhoto === 'string'
+                  ? {uri: friendPhoto}
+                  : default_photo
+              }
+            />
+          </TouchableOpacity>
+          <View>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: 'black',
+                width: 190,
+              }}>
+              {friendName}
+            </Text>
+            <Text style={{alignItems: 'center', color: 'black'}}>
+              Online <View style={styles.liveBtn}></View>
+            </Text>
+          </View>
+        </View>
+        <View style={styles.callSection}>
+          <TouchableOpacity>
+            <Image
+              style={{width: 22, height: 22}}
+              source={require('../assets/png/videoCall.png')}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Image
+              style={{width: 22, height: 22}}
+              source={require('../assets/png/call.png')}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <Modal visible={openModal}>
+        <View style={styles1.modalContainer}>
+          <TouchableOpacity
+            style={styles1.closeButton}
+            onPress={handleCloseModal}>
+            <Image source={cross_photo} style={styles1.closeIcon} />
+          </TouchableOpacity>
+          {documentPath && allowMedia(documentPath) === 'image' ? (
+            <ImageViewer
+              imageUrls={[{url: documentPath}]}
+              enableSwipeDown={true}
+              onCancel={handleCloseModal}
+            />
+          ) : allowMedia(documentPath) === 'video' ? (
+            <View
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                height: '100%',
+              }}>
+              <VideoPlayer
+                documentPath={
+                  'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
+                }
+              />
+              <View style={styles1.videoOverlay}></View>
+            </View>
+          ) : null}
+        </View>
+      </Modal>
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+        onScroll={({nativeEvent}) => {
+          if (nativeEvent.contentOffset.y === 0) {
+            fetchMessages();
+          }
+        }}
+        contentContainerStyle={{flexGrow: 1}}
+      />
+      <View style={[styles.sendBox, {width: width}]}>
+        {showButtons && (
+          <View style={styles.leftAreaBtn}>
+            <TouchableOpacity style={styles.leftBtn}>
+              <Image
+                style={{width: 25, height: 25}}
+                source={require('../assets/png/AddDocument.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.leftBtn}>
+              <Image
+                style={{width: 25, height: 25}}
+                source={require('../assets/png/AddImage.png')}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View
+          style={{position: 'relative', width: showButtons ? '65%' : '86.4%'}}>
+          <TextInput
+            multiline
+            value={inputValue}
+            onChangeText={handleInputChange}
+            onContentSizeChange={handleContentSizeChange}
+            style={[styles.messageBox, {height: Math.min(height, maxHeight)}]}
+            placeholder="Type message..."
+            placeholderTextColor="#888"
+          />
+          <TouchableOpacity style={styles.emojiBtn}>
+            <Image
+              style={{width: 26, height: 26}}
+              source={require('../assets/png/emojiBtn.png')}
+            />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={styles.sendBtn}>
+          <Image
+            style={{width: 24, height: 24}}
+            source={require('../assets/png/SendBtn.png')}
+          />
+        </TouchableOpacity>
+      </View>
+      <LongPressPopup isVisible={isPopupForward} onClose={handleClosePopup2} />
+    </View>
+  );
+};
+
+const styles1 = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  date: {
+    textAlign: 'center',
+    marginTop : 5,
+  },
+  messageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+    marginHorizontal: 16,
+    maxWidth: '80%',
+    borderRadius: 8,
+    padding: 8,
+    backgroundColor: '#F2F2F2',
+  },
+  currentUserMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#DCF8C6',
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  media: {
+    width: 100,
+    height: 100,
+    resizeMode: 'cover',
+    borderRadius: 8,
+  },
+  media1: {
+    width: 70,
+    height: 70,
+    resizeMode: 'cover',
+    borderRadius: 8,
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  modalImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#111',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 999,
+  },
+  closeIcon: {
+    width: 25,
+    height: 25,
+    backgroundColor: 'white',
+  },
+  link: {
+    color: 'white',
+    textDecorationLine: 'underline',
+  },
+  messageTime: {
+    fontSize: 12,
+    alignSelf: 'flex-end',
+    marginRight: 15,
+    color: '#999',
+  },
+});
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    userImag: {
-        width: 40,
-        height: 40,
-        borderRadius: 50,
-        overflow: 'hidden'
-    },
-    chatTop: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10
-    },
-    liveBtn: {
-        height: 10,
-        width: 10,
-        backgroundColor: '#80FF00',
-        borderRadius: 50
-    },
-    callSection: {
-        flexDirection: 'row',
-        gap: 12
-    },
-    chatHead: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        elevation: 5,
-    },
-    sendBox: {
-        backgroundColor: '#fff',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        alignItems: 'flex-end'
-    },
-    leftAreaBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8
-    },
-    messageBox: {
-        backgroundColor: '#F6F6F6',
-        borderRadius: 20,
-        paddingLeft: 20,
-        paddingRight: 38,
-    },
-    sendBtn: {
-        backgroundColor: '#1866B4',
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 50,
-    },
-    emojiBtn: {
-        position: 'absolute',
-        right: 8,
-        bottom: 8
-    },
-    scrollView: {
-        flex: 1,
-    },
-    recvMsg: {
-        backgroundColor: '#EAEAEA',
-        borderRadius: 16,
-        fontSize: 16,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        color: 'black',
-        width: 300
-    },
-    sendMsg: {
-        backgroundColor: '#1866B4',
-        borderRadius: 16,
-        fontSize: 16,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        color: 'white',
-        minWidth: 50,
-        maxWidth: 260
-    },
-    recvImg: {
-        width: 24,
-        height: 24,
-        borderRadius: 20,
-        overflow: 'hidden'
-    },
-    recvMsgBox: {
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'flex-end',
-        marginHorizontal: 10,
-        marginVertical: 10,
-    },
-    sendMsgBox: {
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'flex-end',
-        marginHorizontal: 10,
-        marginVertical: 10,
-        justifyContent: 'flex-end'
-    },
-    img: {
-        width: 200,
-        height: 200,
-        resizeMode: 'cover',
-        borderRadius: 16,
-    },
-    leftBtn: {
-        height: 40,
-        width: 30,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    },
-    modalContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-around'
-    },
-    modalText: {
-        fontSize: 18,
-        marginBottom: 10,
-    },
-    closeButton: {
-        marginTop: 10,
-        alignSelf: 'flex-end',
-    },
-    closeButtonText: {
-        fontSize: 16,
-        color: 'blue',
-    },
-    popupBtn: {
-        justifyContent: 'center',
-        alignItems: 'center'
-    }
-})
+  container: {
+    flex: 1,
+  },
+  userImag: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    overflow: 'hidden',
+  },
+  chatTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  liveBtn: {
+    height: 10,
+    width: 10,
+    backgroundColor: '#80FF00',
+    borderRadius: 50,
+  },
+  callSection: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  chatHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    elevation: 5,
+  },
+  sendBox: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    alignItems: 'flex-end',
+  },
+  leftAreaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  messageBox: {
+    backgroundColor: '#F6F6F6',
+    borderRadius: 20,
+    paddingLeft: 20,
+    paddingRight: 38,
+  },
+  sendBtn: {
+    backgroundColor: '#1866B4',
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+  },
+  emojiBtn: {
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  recvMsg: {
+    backgroundColor: '#EAEAEA',
+    borderRadius: 16,
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    color: 'black',
+    width: 300,
+  },
+  sendMsg: {
+    backgroundColor: '#1866B4',
+    borderRadius: 16,
+    fontSize: 16,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-end',
+    paddingVertical: 6,
+    color: 'white',
+    minWidth: 50,
+    maxWidth: 260,
+  },
+  recvImg: {
+    width: 24,
+    height: 24,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'red',
+    alignSelf: 'center',
+  },
+  recvMsgBox: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-end',
+    marginHorizontal: 10,
+    marginVertical: 10,
+  },
+  sendMsgBox: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-end',
+    marginHorizontal: 10,
+    marginVertical: 10,
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
+    backgroundColor: '#DCF8C6',
+  },
+  img: {
+    width: 200,
+    height: 200,
+    resizeMode: 'cover',
+    borderRadius: 16,
+  },
+  leftBtn: {
+    height: 40,
+    width: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  closeButton: {
+    marginTop: 10,
+    alignSelf: 'flex-end',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: 'blue',
+  },
+  popupBtn: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default ChatSection;
