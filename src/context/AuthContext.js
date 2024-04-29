@@ -634,9 +634,7 @@ export const AuthProvider = ({children}) => {
   };
 
   const fetchChatHistory = async (memberToken, memID, page) => {
-    if (page < 1) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     try {
       const {data} = await axios.get(
         configURL.chatHistoryURL +
