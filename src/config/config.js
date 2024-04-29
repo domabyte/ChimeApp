@@ -25,6 +25,8 @@ const configURL = {
     acceptFriendRequestURL: baseURL + 'User/AcceptFriendRequest',
     unFriendRequestURL: baseURL + 'User/UnFriendRequest',
     groupURL: baseURL + 'post/_view_group_list?MemberToken=',
-    chatHistoryURL: baseURL + 'message/_chat_history?MemberToken='
+    chatHistoryURL: baseURL + 'message/_chat_history?MemberToken=',
+    sendPrivateMsgURL: baseURL + 'message/sendPrivateMessage',
+    sendMediaURL: baseURL + 'message/_uploadChatMedia',
 };
 export default configURL;
