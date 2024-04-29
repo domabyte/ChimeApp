@@ -1,6 +1,7 @@
 import RNFetchBlob from 'rn-fetch-blob';
 import RNFS from 'react-native-fs';
 import {DateTime} from 'luxon';
+import * as ImagePicker from 'react-native-image-picker';
 import {
   PermissionsAndroid,
   Platform,
@@ -8,10 +9,12 @@ import {
   Linking,
 } from 'react-native';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import axios from 'axios';
+import configURL from '../config/config';
+import DocumentPicker from 'react-native-document-picker';
 export function allowMedia(mediapath) {
   if (mediapath) {
     if (mediapath.indexOf('youtube') > -1) {
-      console.log('Inside');
       return 'youtube';
     }
     var url = mediapath.split('.');
@@ -262,3 +265,176 @@ export async function downloadFile(documentPath, result) {
     }
   }
 }
+
+const sendMessage = async (
+  memberToken,
+  LoginToken,
+  friendId,
+  mediaPath,
+  media,
+) => {
+  const formData = new FormData();
+  formData.append('messageText', '');
+  formData.append('MemberToken', memberToken);
+  formData.append('ReceiverID', friendId);
+  formData.append('IsCallMsg', false);
+  formData.append('EventType', 'Click');
+  formData.append('MediaPath', mediaPath);
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      MemberToken: memberToken,
+      LoginToken: LoginToken,
+    },
+  };
+
+  try {
+    const {data} = await axios.post(
+      configURL.sendPrivateMsgURL,
+      formData,
+      config,
+    );
+    if (data?.Result?.errorText) {
+      setIsMediaUploading(false); 
+    } else {
+      return true;
+    }
+  } catch (err) {
+    console.log('Failed to send message to the server : ', err);
+  }
+};
+
+const uploadChatMedia = async (
+  MediaPath,
+  memberToken,
+  LoginToken,
+  ReceiverID,
+) => {
+  const formData = new FormData();
+  formData.append('MemberToken', memberToken);
+  formData.append('ReceiverID', ReceiverID);
+  formData.append('Media', {
+    uri: MediaPath.uri?.uri,
+    name: MediaPath.uri?.fileName,
+    type: MediaPath.uri?.type,
+  });
+  try {
+    const {data} = await axios.post(configURL.sendMediaURL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        MemberToken: memberToken,
+        LoginToken: LoginToken,
+      },
+    });
+    if (data.Media_Path) {
+      await sendMessage(
+        memberToken,
+        LoginToken,
+        ReceiverID,
+        data.Media_Path,
+        MediaPath,
+      );
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    console.log(`Error uploading chat media : ${err}`);
+  }
+};
+
+const uploadDoc = async (MediaPath, memberToken, LoginToken, ReceiverID) => {
+  const formData = new FormData();
+  formData.append('MemberToken', memberToken);
+  formData.append('ReceiverID', ReceiverID);
+  formData.append('Media', {
+    uri: MediaPath?.uri?.uri,
+    name: MediaPath?.uri?.name,
+    type: MediaPath?.uri?.type,
+  });
+  try {
+    const {data} = await axios.post(configURL.sendMediaURL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        MemberToken: memberToken,
+        LoginToken: LoginToken,
+      },
+    });
+    if (data.Media_Path) {
+      await sendMessage(
+        memberToken,
+        LoginToken,
+        ReceiverID,
+        data.Media_Path,
+        MediaPath,
+      );
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    console.log(`Error uploading chat media : ${err}`);
+  }
+};
+
+const handleImageResponse = async (response, memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+  setIsMediaUploading(true);
+  if (response.didCancel) {
+    setIsMediaUploading(false);
+    console.log('User cancelled image picker');
+    return false;
+  } else if (response.error) {
+    setIsMediaUploading(false);
+    console.log('ImagePicker Error: ', response.error);
+    return false;
+  } else {
+    let source = {uri: response.assets[0]};
+    const resp = await uploadChatMedia(source, memberToken, loginToken, ReceiverID);
+    setIsMediaUploading(false);
+    return resp;
+  }
+};
+
+const handleDocResponse = async (response, memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+  setIsMediaUploading(true);
+  let source = {uri: response[0]};
+  if (source) {
+    await uploadDoc(source, memberToken, loginToken, ReceiverID);
+    setIsMediaUploading(false);
+  } else {
+    console.log('No document selected');
+    setIsMediaUploading(false);
+  }
+};
+export const pickImage = async (memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+  const options = {
+    title: 'Select Image',
+    storageOptions: {
+      skipBackup: true,
+      path: 'images',
+    },
+  };
+  if (Platform.OS === 'android') {
+    await ImagePicker.launchImageLibrary(options, response => {
+     handleImageResponse(response, memberToken, loginToken, ReceiverID, setIsMediaUploading);
+    });
+  } else {
+    await ImagePicker.showImagePicker(options,  response => {
+       handleImageResponse(response, memberToken, loginToken, ReceiverID, setIsMediaUploading);
+    });
+  }
+};
+
+export const pickDocument = async (memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+  try {
+    const doc = await DocumentPicker.pick();
+    handleDocResponse(doc, memberToken, loginToken, ReceiverID, setIsMediaUploading);
+  } catch (err) {
+    if (DocumentPicker.isCancel(e)) {
+      setIsMediaUploading(false);
+      console.log('User cancel the upload ', e);
+    } else {
+      console.log(err);
+    }
+  }
+};
