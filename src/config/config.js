@@ -28,5 +28,7 @@ const configURL = {
     chatHistoryURL: baseURL + 'message/_chat_history?MemberToken=',
     sendPrivateMsgURL: baseURL + 'message/sendPrivateMessage',
     sendMediaURL: baseURL + 'message/_uploadChatMedia',
+    _getUserInfoURL: baseURL + 'user/_getBasicInfoByMemId?MemberToken=',
+    deleteMsgURL: baseURL + 'message/deleteMessageById',
 };
 export default configURL;

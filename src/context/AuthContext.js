@@ -93,6 +93,39 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const getUserOnlineStatus = async (
+    memberToken,
+    loginToken,
+    memId,
+    username,
+  ) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.get(
+        `${configURL._getUserInfoURL}${memberToken}${
+          memId ? `&MemId=${memId}` : ''
+        }${username ? `&username=${username}` : ''}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            MemberToken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      if (data) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setIsLoading(false);
+        return false;
+      }
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
   const basicInfo = async (
     location,
     countryValue,
@@ -529,13 +562,13 @@ export const AuthProvider = ({children}) => {
         memberToken +
         '&MemId=' +
         MemId +
-        '&page=1&pageSize=40&keywords=' +
+        '&page=1&pageSize=50&keywords=' +
         keywords
       : configURL.getSentFriendRequestURL +
         memberToken +
         '&MemId=' +
         MemId +
-        '&page=1&pageSize=40';
+        '&page=1&pageSize=50';
     try {
       const {data} = await axios.get(url, {
         headers: {
@@ -654,6 +687,64 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const sendMessage = async (
+    memberToken,
+    loginToken,
+    messageText,
+    friendId,
+    msgId,
+  ) => {
+    const formData = new FormData();
+    formData.append('MemberToken', memberToken);
+    formData.append('messageText', messageText);
+    formData.append('ReceiverID', friendId);
+    formData.append('MessageId', msgId);
+    formData.append('IsCallMsg', false);
+
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        MemberToken: memberToken,
+        LoginToken: loginToken,
+      },
+    };
+    try {
+      const {data} = await axios.post(
+        configURL.sendPrivateMsgURL,
+        formData,
+        config,
+      );
+      if (data?.Result?.MessageId) {
+        return data?.Result?.message;
+      }else {
+        return false;
+      }
+    } catch (err) {
+      console.log('Error sending the message ', err);
+    }
+  };
+
+  const deleteMsg = async (memberToken, loginToken, msgId) => {
+    try {
+      const {data} = await axios.delete(configURL.deleteMsgURL, {
+        headers: {
+          LoginToken: loginToken,
+          MemberToken: memberToken,
+        },
+        data: {
+          MemberToken: memberToken,
+          MessageId: msgId,
+        },
+      });
+      if (data.message) {
+        console.log('Data is : ', data.message);
+        return data;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -663,6 +754,7 @@ export const AuthProvider = ({children}) => {
         setUserInfo,
         splashLoading,
         error,
+        getUserOnlineStatus,
         setError,
         register,
         otpVerify,
@@ -686,6 +778,8 @@ export const AuthProvider = ({children}) => {
         messageFriends,
         getGroups,
         fetchChatHistory,
+        sendMessage,
+        deleteMsg,
       }}>
       {children}
     </AuthContext.Provider>
