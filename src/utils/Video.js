@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-const VideoThumbnail = ({ thumbnailUri, onPress }) => {
+const VideoThumbnail = ({ thumbnailUri, onPress, onLongPress}) => {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity style={styles.container} onPress={onPress} onLongPress={onLongPress}>
       <ImageBackground
         style={styles.thumbnail}
         source={{ uri: thumbnailUri }}

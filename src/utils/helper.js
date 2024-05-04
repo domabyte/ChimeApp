@@ -295,7 +295,7 @@ const sendMessage = async (
       config,
     );
     if (data?.Result?.errorText) {
-      setIsMediaUploading(false); 
+      setIsMediaUploading(false);
     } else {
       return true;
     }
@@ -377,7 +377,13 @@ const uploadDoc = async (MediaPath, memberToken, LoginToken, ReceiverID) => {
   }
 };
 
-const handleImageResponse = async (response, memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+const handleImageResponse = async (
+  response,
+  memberToken,
+  loginToken,
+  ReceiverID,
+  setIsMediaUploading,
+) => {
   setIsMediaUploading(true);
   if (response.didCancel) {
     setIsMediaUploading(false);
@@ -389,13 +395,24 @@ const handleImageResponse = async (response, memberToken, loginToken, ReceiverID
     return false;
   } else {
     let source = {uri: response.assets[0]};
-    const resp = await uploadChatMedia(source, memberToken, loginToken, ReceiverID);
+    const resp = await uploadChatMedia(
+      source,
+      memberToken,
+      loginToken,
+      ReceiverID,
+    );
     setIsMediaUploading(false);
     return resp;
   }
 };
 
-const handleDocResponse = async (response, memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+const handleDocResponse = async (
+  response,
+  memberToken,
+  loginToken,
+  ReceiverID,
+  setIsMediaUploading,
+) => {
   setIsMediaUploading(true);
   let source = {uri: response[0]};
   if (source) {
@@ -406,7 +423,12 @@ const handleDocResponse = async (response, memberToken, loginToken, ReceiverID, 
     setIsMediaUploading(false);
   }
 };
-export const pickImage = async (memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+export const pickImage = async (
+  memberToken,
+  loginToken,
+  ReceiverID,
+  setIsMediaUploading,
+) => {
   const options = {
     title: 'Select Image',
     storageOptions: {
@@ -416,23 +438,46 @@ export const pickImage = async (memberToken, loginToken, ReceiverID, setIsMediaU
   };
   if (Platform.OS === 'android') {
     await ImagePicker.launchImageLibrary(options, response => {
-     handleImageResponse(response, memberToken, loginToken, ReceiverID, setIsMediaUploading);
+      handleImageResponse(
+        response,
+        memberToken,
+        loginToken,
+        ReceiverID,
+        setIsMediaUploading,
+      );
     });
   } else {
-    await ImagePicker.showImagePicker(options,  response => {
-       handleImageResponse(response, memberToken, loginToken, ReceiverID, setIsMediaUploading);
+    await ImagePicker.showImagePicker(options, response => {
+      handleImageResponse(
+        response,
+        memberToken,
+        loginToken,
+        ReceiverID,
+        setIsMediaUploading,
+      );
     });
   }
 };
 
-export const pickDocument = async (memberToken, loginToken, ReceiverID, setIsMediaUploading) => {
+export const pickDocument = async (
+  memberToken,
+  loginToken,
+  ReceiverID,
+  setIsMediaUploading,
+) => {
   try {
     const doc = await DocumentPicker.pick();
-    handleDocResponse(doc, memberToken, loginToken, ReceiverID, setIsMediaUploading);
+    handleDocResponse(
+      doc,
+      memberToken,
+      loginToken,
+      ReceiverID,
+      setIsMediaUploading,
+    );
   } catch (err) {
-    if (DocumentPicker.isCancel(e)) {
+    if (DocumentPicker.isCancel()) {
       setIsMediaUploading(false);
-      console.log('User cancel the upload ', e);
+      console.log('User cancel the upload ');
     } else {
       console.log(err);
     }
