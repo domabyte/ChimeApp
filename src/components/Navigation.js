@@ -21,129 +21,138 @@ import UserProfile from '../myProfile/UserProfile.js';
 import {AuthContext} from '../context/AuthContext.js';
 import AllMessages from '../messages/All_messages.js';
 import ChatSection from '../messages/ChatSection.js';
-import ChatSection1 from '../messages/Chats.js';
 import LongPressPopup from '../messages/ForwordMsg.js';
-const Stack = createNativeStackNavigator();
+import {createStackNavigator} from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
+
+const AuthStack = () => (
+  <Stack.Navigator initialRouteName="Login">
+    <Stack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="Register"
+      component={RegisterScreen}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="OtpVerification"
+      component={OtpVerification}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="forgotPassword"
+      component={ForgotPassword}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="forgotPassOTP"
+      component={ForgotPassOTP}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="changePassword"
+      component={ChangePassword}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="successPassword"
+      component={SuccessPassword}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="addProfile"
+      component={AddProfile}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="information"
+      component={Information}
+      options={{headerShown: false}}
+    />
+  </Stack.Navigator>
+);
+
+const AppStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="myFriend"
+      component={MyFriends}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="findFriends"
+      component={FindFriends}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="suggestedFriends"
+      component={SuggestedFriends}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="sentRequest"
+      component={SentRequest}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="receivedRequest"
+      component={ReceivedRequest}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="myFriends"
+      component={MyFriends}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="myProfile"
+      component={MyProfile}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="userProfile"
+      component={UserProfile}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="allMessages"
+      component={AllMessages}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="chatSection"
+      component={ChatSection}
+      options={{headerShown: false}}
+    />
+    <Stack.Screen
+      name="longPressPopup"
+      component={LongPressPopup}
+      options={{headerShown: false}}
+    />
+  </Stack.Navigator>
+);
 
 const Navigation = () => {
   const {userInfo, splashLoading} = useContext(AuthContext);
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        {splashLoading ? (
+      {splashLoading ? (
+        <Stack.Navigator>
           <Stack.Screen
-            name="Splash Screen"
+            name="SplashScreen"
             component={SplashScreen}
             options={{headerShown: false}}
           />
-        ) : userInfo.memberToken ? (
-          <>
-            <Stack.Screen
-              name="myFriend"
-              component={MyFriends}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="findFriends"
-              component={FindFriends}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="suggestedFriends"
-              component={SuggestedFriends}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="sentRequest"
-              component={SentRequest}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="receivedRequest"
-              component={ReceivedRequest}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="myFriends"
-              component={MyFriends}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="myProfile"
-              component={MyProfile}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="userProfile"
-              component={UserProfile}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="allMessages"
-              component={AllMessages}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="chatSection"
-              component={ChatSection}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="longPressPopup"
-              component={LongPressPopup}
-              options={{headerShown: false}}
-            />
-          </>
-        ) : (
-          <>
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="OtpVerification"
-              component={OtpVerification}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="forgotPassword"
-              component={ForgotPassword}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="forgotPassOTP"
-              component={ForgotPassOTP}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="changePassword"
-              component={ChangePassword}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="successPassword"
-              component={SuccessPassword}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="addProfile"
-              component={AddProfile}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="information"
-              component={Information}
-              options={{headerShown: false}}
-            />
-          </>
-        )}
-      </Stack.Navigator>
+        </Stack.Navigator>
+      ) : userInfo.memberToken ? (
+        <AppStack />
+      ) : (
+        <AuthStack />
+      )}
     </NavigationContainer>
   );
 };

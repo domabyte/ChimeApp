@@ -8,6 +8,7 @@ import {
   StatusBar,
   ScrollView,
   Button,
+  SafeAreaView,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../context/AuthContext';
@@ -23,6 +24,7 @@ const Myprofile = ({navigation}) => {
   };
 
   return (
+    <SafeAreaView style={{height:'100%'}}>
     <View style={styles.container}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <ScrollView>
@@ -153,6 +155,7 @@ const Myprofile = ({navigation}) => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

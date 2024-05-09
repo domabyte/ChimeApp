@@ -6,6 +6,7 @@ import {
   Text,
   StatusBar,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import React, {useState} from 'react';
 
@@ -19,6 +20,7 @@ const UserProfile = ({navigation}) => {
   };
 
   return (
+    <SafeAreaView style={{height:'100%'}}>
     <View style={styles.container}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <ScrollView>
@@ -145,6 +147,7 @@ const UserProfile = ({navigation}) => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 
