@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, Touchable, Image} from 'react-native';
+import {View, Text, TouchableOpacity, Touchable, Image, SafeAreaView} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import Video from 'react-native-video';
 import Slider from '@react-native-community/slider';

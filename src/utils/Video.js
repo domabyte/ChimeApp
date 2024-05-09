@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ImageBackground, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, ImageBackground, TouchableOpacity, Text, StyleSheet, SafeAreaView } from 'react-native';
 
 const VideoThumbnail = ({ thumbnailUri, onPress, onLongPress}) => {
   return (

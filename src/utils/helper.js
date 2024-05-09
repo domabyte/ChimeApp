@@ -1,4 +1,3 @@
-import RNFetchBlob from 'rn-fetch-blob';
 import RNFS from 'react-native-fs';
 import {DateTime} from 'luxon';
 import * as ImagePicker from 'react-native-image-picker';
@@ -8,10 +7,12 @@ import {
   ToastAndroid,
   Linking,
 } from 'react-native';
-import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import axios from 'axios';
 import configURL from '../config/config';
 import DocumentPicker from 'react-native-document-picker';
+import Toast from 'react-native-simple-toast';
+import FileViewer from 'react-native-file-viewer';
+
 export function allowMedia(mediapath) {
   if (mediapath) {
     if (mediapath.indexOf('youtube') > -1) {
@@ -158,39 +159,47 @@ export function formatDateString(dateStr) {
 }
 
 export async function downloadFile(documentPath, result) {
-  const {dirs} = RNFetchBlob.fs;
-  const dirToSave = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+  let dirToSave;
+  if (Platform.OS === 'ios') {
+    dirToSave = RNFS.DocumentDirectoryPath;
+  } else {
+    dirToSave = RNFS.DownloadDirectoryPath;
+  }
 
-  let granted = await PermissionsAndroid.check(
-    PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-  );
+  let granted;
 
-  if (!granted) {
-    granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-      {
-        title: 'Storage Permission',
-        message: 'App needs access to your storage to read files.',
-        buttonPositive: 'OK',
-      },
+  if (Platform.OS === 'android') {
+    granted = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
     );
+
+    if (!granted) {
+      granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission',
+          message: 'App needs access to your storage to read files.',
+          buttonPositive: 'OK',
+        },
+      );
+    }
+  } else {
+    granted = true;
   }
 
   if (granted) {
     console.log('Storage permission granted');
     try {
-      if (result.length == 2) {
+      if (result.length === 2) {
         const downloadDest = `${dirToSave}/${result[0]}.${result[1]}`;
+        console.log('DOwnload is : ', downloadDest);
         const options = {
           fromUrl: documentPath,
           toFile: downloadDest,
           background: true,
           begin: res => {
             if (Platform.OS === 'ios') {
-              PushNotificationIOS.presentLocalNotification({
-                alertBody: 'Download started...',
-                sound: 'default',
-              });
+              Toast.show('Download started...', {duration: Toast.LONG});
             } else {
               ToastAndroid.show('Download started...', ToastAndroid.LONG);
             }
@@ -207,33 +216,33 @@ export async function downloadFile(documentPath, result) {
         downloadTask.promise
           .then(response => {
             if (Platform.OS === 'ios') {
-              PushNotificationIOS.presentLocalNotification({
-                alertBody: 'Download complete!',
-                sound: 'default',
-              });
+              Toast.show('Download complete!', {duration: Toast.SHORT});
             } else {
               ToastAndroid.show(
                 `File ${result[0]}.${result[1]} saved in Downloader Folder`,
                 ToastAndroid.SHORT,
               );
             }
+            FileViewer.open(downloadDest, {showOpenWithDialog: true})
+              .then(() => {
+                console.log('Success');
+              })
+              .catch(error => {
+                console.log('SOrry not able to open the file', error);
+              });
           })
           .catch(error => {
             console.error('Download failed:', error);
             if (Platform.OS === 'ios') {
-              PushNotificationIOS.presentLocalNotification({
-                alertBody: 'Download failed!',
-                sound: 'default',
-              });
+              Toast.show('Download failed!', {duration: Toast.SHORT});
             } else {
               ToastAndroid.show('Download failed!', ToastAndroid.SHORT);
             }
           });
       } else {
         if (Platform.OS === 'ios') {
-          PushNotificationIOS.presentLocalNotification({
-            alertBody: 'File is corrupted or no result provided!',
-            sound: 'default',
+          Toast.show('File is corrupted or no result provided!', {
+            duration: Toast.SHORT,
           });
         } else {
           ToastAndroid.show(
@@ -245,10 +254,7 @@ export async function downloadFile(documentPath, result) {
     } catch (error) {
       console.error('Error downloading file:', error);
       if (Platform.OS === 'ios') {
-        PushNotificationIOS.presentLocalNotification({
-          alertBody: 'Error downloading file!',
-          sound: 'default',
-        });
+        Toast.show('Error downloading file!', {duration: Toast.SHORT});
       } else {
         ToastAndroid.show('Error downloading file!', ToastAndroid.SHORT);
       }
@@ -256,10 +262,7 @@ export async function downloadFile(documentPath, result) {
   } else {
     console.log('Storage permission denied');
     if (Platform.OS === 'ios') {
-      PushNotificationIOS.presentLocalNotification({
-        alertBody: 'Storage permission denied!',
-        sound: 'default',
-      });
+      Toast.show('Storage permission denied!', {duration: Toast.SHORT});
     } else {
       ToastAndroid.show('Storage permission denied!', ToastAndroid.SHORT);
     }
@@ -436,27 +439,15 @@ export const pickImage = async (
       path: 'images',
     },
   };
-  if (Platform.OS === 'android') {
-    await ImagePicker.launchImageLibrary(options, response => {
-      handleImageResponse(
-        response,
-        memberToken,
-        loginToken,
-        ReceiverID,
-        setIsMediaUploading,
-      );
-    });
-  } else {
-    await ImagePicker.showImagePicker(options, response => {
-      handleImageResponse(
-        response,
-        memberToken,
-        loginToken,
-        ReceiverID,
-        setIsMediaUploading,
-      );
-    });
-  }
+  await ImagePicker.launchImageLibrary(options, response => {
+    handleImageResponse(
+      response,
+      memberToken,
+      loginToken,
+      ReceiverID,
+      setIsMediaUploading,
+    );
+  });
 };
 
 export const pickDocument = async (

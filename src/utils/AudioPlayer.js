@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
 import SoundPlayer from 'react-native-sound-player'
 
@@ -32,7 +32,7 @@ const AudioPlayer = ({ documentPath }) => {
     }
   }
 
-  const durationBarLength = 100; // Adjust duration bar length (in pixels)
+  const durationBarLength = 100;
 
   return (
     <View style={bubbleStyle}>
