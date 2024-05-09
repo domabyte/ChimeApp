@@ -1,79 +1,62 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
   Image,
-  ScrollView,
+  FlatList,
   StyleSheet,
   StatusBar,
   TouchableOpacity,
   TextInput,
+  RefreshControl,
+  SafeAreaView,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Header from '../../components/Header';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const ReceivedRequest = ({navigation}) => {
+const ReceivedRequest = ({ navigation }) => {
   const [receiveRequest, setReceiveRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
-
-  const {
-    isLoading,
-    userInfo,
-    receiveFriendRequest,
-    getReceiveFriendRequest,
-    acceptFriendRequest,
-    cancelFriendRequest,
-    error,
-    setError,
-  } = useContext(AuthContext);
+  const [refreshing, setRefreshing] = useState(false);
+  const { isLoading, userInfo, receiveFriendRequest, getReceiveFriendRequest, acceptFriendRequest, cancelFriendRequest, error, setError } = useContext(AuthContext);
   const isFocused = useIsFocused();
+
   useEffect(() => {
     setError('');
-    const fetchReceiveFriendRequest = async () => {
-      try {
-        const response = await receiveFriendRequest(userInfo.id);
-        if (response) {
-          setReceiveRequest(response);
-        }
-      } catch (err) {
-        console.log('Problem fetching receive friend request');
-      }
-    };
-    fetchReceiveFriendRequest();
+    fetchAllReceiveFriendRequests();
     return () => {
       setError('');
     };
   }, [isFocused]);
 
-  const handleIgnore = index => {
-    const newSearchResults = searchResults.filter((_, i) => i !== index);
-    setSearchResults(newSearchResults);
-    const newSuggestedFriendsData = receiveRequest.filter(
-      (_, i) => i !== index,
-    );
-    setReceiveRequest(newSuggestedFriendsData);
-  };
+  useEffect(() => {
+    if (searchKeyword === '') {
+      handleGoBack();
+    }
+  }, [searchKeyword]);
 
-  const handleGoBack = () => {
-    setSearchKeyword('');
-    setSearchButtonClicked(false);
+  const fetchAllReceiveFriendRequests = async () => {
+    try {
+      const response = await receiveFriendRequest(userInfo.id);
+      if (response) {
+        setReceiveRequest(response);
+      }
+      setRefreshing(false);
+    } catch (err) {
+      console.log('Problem fetching receive friend request');
+    }
   };
 
   const handleFriendRequest = async () => {
     try {
       if (searchKeyword) {
-        const response = await getReceiveFriendRequest(
-          userInfo.memberToken,
-          userInfo.id,
-          userInfo.LoginToken,
-          (keywords = searchKeyword),
-        );
+        const response = await getReceiveFriendRequest(userInfo.memberToken, userInfo.id, userInfo.LoginToken, (keywords = searchKeyword));
         setSearchResults(response || []);
         setSearchButtonClicked(true);
       }
@@ -82,13 +65,14 @@ const ReceivedRequest = ({navigation}) => {
     }
   };
 
+  const handleGoBack = () => {
+    setSearchKeyword('');
+    setSearchButtonClicked(false);
+  };
+
   const handleAcceptFriendRequest = async (FriendList_Id, index) => {
     try {
-      const response = await acceptFriendRequest(
-        userInfo.memberToken,
-        FriendList_Id,
-        userInfo.LoginToken,
-      );
+      const response = await acceptFriendRequest(userInfo.memberToken, FriendList_Id, userInfo.LoginToken);
       if (response) {
         handleIgnore(index);
       }
@@ -99,21 +83,121 @@ const ReceivedRequest = ({navigation}) => {
 
   const handleCancelFriendRequest = async (FriendList_Id, index) => {
     try {
-      const response = await cancelFriendRequest(
-        FriendList_Id,
-        userInfo.memberToken,
-        userInfo.LoginToken,
-      );
+      const response = await cancelFriendRequest(FriendList_Id, userInfo.memberToken, userInfo.LoginToken);
       if (response) {
-       handleIgnore(index);
+        handleIgnore(index);
       }
     } catch (err) {
       console.log('Error is : ', err);
     }
   };
 
+  const handleIgnore = index => {
+    const newSearchResults = searchResults.filter((_, i) => i !== index);
+    setSearchResults(newSearchResults);
+    const newSuggestedFriendsData = receiveRequest.filter((_, i) => i !== index);
+    setReceiveRequest(newSuggestedFriendsData);
+  };
+
+  const renderItem = ({item, index}) => (
+    <View style={styles.friendList}>
+      <View style={styles.userImage}>
+        <Image
+          style={{width: '100%', height: '100%'}}
+          source={
+            item.Mem_Photo && typeof item.Mem_Photo === 'string'
+              ? {uri: item.Mem_Photo}
+              : default_photo
+          }
+        />
+      </View>
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
+          {item.Mem_Name}
+        </Text>
+        <Text
+          style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
+          {item.Mem_Designation.trim() === 'Not Added'
+            ? ''
+            : item.Mem_Designation.trim()}
+        </Text>
+        <View style={styles.mutualBox}>
+          <View style={{flexDirection: 'row'}}>
+            <Image
+              style={styles.mutualImg}
+              source={require('../../assets/png/user1.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user4.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user2.png')}
+            />
+          </View>
+          <Text style={{color: 'black'}}>
+            {item.MutualFriends} mutual connections
+          </Text>
+        </View>
+        <View style={styles.buttonArea}>
+          <TouchableOpacity
+            style={[styles.blueBtn, {backgroundColor: '#192334'}]}
+            onPress={() =>
+              handleAcceptFriendRequest(item?.FriendList_Id, index)
+            }>
+            <Text style={{color: 'white'}}>Accept</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]} onPress={()=> handleCancelFriendRequest(item?.FriendList_Id, index)}>
+            <Text style={{color: 'black'}}>Reject</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+);
+
+
+  const keyExtractor = (item, index) => index.toString();
+
+  const renderNoResults = () => (
+    <View style={styles.noResults}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignContent: 'center',
+        }}>
+        <Image
+          style={{width: 200, height: 200}}
+          source={require('../../assets/png/no-post.png')}
+        />
+      </View>
+      <View>
+        <Text>Here is no more member!</Text>
+        <Text>Please wait for some days.</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setSearchButtonClicked(false);
+            setSearchKeyword('');
+          }}>
+          <Text style={styles.goBackText} onPress={handleGoBack}>
+            Go Back
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchReceiveFriendRequest();
+  };
+
   return (
-    <>
+    <SafeAreaView style={{height:'100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <Header navigation={navigation}/>
       <View style={styles.container}>
@@ -161,182 +245,17 @@ const ReceivedRequest = ({navigation}) => {
             />
           </TouchableOpacity>
         </View>
-        <ScrollView>
-          {searchButtonClicked ? (
-            searchResults.length > 0 ? (
-              searchResults.map((item, index) => (
-                <View key={index} style={styles.friendList}>
-                  <View style={styles.userImage}>
-                    <Image
-                      style={{width: '100%', height: '100%'}}
-                      source={
-                        item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                          ? {uri: item.Mem_Photo}
-                          : default_photo
-                      }
-                    />
-                  </View>
-                  <View>
-                    <Text
-                      ellipsizeMode="tail"
-                      style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                      {item.Mem_Name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: '#1866B4',
-                        fontWeight: '500',
-                      }}>
-                      {item.Mem_Designation.trim() === 'Not Added'
-                        ? ''
-                        : item.Mem_Designation.trim()}
-                    </Text>
-                    <View style={styles.mutualBox}>
-                      <View style={{flexDirection: 'row'}}>
-                        <Image
-                          style={styles.mutualImg}
-                          source={require('../../assets/png/user1.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user4.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user2.png')}
-                        />
-                      </View>
-                      <Text style={{color: 'black'}}>
-                        {item.MutualFriends} mutual connections
-                      </Text>
-                    </View>
-                    <View style={styles.buttonArea}>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#192334'}]}
-                        onPress={() =>
-                          handleAcceptFriendRequest(item?.FriendList_Id, index)
-                        }>
-                        <Text style={{color: 'white'}}>Accept</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]} onPress={()=> handleCancelFriendRequest(item?.FriendList_Id, index)}>
-                        <Text style={{color: 'black'}}>Reject</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View style={styles.noResults}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                  }}>
-                  <Image
-                    style={{width: 200, height: 200}}
-                    source={require('../../assets/png/no-post.png')}
-                  />
-                </View>
-                <View>
-                  <Text>Here is no more member!</Text>
-                  <Text>Please wait for some days.</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchButtonClicked(false);
-                      setSearchKeyword('');
-                    }}>
-                    <Text style={styles.goBackText} onPress={handleGoBack}>
-                      Go Back
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )
-          ) : receiveRequest.length > 0 ? (
-            receiveRequest.map((item, index) => (
-              <View key={index} style={styles.friendList}>
-                <View style={styles.userImage}>
-                  <Image
-                    style={{width: '100%', height: '100%'}}
-                    source={
-                      item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                        ? {uri: item.Mem_Photo}
-                        : default_photo
-                    }
-                  />
-                </View>
-                <View>
-                  <Text
-                    ellipsizeMode="tail"
-                    style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                    {item.Mem_Name}
-                  </Text>
-                  <Text
-                    style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
-                    {item.Mem_Designation.trim() === 'Not Added'
-                      ? ''
-                      : item.Mem_Designation.trim()}
-                  </Text>
-                  <View style={styles.mutualBox}>
-                    <View style={{flexDirection: 'row'}}>
-                      <Image
-                        style={styles.mutualImg}
-                        source={require('../../assets/png/user1.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user4.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user2.png')}
-                      />
-                    </View>
-                    <Text style={{color: 'black'}}>
-                      {item.MutualFriends} mutual connections
-                    </Text>
-                  </View>
-                  <View style={styles.buttonArea}>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#192334'}]}
-                      onPress={() =>
-                        handleAcceptFriendRequest(item?.FriendList_Id, index)
-                      }>
-                      <Text style={{color: 'white'}}>Accept</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]} onPress={()=> handleCancelFriendRequest(item?.FriendList_Id, index)}>
-                      <Text style={{color: 'black'}}>Reject</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
-          ) : (
-            <View style={styles.noResults}>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                }}>
-                <Image
-                  style={{width: 200, height: 200}}
-                  source={require('../../assets/png/no-post.png')}
-                />
-              </View>
-              <View>
-                <Text>Here is no more member!</Text>
-                <Text>Please wait for some days.</Text>
-              </View>
-            </View>
-          )}
-        </ScrollView>
+        <FlatList
+          data={searchButtonClicked ? searchResults : receiveRequest}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={renderNoResults}
+        />
       </View>
-    </>
+    </SafeAreaView>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,15 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  SafeAreaView,
 } from 'react-native';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
-import { AuthContext } from '../../context/AuthContext';
-import { useIsFocused } from '@react-navigation/core';
+import {AuthContext} from '../../context/AuthContext';
+import {useIsFocused} from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const FindFriends = ({ navigation }) => {
+const FindFriends = ({navigation}) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState([]);
   const [suggestedFriendsData, setSuggestedFriendsData] = useState([]);
   const [searchKeywords, setSearchKeywords] = useState('');
@@ -78,6 +79,12 @@ const FindFriends = ({ navigation }) => {
     };
   }, [isFocused]);
 
+  useEffect(() => {
+    if (searchKeywords === '') {
+      handleGoBack();
+    }
+  }, [searchKeywords]);
+
   const handleSearchKeyword = async () => {
     try {
       if (searchKeywords) {
@@ -119,7 +126,7 @@ const FindFriends = ({ navigation }) => {
         userInfo.id,
         nextPage,
         20,
-        searchKeywords || null
+        searchKeywords || null,
       );
       if (result && result.length > 0) {
         if (searchButtonClicked) {
@@ -136,20 +143,22 @@ const FindFriends = ({ navigation }) => {
     }
   };
 
-  const renderFriendItem = ({ item, index }) => (
+  const renderFriendItem = ({item, index}) => (
     <View key={index} style={styles.friendList}>
       <View style={styles.userImage}>
-        <Image
-          style={{ width: '100%', height: '100%' }}
-          source={
-            item.Mem_photo && typeof item.Mem_photo === 'string'
-              ? { uri: item.Mem_photo }
-              : default_photo
-          }
-        />
+        <TouchableOpacity onPress={() => navigation.navigate('myProfile')}>
+          <Image
+            style={{width: '100%', height: '100%'}}
+            source={
+              item.Mem_photo && typeof item.Mem_photo === 'string'
+                ? {uri: item.Mem_photo}
+                : default_photo
+            }
+          />
+        </TouchableOpacity>
       </View>
       <View>
-        <Text style={{ fontSize: 18, color: 'black', fontWeight: '500' }}>
+        <Text style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
           {item.Mem_name}
         </Text>
         <Text
@@ -163,7 +172,7 @@ const FindFriends = ({ navigation }) => {
             : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{flexDirection: 'row'}}>
             <Image
               style={styles.mutualImg}
               source={require('../../assets/png/user1.png')}
@@ -177,7 +186,7 @@ const FindFriends = ({ navigation }) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{ color: 'black' }}>
+          <Text style={{color: 'black'}}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
@@ -185,12 +194,12 @@ const FindFriends = ({ navigation }) => {
           <TouchableOpacity
             style={styles.blueBtn}
             onPress={() => handleAddFriend(index, item.Mem_ID)}>
-            <Text style={{ color: 'white' }}>Add Friend</Text>
+            <Text style={{color: 'white'}}>Add Friend</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
+            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
             onPress={() => handleIgnore(index)}>
-            <Text style={{ color: 'black' }}>Ignore</Text>
+            <Text style={{color: 'black'}}>Ignore</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -198,7 +207,7 @@ const FindFriends = ({ navigation }) => {
   );
 
   return (
-    <>
+    <SafeAreaView style={{height: '100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <Header navigation={navigation} />
       <View style={styles.container}>
@@ -212,7 +221,7 @@ const FindFriends = ({ navigation }) => {
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
-                style={{ width: 30, height: 30 }}
+                style={{width: 30, height: 30}}
                 source={require('../../assets/png/leftArrow.png')}
               />
             </TouchableOpacity>
@@ -230,7 +239,7 @@ const FindFriends = ({ navigation }) => {
             style={styles.searchbtn}
             onPress={handleSearchKeyword}>
             <Image
-              style={{ width: 24, height: 24 }}
+              style={{width: 24, height: 24}}
               source={require('../../assets/png/search.png')}
             />
           </TouchableOpacity>
@@ -248,7 +257,7 @@ const FindFriends = ({ navigation }) => {
                   alignContent: 'center',
                 }}>
                 <Image
-                  style={{ width: 200, height: 200 }}
+                  style={{width: 200, height: 200}}
                   source={require('../../assets/png/no-post.png')}
                 />
               </View>
@@ -267,10 +276,12 @@ const FindFriends = ({ navigation }) => {
           )}
           onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={() => isLoadingMore && <Spinner visible={true} />}
+          ListFooterComponent={() =>
+            isLoadingMore && <Spinner visible={true} />
+          }
         />
       </View>
-    </>
+    </SafeAreaView>
   );
 };
 

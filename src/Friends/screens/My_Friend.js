@@ -3,18 +3,20 @@ import {
   View,
   Text,
   Image,
-  ScrollView,
   StyleSheet,
   StatusBar,
   TouchableOpacity,
   TextInput,
+  FlatList,
+  RefreshControl,
 } from 'react-native';
 import Header from '../../components/Header';
-import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
-import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
+import Spinner from 'react-native-loading-spinner-overlay';
+import {useIsFocused} from '@react-navigation/core';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 const MyFriends = ({navigation}) => {
   const [myFriends, setMyFriends] = useState([]);
@@ -23,29 +25,36 @@ const MyFriends = ({navigation}) => {
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const {isLoading, userInfo, getAllFriends, unFriendRequest, error, setError} =
     useContext(AuthContext);
-
+  const [refreshing, setRefreshing] = useState(false);
   const isFocused = useIsFocused();
+
   useEffect(() => {
     setError('');
-    const fetchMyFriend = async () => {
-      try {
-        const response = await getAllFriends(
-          userInfo.memberToken,
-          userInfo.id,
-          userInfo.LoginToken,
-        );
-        if (response) {
-          setMyFriends(response);
-        }
-      } catch (err) {
-        console.log('Problem fetching MyFriend');
-      }
-    };
     fetchMyFriend();
     return () => {
       setError('');
     };
   }, [isFocused]);
+
+  useEffect(() => {
+    if (searchKeyword === '') {
+      handleGoBack();
+    }
+  }, [searchKeyword]);
+
+  const fetchMyFriend = async () => {
+    try {
+      const response = await getAllFriends(
+        userInfo.memberToken,
+        userInfo.id,
+        userInfo.LoginToken,
+      );
+      setMyFriends(response || []);
+      setRefreshing(false);
+    } catch (err) {
+      console.log('Problem fetching MyFriend');
+    }
+  };
 
   const handleMyFriendRequest = async () => {
     try {
@@ -54,7 +63,7 @@ const MyFriends = ({navigation}) => {
           userInfo.memberToken,
           userInfo.id,
           userInfo.LoginToken,
-          (keywords = searchKeyword),
+          searchKeyword,
         );
         setSearchResults(response || []);
         setSearchButtonClicked(true);
@@ -91,228 +100,166 @@ const MyFriends = ({navigation}) => {
     }
   };
 
-  return (
-    <>
-      <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header navigation={navigation}/>
-      <View style={styles.container}>
-        <Spinner visible={isLoading} />
-        <View style={{marginHorizontal: 16, marginVertical: 10}}>
-          <FriendHeader navigation={navigation} index={0}/>
-        </View>
-        <View
-          style={{
-            marginHorizontal: 16,
-            marginVertical: 10,
-            flexDirection: 'row',
-          }}>
-          {searchButtonClicked && (
-            <TouchableOpacity onPress={handleGoBack}>
-              <Image
-                style={{width: 30, height: 30}}
-                source={require('../../assets/png/leftArrow.png')}
-              />
-            </TouchableOpacity>
-          )}
-          <Text style={styles.FriendTex}>
-            {' '}
-            Friends{' '}
-            <Text style={{color: '#1866B4'}}>
-              {searchButtonClicked ? searchResults.length : myFriends.length}
-            </Text>
+  const renderItem = ({item, index}) => (
+    <View style={styles.friendList}>
+      <View style={styles.userImage}>
+        <Image
+          style={{width: '100%', height: '100%'}}
+          source={
+            item.Mem_Photo && typeof item.Mem_Photo === 'string'
+              ? {uri: item.Mem_Photo}
+              : default_photo
+          }
+        />
+      </View>
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
+          {item.Mem_Name}
+        </Text>
+        <Text style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
+          {item.Mem_Designation.trim() === 'Not Added'
+            ? ''
+            : item.Mem_Designation.trim()}
+        </Text>
+        <View style={styles.mutualBox}>
+          <View style={{flexDirection: 'row'}}>
+            <Image
+              style={styles.mutualImg}
+              source={require('../../assets/png/user1.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user4.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user2.png')}
+            />
+          </View>
+          <Text style={{color: 'black'}}>
+            {item.MutualFriends} mutual connections
           </Text>
         </View>
-        <View style={styles.searchSection}>
-          <TextInput
-            placeholder="Search Friends"
-            style={styles.searchBox}
-            value={searchKeyword}
-            onChangeText={text => setSearchKeyword(text)}
-          />
+        <View style={styles.buttonArea}>
           <TouchableOpacity
-            style={styles.searchbtn}
-            onPress={handleMyFriendRequest}>
-            <Image
-              style={{width: 24, height: 24}}
-              source={require('../../assets/png/search.png')}
-            />
+            style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}
+            onPress={() => handleUnfriend(item?.FriendList_Id, index)}>
+            <Text style={{color: 'white'}}>UnFriend</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
+            onPress={() =>
+              navigation.navigate('chatSection', {
+                friendId: item?.Mem_ID,
+                friendName: item?.Mem_Name,
+                friendPhoto: item?.Mem_Photo,
+              })
+            }>
+            <Text style={{color: 'black'}}>Message</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView>
-          {searchButtonClicked ? (
-            searchResults.length > 0 ? (
-              searchResults.map((item, index) => (
-                <View key={index} style={styles.friendList}>
-                  <View style={styles.userImage}>
-                    <Image
-                      style={{width: '100%', height: '100%'}}
-                      source={
-                        item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                          ? {uri: item.Mem_Photo}
-                          : default_photo
-                      }
-                    />
-                  </View>
-                  <View>
-                    <Text
-                      ellipsizeMode="tail"
-                      style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                      {item.Mem_Name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: '#1866B4',
-                        fontWeight: '500',
-                      }}>
-                      {item.Mem_Designation.trim() === 'Not Added'
-                        ? ''
-                        : item.Mem_Designation.trim()}
-                    </Text>
-                    <View style={styles.mutualBox}>
-                      <View style={{flexDirection: 'row'}}>
-                        <Image
-                          style={styles.mutualImg}
-                          source={require('../../assets/png/user1.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user4.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user2.png')}
-                        />
-                      </View>
-                      <Text style={{color: 'black'}}>
-                        {item.MutualFriends} mutual connections
-                      </Text>
-                    </View>
-                    <View style={styles.buttonArea}>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}
-                        onPress={() =>
-                          handleUnfriend(item?.FriendList_Id, index)
-                        }>
-                        <Text style={{color: 'white'}}>UnFriend</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}>
-                        <Text style={{color: 'black'}}>Message</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View style={styles.noResults}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                  }}>
-                  <Image
-                    style={{width: 200, height: 200}}
-                    source={require('../../assets/png/no-post.png')}
-                  />
-                </View>
-                <View>
-                  <Text>Here is no more member!</Text>
-                  <Text>Please wait for some days.</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchButtonClicked(false);
-                      setSearchKeyword('');
-                    }}>
-                    <Text style={styles.goBackText} onPress={handleGoBack}>
-                      Go Back
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )
-          ) : myFriends.length > 0 ? (
-            myFriends.map((item, index) => (
-              <View key={index} style={styles.friendList}>
-                <View style={styles.userImage}>
-                  <Image
-                    style={{width: '100%', height: '100%'}}
-                    source={
-                      item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                        ? {uri: item.Mem_Photo}
-                        : default_photo
-                    }
-                  />
-                </View>
-                <View>
-                  <Text
-                    ellipsizeMode="tail"
-                    style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                    {item.Mem_Name}
-                  </Text>
-                  <Text
-                    style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
-                    {item.Mem_Designation.trim() === 'Not Added'
-                      ? ''
-                      : item.Mem_Designation.trim()}
-                  </Text>
-                  <View style={styles.mutualBox}>
-                    <View style={{flexDirection: 'row'}}>
-                      <Image
-                        style={styles.mutualImg}
-                        source={require('../../assets/png/user1.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user4.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user2.png')}
-                      />
-                    </View>
-                    <Text style={{color: 'black'}}>
-                      {item.MutualFriends} mutual connections
-                    </Text>
-                  </View>
-                  <View style={styles.buttonArea}>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#192334'}]}
-                      onPress={() =>
-                        handleUnfriend(item?.FriendList_Id, index)
-                      }>
-                      <Text style={{color: 'white'}}>UnFriend</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}>
-                      <Text style={{color: 'black'}}>Message</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
-          ) : (
-            <View style={styles.noResults}>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                }}>
-                <Image
-                  style={{width: 200, height: 200}}
-                  source={require('../../assets/png/no-post.png')}
-                />
-              </View>
-              <View>
-                <Text>Here is no more member!</Text>
-                <Text>Please wait for some days.</Text>
-              </View>
-            </View>
-          )}
-        </ScrollView>
       </View>
+    </View>
+  );
+
+  const renderNoResults = () => (
+    <View style={styles.noResults}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignContent: 'center',
+        }}>
+        <Image
+          style={{width: 200, height: 200}}
+          source={require('../../assets/png/no-post.png')}
+        />
+      </View>
+      <View>
+        <Text>Here is no more member!</Text>
+        <Text>Please wait for some days.</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setSearchButtonClicked(false);
+            setSearchKeyword('');
+          }}>
+          <Text style={styles.goBackText} onPress={handleGoBack}>
+            Go Back
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchMyFriend();
+  };
+
+  return (
+    <>
+      <SafeAreaView style={{height: '100%'}}>
+        <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
+        <Header navigation={navigation} />
+        <View style={styles.container}>
+          <Spinner visible={isLoading} />
+          <View style={{marginHorizontal: 16, marginVertical: 10}}>
+            <FriendHeader navigation={navigation} index={0} />
+          </View>
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginVertical: 10,
+              flexDirection: 'row',
+            }}>
+            {searchButtonClicked && (
+              <TouchableOpacity onPress={handleGoBack}>
+                <Image
+                  style={{width: 30, height: 30}}
+                  source={require('../../assets/png/leftArrow.png')}
+                />
+              </TouchableOpacity>
+            )}
+            <Text style={styles.FriendTex}>
+              {' '}
+              Friends{' '}
+              <Text style={{color: '#1866B4'}}>
+                {searchButtonClicked ? searchResults.length : myFriends.length}
+              </Text>
+            </Text>
+          </View>
+          <View style={styles.searchSection}>
+            <TextInput
+              placeholder="Search Friends"
+              style={styles.searchBox}
+              value={searchKeyword}
+              onChangeText={text => setSearchKeyword(text)}
+            />
+            <TouchableOpacity
+              style={styles.searchbtn}
+              onPress={handleMyFriendRequest}>
+              <Image
+                style={{width: 24, height: 24}}
+                source={require('../../assets/png/search.png')}
+              />
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={searchButtonClicked ? searchResults : myFriends}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            ListEmptyComponent={renderNoResults}
+          />
+        </View>
+      </SafeAreaView>
     </>
   );
 };
@@ -412,13 +359,6 @@ const styles = StyleSheet.create({
     fontWeight: '100',
     paddingLeft: 15,
     marginBottom: 10,
-  },
-  buttons: {
-    backgroundColor: '#EAEAEA',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginVertical: 12,
   },
 });
 
