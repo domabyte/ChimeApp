@@ -10,18 +10,17 @@ import {
   TouchableWithoutFeedback,
   FlatList,
   TextInput,
-  useWindowDimensions,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import Spinner from 'react-native-loading-spinner-overlay';
 import YoutubePlayer from 'react-native-youtube-iframe';
-import EmojiSelector, {Categories} from 'react-native-emoji-selector';
+import HTMLView from 'react-native-htmlview';
 import LongPressPopup from './ForwordMsg';
 import VideoThumbnail from '../utils/Video';
 import {AuthContext} from '../context/AuthContext';
 import SocketContext from '../context/SocketContext';
 import {IOScrollView, InView} from 'react-native-intersection-observer';
-import configURL from '../config/config';
-
 import {
   allowMedia,
   downloadFile,
@@ -38,7 +37,6 @@ import {
 import ImageViewer from 'react-native-image-zoom-viewer';
 import VideoPlayer from '../utils/VideoPlayer';
 import Orientation from 'react-native-orientation-locker';
-import axios from 'axios';
 import AudioPlayer from '../utils/AudioPlayer';
 import MediaUploadLoader from '../utils/MediaUploadLoader';
 
@@ -49,22 +47,33 @@ const cross_photo = require('../assets/png/Cross.png');
 const ChatSection = ({navigation, route}) => {
   const {friendId, friendName, friendPhoto} = route.params;
   const {width} = Dimensions.get('window');
-  const {isLoading, userInfo, fetchChatHistory, setIsLoading} =
-    useContext(AuthContext);
+  const [isOnline, setIsOnline] = useState('Offline');
+  const {
+    userInfo,
+    fetchChatHistory,
+    deleteMsg,
+    setIsLoading,
+    getUserOnlineStatus,
+    sendMessage,
+  } = useContext(AuthContext);
   const {socket, joinRoom, leaveRoom} = useContext(SocketContext);
   const [messages, setMessages] = useState([]);
-  const [scrollPos, setScrollPos] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [showButtons, setShowButtons] = useState(true);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const maxHeight = 100;
   const [height, setHeight] = useState(40);
-  const [isPopupForward, setPopupForward] = useState(false);
+  const [isPopupSend, setPopupSend] = useState(false);
+  const [imgPopupVisible, setimgPopupVisible] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [documentPath, setDocumentPath] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [isMediaUploading, setIsMediaUploading] = useState(false);
+  const [longPressedIndex, setLongPressedIndex] = useState(null);
+  const [msgId, setMsgID] = useState(null);
+  const [pressMsg, setPressMsg] = useState('');
+  const [pressMedia, setPressMedia] = useState({});
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const curPage = useRef(1);
 
   const fetchMessages = async () => {
@@ -88,10 +97,38 @@ const ChatSection = ({navigation, route}) => {
     }
   };
 
+  const fetchUserOnlineStatus = async () => {
+    const resp = await getUserOnlineStatus(
+      userInfo.memberToken,
+      userInfo.LoginToken,
+      friendId,
+    );
+    if (
+      resp.ConnectionID == null ||
+      resp.ConnectionID === '' ||
+      resp.ConnectionID === '0' ||
+      resp.LoginStatus === 0
+    ) {
+      setIsOnline('Offline');
+    } else if (resp.LoginStatus === 1) {
+      setIsOnline('Online');
+    } else if (resp.LoginStatus === 2) {
+      setIsOnline('Away');
+    } else if (resp.LoginStatus === 3) {
+      setIsOnline('Do not Disturb');
+    } else if (resp.LoginStatus === 4) {
+      setIsOnline('Offline');
+    } else {
+      setIsOnline('Offline');
+    }
+  };
+
   useEffect(() => {
     joinRoom({userId: userInfo.id, friendId}, fetchMessages);
+    fetchUserOnlineStatus();
     return () => {
       leaveRoom({userId: userInfo.id, friendId});
+      setIsOnline(false);
     };
   }, []);
 
@@ -100,40 +137,62 @@ const ChatSection = ({navigation, route}) => {
     setHeight(newHeight > maxHeight ? maxHeight : newHeight);
   };
 
-  const sendMessage = async () => {
-    if (inputValue.trim() !== '') {
-      const formData = new FormData();
-      formData.append('MemberToken', userInfo?.memberToken);
-      formData.append('messageText', inputValue);
-      formData.append('ReceiverID', friendId);
-      formData.append('IsCallMsg', false);
-      formData.append('EventType', 'Click');
-
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          MemberToken: userInfo?.memberToken,
-          LoginToken: userInfo?.LoginToken,
-        },
-      };
-
-      try {
-        const {data} = await axios.post(
-          configURL.sendPrivateMsgURL,
-          formData,
-          config,
-        );
-        if (data?.Result?.MessageId) {
-          setInputValue('');
+  const handleSendMessage = async () => {
+    setIsSendingMessage(true);
+    try {
+      if (msgId) {
+        if (inputValue.trim() !== '') {
+          const response = await sendMessage(
+            userInfo?.memberToken,
+            userInfo?.LoginToken,
+            inputValue,
+            friendId,
+            msgId,
+          );
+          if (response) {
+            const updatedMessage = {
+              ...messages.find(msg => msg.Id === msgId),
+              Message: inputValue,
+            };
+            setMessages(prevMessages =>
+              prevMessages.map(msg =>
+                msg.Id === msgId ? updatedMessage : msg,
+              ),
+            );
+          }
         }
-      } catch (err) {
-        console.log('Failed to send message to the server : ', err);
+      } else {
+        if (inputValue.trim() !== '') {
+          await sendMessage(
+            userInfo?.memberToken,
+            userInfo?.LoginToken,
+            inputValue,
+            friendId,
+            '',
+          );
+        }
       }
+    } catch (err) {
+      console.log('Failed to send message to the server : ', err);
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
+  const handleEdit = () => {
+    setInputValue(pressMsg);
+  };
+
   const handleReceiveMessage = data => {
-    setMessages(prevMessages => [data.msgResp, ...prevMessages]);
+    if (!msgId) {
+      setMessages(prevMessages => [data.msgResp, ...prevMessages]);
+    } else {
+      setPopupVisible(false);
+      setLongPressedIndex(null);
+      setMsgID(null);
+      setPressMsg('');
+    }
+    setInputValue('');
   };
 
   useEffect(() => {
@@ -145,18 +204,38 @@ const ChatSection = ({navigation, route}) => {
         socket.off('receiveMessage', handleReceiveMessage);
       }
     };
-  }, [socket]);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-  };
+  }, [socket, msgId]);
 
   const handleLongPress = () => {
     setPopupVisible(true);
   };
 
+  const handleClosePopup = () => {
+    setPopupVisible(false);
+    setimgPopupVisible(false);
+    setLongPressedIndex(null);
+    setInputValue('');
+  };
+
   const handleClosePopup2 = () => {
-    setPopupForward(false);
+    setPopupSend(false);
+  };
+
+  const handleMsgDelete = async () => {
+    try {
+      await deleteMsg(userInfo.memberToken, userInfo.LoginToken, msgId);
+      setMessages(prevMessages =>
+        prevMessages.filter(message => message.Id !== msgId),
+      );
+      handleClosePopup();
+      setMsgID(null);
+    } catch (error) {
+      console.log('Failed to delete message: ', error);
+    }
+  };
+
+  const handlePopSend = () => {
+    setPopupSend(true);
   };
 
   const handleInputChange = text => {
@@ -164,8 +243,8 @@ const ChatSection = ({navigation, route}) => {
     setShowButtons(text.length === 0);
   };
 
-  const toggleEmojiSelector = () => {
-    setShowEmojiSelector(!showEmojiSelector);
+  const handleLongPress1 = () => {
+    setimgPopupVisible(true);
   };
 
   const handleOpenModal = item => {
@@ -191,17 +270,12 @@ const ChatSection = ({navigation, route}) => {
     const isMedia = !!item.MediaPath;
     const messageType = isMedia ? allowMedia(item.MediaPath) : null;
     const messageTime = getTimeFromDateByZone(item.EntryDate);
+    const messageDate = formatDateString(item.EntryDate);
     return (
       <>
         <IOScrollView>
-          <InView
-            onChange={e => {
-              if (e && index == messages.length - 1) fetchMessages();
-            }}>
             {item.IsDateShow == item.Id && (
-              <Text style={styles1.date}>
-                {formatDateString(item.EntryDate)}
-              </Text>
+              <Text style={styles1.date}>{messageDate}</Text>
             )}
             <View
               style={{
@@ -234,48 +308,86 @@ const ChatSection = ({navigation, route}) => {
               <View
                 style={[
                   styles1.messageContainer,
-                  isCurrentUser && styles.sendMsg,
+                  longPressedIndex === index
+                    ? styles1.longPressed
+                    : isCurrentUser
+                    ? styles.sendMsg
+                    : styles1.rcvMsg,
                   isYoutubeUrl(item?.Message) && {
                     backgroundColor: 'white',
                   },
                   isMedia && {
-                    backgroundColor: 'white',
+                    backgroundColor:
+                      longPressedIndex == index ? 'lightgreen' : 'white',
                   },
                 ]}>
                 {isMedia ? (
-                  <TouchableWithoutFeedback onLongPress={handleLongPress}>
+                  <TouchableWithoutFeedback>
                     <View>
                       {messageType === 'video' ? (
                         <VideoThumbnail
                           thumbnailUri={
                             messageType === 'image'
-                              ? item.MediaPath
+                              ? item
                               : item.Media_Thumbnail
                           }
                           onPress={() => handleOpenModal(item.MediaPath)}
+                          onLongPress={() => {
+                            setLongPressedIndex(index);
+                            handleLongPress1();
+                            setMsgID(item.Id);
+                            setPressMedia(item);
+                          }}
                         />
                       ) : messageType === 'image' ? (
                         <TouchableOpacity
-                          onPress={() => handleOpenModal(item.MediaPath)}>
+                          onPress={() => handleOpenModal(item.MediaPath)}
+                          onLongPress={() => {
+                            setLongPressedIndex(index);
+                            handleLongPress1();
+                            setMsgID(item.Id);
+                            setPressMedia(item);
+                          }}>
                           <Image
+                            o
                             style={styles1.media}
                             source={{uri: item.MediaPath}}
                           />
                         </TouchableOpacity>
                       ) : messageType === 'audio' ? (
-                        <AudioPlayer documentPath={item?.MediaPath} />
+                        <TouchableOpacity
+                          onLongPress={() => {
+                            setLongPressedIndex(index);
+                            handleLongPress1();
+                            setMsgID(item.Id);
+                            setPressMedia(item);
+                          }}>
+                          <AudioPlayer documentPath={item?.MediaPath} />
+                        </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
                           onPress={() =>
                             downloadFile(item?.MediaPath, getDocType(item))
-                          }>
+                          }
+                          onLongPress={() => {
+                            setLongPressedIndex(index);
+                            handleLongPress1();
+                            setMsgID(item.Id);
+                            setPressMsg(item);
+                          }}>
                           <Image style={styles1.media1} source={doc_photo} />
                         </TouchableOpacity>
                       )}
                     </View>
                   </TouchableWithoutFeedback>
                 ) : (
-                  <TouchableWithoutFeedback onLongPress={handleLongPress}>
+                  <TouchableWithoutFeedback
+                    onLongPress={() => {
+                      handleLongPress();
+                      setLongPressedIndex(index);
+                      setMsgID(item.Id);
+                      setPressMsg(item?.Message);
+                    }}>
                     <View style={{flexDirection: 'row'}}>
                       {isYoutubeUrl(item?.Message) ? (
                         <View style={{flexDirection: 'column'}}>
@@ -324,14 +436,13 @@ const ChatSection = ({navigation, route}) => {
                                 </Text>
                               );
                             } else {
+                              const htmlContent = `<p><a>${messagePart}</a></p>`;
                               return (
-                                <Text
-                                  style={{
-                                    color: isCurrentUser ? 'white' : 'black',
-                                  }}
-                                  key={`${index}_${idx}`}>
-                                  {messagePart}
-                                </Text>
+                                <HTMLView
+                                  value={htmlContent}
+                                  key={`${index}_${idx}`}
+                                  stylesheet={isCurrentUser ? styles2 : styles3}
+                                />
                               );
                             }
                           },
@@ -374,178 +485,238 @@ const ChatSection = ({navigation, route}) => {
               ]}>
               {messageTime} {isCurrentUser && '✔️'}
             </Text>
-          </InView>
         </IOScrollView>
       </>
     );
   };
 
   return (
-    <View style={styles1.container}>
-      <View style={styles.chatHead}>
-        <Spinner visible={isLoading} />
-        <View style={styles.chatTop}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image
-              style={{width: 25, height: 25, marginBottom: 10}}
-              source={require('../assets/png/leftArrow2.png')}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.userImag}>
-            <Image
-              style={{width: '100%', height: '100%', resizeMode: 'cover'}}
-              source={
-                friendPhoto && typeof friendPhoto === 'string'
-                  ? {uri: friendPhoto}
-                  : default_photo
-              }
-            />
-          </TouchableOpacity>
-          <View>
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: 'black',
-                width: 190,
-              }}>
-              {friendName}
-            </Text>
-            <Text style={{alignItems: 'center', color: 'black'}}>
-              Online <View style={styles.liveBtn}></View>
-            </Text>
-          </View>
-        </View>
-        <View style={styles.callSection}>
-          <TouchableOpacity>
-            <Image
-              style={{width: 22, height: 22}}
-              source={require('../assets/png/videoCall.png')}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              style={{width: 22, height: 22}}
-              source={require('../assets/png/call.png')}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <Modal visible={openModal}>
-        <View style={styles1.modalContainer}>
-          <TouchableOpacity
-            style={styles1.closeButton}
-            onPress={handleCloseModal}>
-            <Image source={cross_photo} style={styles1.closeIcon} />
-          </TouchableOpacity>
-          {documentPath && allowMedia(documentPath) === 'image' ? (
-            <ImageViewer
-              imageUrls={[{url: documentPath}]}
-              enableSwipeDown={true}
-              onCancel={handleCloseModal}
-            />
-          ) : allowMedia(documentPath) === 'video' ? (
-            <View
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                height: '100%',
-              }}>
-              <VideoPlayer
-                documentPath={
-                  'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
+    <SafeAreaView style={{height: '100%'}}>
+      <View style={styles1.container}>
+        <View style={styles.chatHead}>
+          <View style={styles.chatTop}>
+            {!isPopupVisible && !imgPopupVisible ? (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Image
+                  style={{width: 25, height: 25, marginBottom: 5}}
+                  source={require('../assets/png/leftArrow2.png')}
+                />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={handleClosePopup}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/optionClose.png')}
+                />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.userImag}>
+              <Image
+                style={{width: '100%', height: '100%', resizeMode: 'cover'}}
+                source={
+                  friendPhoto && typeof friendPhoto === 'string'
+                    ? {uri: friendPhoto}
+                    : default_photo
                 }
               />
-              <View style={styles1.videoOverlay}></View>
+            </TouchableOpacity>
+            <View>
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: 'black',
+                  width: 190,
+                }}>
+                {friendName}
+              </Text>
+              <View style={{display: 'flex', flexDirection: 'row'}}>
+                <Text style={{alignItems: 'center', color: 'black'}}>
+                  {isOnline}{' '}
+                </Text>
+                <View
+                  style={
+                    isOnline == 'Online' ? styles.liveBtn : styles.offlineBtn
+                  }></View>
+              </View>
             </View>
-          ) : null}
+          </View>
+          {isPopupVisible ? (
+            <View style={styles.popupOption}>
+              <TouchableOpacity onPress={handleMsgDelete}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/delete.png')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleEdit}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/edit.png')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handlePopSend}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/forward.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : imgPopupVisible ? (
+            <View style={styles.popupOption}>
+              <TouchableOpacity onPress={handleMsgDelete}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/delete.png')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handlePopSend}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/forward.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.callSection}>
+              <TouchableOpacity>
+                <Image
+                  style={{width: 22, height: 22}}
+                  source={require('../assets/png/videoCall.png')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Image
+                  style={{width: 22, height: 22}}
+                  source={require('../assets/png/call.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-      </Modal>
-      <FlatList
-        // ref={flatListRef}
-        inverted
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        refreshing={refreshing}
-        contentContainerStyle={{flexGrow: 1}}
-      />
-      {isMediaUploading && <MediaUploadLoader />}
-      <View style={[styles.sendBox, {width: width}]}>
-        {showButtons && (
-          <View style={styles.leftAreaBtn}>
+        <Modal visible={openModal}>
+          <View style={styles1.modalContainer}>
             <TouchableOpacity
-              style={styles.leftBtn}
-              onPress={() =>
-                pickDocument(
-                  userInfo.memberToken,
-                  userInfo.LoginToken,
-                  friendId,
-                  setIsMediaUploading,
-                )
-              }>
-              <Image
-                style={{width: 25, height: 25}}
-                source={require('../assets/png/AddDocument.png')}
-              />
+              style={styles1.closeButton}
+              onPress={handleCloseModal}>
+              <SafeAreaView style={{height: '100%'}}>
+                <Image source={cross_photo} style={styles1.closeIcon} />
+              </SafeAreaView>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => pickImage(
-                  userInfo.memberToken,
-                  userInfo.LoginToken,
-                  friendId,
-                  setIsMediaUploading,
-                )}
-              style={styles.leftBtn}>
-              <Image
-                style={{width: 25, height: 25}}
-                source={require('../assets/png/AddImage.png')}
+            {documentPath && allowMedia(documentPath) === 'image' ? (
+              <SafeAreaView style={{height: '100%'}}>
+                <ImageViewer
+                  imageUrls={[{url: documentPath}]}
+                  enableSwipeDown={true}
+                  onCancel={handleCloseModal}
+                  />
+                  </SafeAreaView>
+            ) : allowMedia(documentPath) === 'video' ? (
+              <View
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  height: '100%',
+                }}>
+                <VideoPlayer
+                  documentPath={
+                    'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
+                  }
+                />
+                <View style={styles1.videoOverlay}></View>
+              </View>
+            ) : null}
+          </View>
+        </Modal>
+        <FlatList
+          // ref={flatListRef}
+          inverted
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          refreshing={refreshing}
+          contentContainerStyle={{flexGrow: 1}}
+        />
+        {isMediaUploading && 
+           <MediaUploadLoader />
+           }
+        <View style={[styles.sendBox, {width: width}]}>
+          {showButtons && (
+            <View style={styles.leftAreaBtn}>
+              <TouchableOpacity
+                style={styles.leftBtn}
+                onPress={() =>
+                  pickDocument(
+                    userInfo.memberToken,
+                    userInfo.LoginToken,
+                    friendId,
+                    setIsMediaUploading,
+                  )
+                }>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/AddDocument.png')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  pickImage(
+                    userInfo.memberToken,
+                    userInfo.LoginToken,
+                    friendId,
+                    setIsMediaUploading,
+                  )
+                }
+                style={styles.leftBtn}>
+                <Image
+                  style={{width: 25, height: 25}}
+                  source={require('../assets/png/AddImage.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+          <View
+            style={{
+              position: 'relative',
+              width: showButtons ? '65%' : '86.4%',
+            }}>
+              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <TextInput
+              multiline
+              value={inputValue}
+              onChangeText={handleInputChange}
+              onContentSizeChange={handleContentSizeChange}
+              style={[styles.messageBox, {height: Math.min(height, maxHeight)}]}
+              placeholder="Type message..."
+              placeholderTextColor="#888"
               />
-            </TouchableOpacity>
+              </KeyboardAvoidingView>
           </View>
-        )}
-        {showEmojiSelector && (
-          <View style={styles.emojiSelectorContainer}>
-            <EmojiSelector
-              category={Categories.symbols}
-              onEmojiSelected={emoji => {
-                setInputValue(prev => prev + emoji);
-              }}
-              columns={8}
-            />
-          </View>
-        )}
-
-        <View
-          style={{position: 'relative', width: showButtons ? '65%' : '86.4%'}}>
-          <TextInput
-            multiline
-            value={inputValue}
-            onChangeText={handleInputChange}
-            onContentSizeChange={handleContentSizeChange}
-            style={[styles.messageBox, {height: Math.min(height, maxHeight)}]}
-            placeholder="Type message..."
-            placeholderTextColor="#888"
-          />
-          <TouchableOpacity
-            style={styles.emojiBtn}
-            onPress={toggleEmojiSelector}>
+          {isSendingMessage ? (
             <Image
-              style={{width: 26, height: 26}}
-              source={require('../assets/png/emojiBtn.png')}
-            />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
-          <Image
-            style={{width: 24, height: 24}}
-            source={require('../assets/png/SendBtn.png')}
+            source={require('../assets/png/mediaLoader.png')}
+            style={styles.image}
           />
-        </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.sendBtn}
+              onPress={handleSendMessage}>
+              <Image
+                style={{width: 24, height: 24}}
+                source={require('../assets/png/SendBtn.png')}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        <LongPressPopup
+          isVisible={isPopupSend}
+          onClose={handleClosePopup2}
+          pressMsg={pressMsg}
+          handleClosePopup={handleClosePopup}
+        />
       </View>
-      <LongPressPopup isVisible={isPopupForward} onClose={handleClosePopup2} />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -558,12 +729,43 @@ const styles1 = StyleSheet.create({
     textAlign: 'center',
     marginTop: 5,
   },
+  longPressed: {
+    backgroundColor: 'lightgreen',
+    fontSize: 16,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-end',
+    paddingVertical: 6,
+    color: 'white',
+    minWidth: 50,
+    maxWidth: 260,
+  },
+  sendMsg: {
+    backgroundColor: '#1866B4',
+    fontSize: 16,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-end',
+    paddingVertical: 6,
+    color: 'white',
+    minWidth: 50,
+    maxWidth: 260,
+  },
+  rcvMsg: {
+    backgroundColor: '#EAEAEA',
+    fontSize: 16,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-end',
+    paddingVertical: 6,
+    color: 'white',
+    minWidth: 50,
+    maxWidth: 260,
+  },
   messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 8,
     marginHorizontal: 16,
     maxWidth: '80%',
+    padding: 5,
     borderRadius: 8,
     padding: 8,
     backgroundColor: '#F2F2F2',
@@ -629,11 +831,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  image: {
+    width: 30,
+    height: 30,
+  },
   userImag: {
     width: 40,
     height: 40,
     borderRadius: 50,
     overflow: 'hidden',
+  },
+  msgText: {
+    color: 'white',
+  },
+  msgText1: {
+    color: 'black',
   },
   chatTop: {
     flexDirection: 'row',
@@ -646,9 +858,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#80FF00',
     borderRadius: 50,
   },
+  offlineBtn: {
+    height: 10,
+    width: 10,
+    backgroundColor: 'red',
+    borderRadius: 50,
+  },
   callSection: {
     flexDirection: 'row',
     gap: 12,
+  },
+  popupOption: {
+    flexDirection: 'row',
+    gap: 30,
+    right: 90,
   },
   chatHead: {
     flexDirection: 'row',
@@ -781,6 +1004,18 @@ const styles = StyleSheet.create({
   popupBtn: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+});
+
+const styles2 = StyleSheet.create({
+  a: {
+    color: 'white',
+  },
+});
+
+const styles3 = StyleSheet.create({
+  a: {
+    color: 'black',
   },
 });
 

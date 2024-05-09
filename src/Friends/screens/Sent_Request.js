@@ -1,22 +1,24 @@
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
   Image,
-  ScrollView,
   StyleSheet,
   StatusBar,
   TouchableOpacity,
   TextInput,
+  FlatList,
+  RefreshControl,
+  SafeAreaView,
 } from 'react-native';
-import React, {useEffect, useState, useContext} from 'react';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 import { useIsFocused } from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const SentRequest = ({navigation}) => {
+const SentRequest = ({ navigation }) => {
   const [sentRequest, setSentRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -29,52 +31,59 @@ const SentRequest = ({navigation}) => {
     error,
     setError,
   } = useContext(AuthContext);
+  const [refreshing, setRefreshing] = useState(false);
   const isFocused = useIsFocused();
+
+  const fetchSentFriendRequest = async () => {
+    try {
+      const response = await getSentFriendRequest(
+        userInfo.memberToken,
+        userInfo.id,
+        userInfo.LoginToken,
+        (keywords = null)
+      );
+      if (response) {
+        setSentRequest(response);
+        setRefreshing(false);
+      }
+    } catch (err) {
+      console.log('Problem fetching sent friend', err);
+    }
+  };
   useEffect(() => {
     setError('');
-    const fetchSentFriendRequest = async () => {
-      try {
-        const response = await getSentFriendRequest(
-          userInfo.memberToken,
-          userInfo.id,
-          userInfo.LoginToken,
-          (keywords = null),
-        );
-        if (response) {
-          setSentRequest(response);
-        }
-      } catch (err) {
-        console.log('Problem fetching sent friend',err);
-      }
-    };
     fetchSentFriendRequest();
     return () => {
-        setError('');
-      };
+      setError('');
+    };
   }, [isFocused]);
+
+  useEffect(() => {
+    if (searchKeyword === '') {
+      handleGoBack();
+    }
+  }, [searchKeyword]);
 
   const handleCancelFriendRequest = async (FriendList_Id, index) => {
     try {
       const response = await cancelFriendRequest(
         FriendList_Id,
         userInfo.memberToken,
-        userInfo.LoginToken,
+        userInfo.LoginToken
       );
       if (response) {
-       handleIgnore(index);
+        handleIgnore(index);
       }
     } catch (err) {
       console.log('Error is : ', err);
     }
   };
 
-  const handleIgnore = index => {
-      const newSearchResults = searchResults.filter((_, i) => i !== index);
-      setSearchResults(newSearchResults);
-      const newSuggestedFriendsData = sentRequest.filter(
-        (_, i) => i !== index,
-      );
-      setSentRequest(newSuggestedFriendsData);
+  const handleIgnore = (index) => {
+    const newSearchResults = searchResults.filter((_, i) => i !== index);
+    setSearchResults(newSearchResults);
+    const newSuggestedFriendsData = sentRequest.filter((_, i) => i !== index);
+    setSentRequest(newSuggestedFriendsData);
   };
 
   const handleGoBack = () => {
@@ -89,7 +98,7 @@ const SentRequest = ({navigation}) => {
           userInfo.memberToken,
           userInfo.id,
           userInfo.LoginToken,
-          (keywords = searchKeyword),
+          (keywords = searchKeyword)
         );
         setSearchResults(response || []);
         setSearchButtonClicked(true);
@@ -99,22 +108,94 @@ const SentRequest = ({navigation}) => {
     }
   };
 
+  const renderItem = ({ item, index }) => (
+    <View style={styles.friendList}>
+      <View style={styles.userImage}>
+        <Image
+          style={{ width: '100%', height: '100%' }}
+          source={
+            item.Mem_Photo && typeof item.Mem_Photo === 'string'
+              ? { uri: item.Mem_Photo }
+              : default_photo
+          }
+        />
+      </View>
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          style={{ fontSize: 18, color: 'black', fontWeight: '500' }}
+        >
+          {item.Mem_Name}
+        </Text>
+        <Text
+          style={{
+            fontSize: 12,
+            color: '#1866B4',
+            fontWeight: '500',
+          }}
+        >
+          {item.Mem_Designation.trim() === 'Not Added' ? '' : item.Mem_Designation.trim()}
+        </Text>
+        <View style={styles.mutualBox}>
+          <View style={{ flexDirection: 'row' }}>
+            <Image
+              style={styles.mutualImg}
+              source={require('../../assets/png/user1.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user4.png')}
+            />
+            <Image
+              style={styles.mutualImg2nd}
+              source={require('../../assets/png/user2.png')}
+            />
+          </View>
+          <Text style={{ color: 'black' }}>
+            {item.MutualFriends} mutual connections
+          </Text>
+        </View>
+        <View style={styles.buttonArea}>
+          <TouchableOpacity
+            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
+            onPress={() =>
+              handleCancelFriendRequest(item?.FriendList_Id, index)
+            }
+          >
+            <Text style={{ color: 'black' }}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.blueBtn, { backgroundColor: '#1e293c' }]}
+          >
+            <Text style={{ color: 'white' }}>View Profile</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchSentFriendRequest();
+  };
+
   return (
-    <>
+    <SafeAreaView style={{height:'100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header navigation={navigation}/>
+      <Header navigation={navigation} />
       <View style={styles.container}>
         <Spinner visible={isLoading} />
         <View
           style={{
-              marginHorizontal: 16,
-              marginVertical: 10,
-            }}>
-              <FriendHeader navigation={navigation} index={2}/>
+            marginHorizontal: 16,
+            marginVertical: 10,
+          }}
+        >
+          <FriendHeader navigation={navigation} index={2} />
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
-                style={{width: 30, height: 30}}
+                style={{ width: 30, height: 30 }}
                 source={require('../../assets/png/leftArrow.png')}
               />
             </TouchableOpacity>
@@ -122,7 +203,9 @@ const SentRequest = ({navigation}) => {
           <Text style={styles.FriendTex}>
             {' '}
             Sent Request{' '}
-            <Text style={{color: '#1866B4'}}>{searchButtonClicked ? searchResults.length : sentRequest.length}</Text>
+            <Text style={{ color: '#1866B4' }}>
+              {searchButtonClicked ? searchResults.length : sentRequest.length}
+            </Text>
           </Text>
         </View>
         <View style={styles.searchSection}>
@@ -130,189 +213,58 @@ const SentRequest = ({navigation}) => {
             placeholder="Search Friends"
             style={styles.searchBox}
             value={searchKeyword}
-            onChangeText={text => setSearchKeyword(text)}
+            onChangeText={(text) => setSearchKeyword(text)}
           />
           <TouchableOpacity
             style={styles.searchbtn}
-            onPress={handleFriendRequest}>
+            onPress={handleFriendRequest}
+          >
             <Image
-              style={{width: 24, height: 24}}
+              style={{ width: 24, height: 24 }}
               source={require('../../assets/png/search.png')}
             />
           </TouchableOpacity>
         </View>
-        <ScrollView>
-          {searchButtonClicked ? (
-            searchResults.length > 0 ? (
-              searchResults.map((item, index) => (
-                <View key={index} style={styles.friendList}>
-                  <View style={styles.userImage}>
-                    <Image
-                      style={{width: '100%', height: '100%'}}
-                      source={
-                        item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                          ? {uri: item.Mem_Photo}
-                          : default_photo
-                      }
-                    />
-                  </View>
-                  <View>
-                    <Text
-                      ellipsizeMode="tail"
-                      style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                      {item.Mem_Name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: '#1866B4',
-                        fontWeight: '500',
-                      }}>
-                      {item.Mem_Designation.trim() === 'Not Added' ? "": item.Mem_Designation.trim()}
-                    </Text>
-                    <View style={styles.mutualBox}>
-                      <View style={{flexDirection: 'row'}}>
-                        <Image
-                          style={styles.mutualImg}
-                          source={require('../../assets/png/user1.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user4.png')}
-                        />
-                        <Image
-                          style={styles.mutualImg2nd}
-                          source={require('../../assets/png/user2.png')}
-                        />
-                      </View>
-                      <Text style={{color: 'black'}}>
-                        {item.MutualFriends} mutual connections
-                      </Text>
-                    </View>
-                    <View style={styles.buttonArea}>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
-                        onPress={() =>
-                          handleCancelFriendRequest(item?.FriendList_Id, index)
-                        }>
-                        <Text style={{color: 'black'}}>Cancel</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}>
-                        <Text style={{color: 'white'}}>View Profile</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View style={styles.noResults}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                  }}>
-                  <Image
-                    style={{width: 200, height: 200}}
-                    source={require('../../assets/png/no-post.png')}
-                  />
-                </View>
-                <View>
-                  <Text>Here is no more member!</Text>
-                  <Text>Please wait for some days.</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchButtonClicked(false);
-                      setSearchKeyword('');
-                    }}>
-                    <Text style={styles.goBackText} onPress={handleGoBack}>
-                      Go Back
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )
-          ) : sentRequest.length > 0 ? (
-            sentRequest.map((item, index) => (
-              <View key={index} style={styles.friendList}>
-                <View style={styles.userImage}>
-                  <Image
-                    style={{width: '100%', height: '100%'}}
-                    source={
-                      item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                        ? {uri: item.Mem_Photo}
-                        : default_photo
-                    }
-                  />
-                </View>
-                <View>
-                  <Text
-                    ellipsizeMode="tail"
-                    style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
-                    {item.Mem_Name}
-                  </Text>
-                  <Text
-                    style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
-                    {item.Mem_Designation.trim() === 'Not Added' ? "": item.Mem_Designation.trim()}
-                  </Text>
-                  <View style={styles.mutualBox}>
-                    <View style={{flexDirection: 'row'}}>
-                      <Image
-                        style={styles.mutualImg}
-                        source={require('../../assets/png/user1.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user4.png')}
-                      />
-                      <Image
-                        style={styles.mutualImg2nd}
-                        source={require('../../assets/png/user2.png')}
-                      />
-                    </View>
-                    <Text style={{color: 'black'}}>
-                      {item.MutualFriends} mutual connections
-                    </Text>
-                  </View>
-                  <View style={styles.buttonArea}>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
-                      onPress={() =>
-                        handleCancelFriendRequest(item?.FriendList_Id, index)
-                      }>
-                      <Text style={{color: 'black'}}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}>
-                      <Text style={{color: 'white'}}>View Profile</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
-          ) : (
+        <FlatList
+          data={searchButtonClicked ? searchResults : sentRequest}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          ListEmptyComponent={
             <View style={styles.noResults}>
               <View
                 style={{
                   flex: 1,
                   justifyContent: 'center',
                   alignContent: 'center',
-                }}>
+                }}
+              >
                 <Image
-                  style={{width: 200, height: 200}}
+                  style={{ width: 200, height: 200 }}
                   source={require('../../assets/png/no-post.png')}
                 />
               </View>
               <View>
                 <Text>Here is no more member!</Text>
                 <Text>Please wait for some days.</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchButtonClicked(false);
+                    setSearchKeyword('');
+                  }}
+                >
+                  <Text style={styles.goBackText} onPress={handleGoBack}>
+                    Go Back
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
-          )}
-        </ScrollView>
+          }
+        />
       </View>
-    </>
+    </SafeAreaView>
   );
 };
 
