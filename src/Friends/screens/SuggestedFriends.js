@@ -8,12 +8,15 @@ import {
   StatusBar,
   TouchableOpacity,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import {AuthContext} from '../../context/AuthContext';
 import Spinner from 'react-native-loading-spinner-overlay';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const SuggestedFriends = ({navigation}) => {
+const SuggestedFriends = ({navigation, route}) => {
+  const {userInfo} = route.params;
   const [selectedItemIndex, setSelectedItemIndex] = useState([]);
   const [suggestedFriendsData, setSuggestedFriendsData] = useState([]);
   const [searchKeywords, setSearchKeywords] = useState('');
@@ -23,7 +26,6 @@ const SuggestedFriends = ({navigation}) => {
   const {
     isLoading,
     setIsLoading,
-    userInfo,
     getSuggestedUsers,
     searchFriends,
     sendFriendRequest,
@@ -73,6 +75,12 @@ const SuggestedFriends = ({navigation}) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (searchKeywords === '') {
+      handleGoBack();
+    }
+  }, [searchKeywords]);
+
   const handleSearchKeyword = async () => {
     try {
       if (searchKeywords) {
@@ -104,8 +112,13 @@ const SuggestedFriends = ({navigation}) => {
     setSearchButtonClicked(false);
   };
 
+  const handleCred = async () => {
+    AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+    navigation.navigate('myFriend');
+  }
+
   return (
-    <>
+    <SafeAreaView style={{height:'100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <View style={styles.container}>
         <Spinner visible={isLoading} />
@@ -121,7 +134,7 @@ const SuggestedFriends = ({navigation}) => {
             )}
             <Text style={{color: 'black', fontSize: 18}}>Find Friend</Text>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleCred}>
             <Text style={{color: 'black', fontSize: 18}}>
               {skipButton ? 'Next' : 'Skip'}
             </Text>
@@ -280,7 +293,7 @@ const SuggestedFriends = ({navigation}) => {
           )}
         </ScrollView>
       </View>
-    </>
+    </SafeAreaView>
   );
 };
 

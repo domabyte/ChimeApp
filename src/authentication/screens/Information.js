@@ -9,6 +9,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -116,7 +117,7 @@ const Information = ({navigation, route}) => {
   };
 
   return (
-    <>
+    <SafeAreaView style={{height:'100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <ImageBackground
         source={require('../../assets/png/LoginBg.png')}
@@ -227,7 +228,7 @@ const Information = ({navigation, route}) => {
           </View>
         </ScrollView>
       </ImageBackground>
-    </>
+    </SafeAreaView>
   );
 };
 

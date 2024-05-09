@@ -15,10 +15,16 @@ import {AuthContext} from '../../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AddProfile = ({navigation, route}) => {
-  const {response, countryName, stateName, encryptToken, loginToken, memberToken} = route.params;
+  const {
+    response,
+    countryName,
+    stateName,
+    encryptToken,
+    loginToken,
+    memberToken,
+  } = route.params;
   const [selectedImage, setSelectedImage] = useState(null);
   const {isLoading, setUserInfo, updatePhotoInfo} = useContext(AuthContext);
-
   const value = {
     name: response.Mem_Name + ' ' + response.Mem_LName,
     id: response.Mem_ID,
@@ -30,7 +36,7 @@ const AddProfile = ({navigation, route}) => {
 
   let userInfo = value;
 
-  const pickImage = () => {
+  const pickImage = async () => {
     const options = {
       title: 'Select Image',
       storageOptions: {
@@ -38,16 +44,9 @@ const AddProfile = ({navigation, route}) => {
         path: 'images',
       },
     };
-
-    if (Platform.OS === 'android') {
-      ImagePicker.launchImageLibrary(options, response => {
-        handleImageResponse(response);
-      });
-    } else {
-      ImagePicker.showImagePicker(options, response => {
-        handleImageResponse(response);
-      });
-    }
+    await ImagePicker.launchImageLibrary(options, response => {
+      handleImageResponse(response);
+    });
   };
 
   const handleImageResponse = response => {
@@ -69,7 +68,7 @@ const AddProfile = ({navigation, route}) => {
     const response = await updatePhotoInfo(selectedImage, userInfo);
     if (response) {
       setUserInfo(userInfo);
-      AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+      navigation.navigate('suggestedFriends', {userInfo});
     }
   };
 
