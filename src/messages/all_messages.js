@@ -97,6 +97,7 @@ const AllMessages = ({navigation}) => {
               friendId: item?.Mem_ID,
               friendName: item?.Mem_Name,
               friendPhoto: item?.Mem_Photo,
+              tabIndex: item?.IsFriendCircle === 1 ? 1 : 0,
             })
           }>
           <View style={styles.userImg}>

@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect, useRef} from 'react';
+import React, {useContext, useState, useEffect, useRef, memo} from 'react';
 import {
   View,
   Text,
@@ -45,7 +45,7 @@ const doc_photo = require('../assets/png/doc.png');
 const cross_photo = require('../assets/png/Cross.png');
 
 const ChatSection = ({navigation, route}) => {
-  const {friendId, friendName, friendPhoto} = route.params;
+  const {friendId, friendName, friendPhoto, tabIndex} = route.params;
   const {width} = Dimensions.get('window');
   const [isOnline, setIsOnline] = useState('Offline');
   const {
@@ -55,6 +55,7 @@ const ChatSection = ({navigation, route}) => {
     setIsLoading,
     getUserOnlineStatus,
     sendMessage,
+    getGroupMembers,
   } = useContext(AuthContext);
   const {socket, joinRoom, leaveRoom} = useContext(SocketContext);
   const [messages, setMessages] = useState([]);
@@ -74,6 +75,8 @@ const ChatSection = ({navigation, route}) => {
   const [pressMsg, setPressMsg] = useState('');
   const [pressMedia, setPressMedia] = useState({});
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [groupMemberId, setGroupMemberId] = useState([]);
   const curPage = useRef(1);
 
   const fetchMessages = async () => {
@@ -123,14 +126,39 @@ const ChatSection = ({navigation, route}) => {
     }
   };
 
+  const getGroupList = async () => {
+    try {
+      const response = await getGroupMembers(
+        userInfo.memberToken,
+        userInfo.LoginToken,
+        friendId,
+      );
+      if (response) {
+        setGroupMembers(response);
+      }
+    } catch (err) {
+      console.log('Error in getGroupList : ', err);
+    }
+  };
+
   useEffect(() => {
     joinRoom({userId: userInfo.id, friendId}, fetchMessages);
     fetchUserOnlineStatus();
+    if (tabIndex) {
+      getGroupList();
+    }
     return () => {
       leaveRoom({userId: userInfo.id, friendId});
       setIsOnline(false);
     };
   }, []);
+
+  useEffect(() => {
+    if (groupMembers && groupMembers.length > 0) {
+      const ids = groupMembers.map(member => member.Mem_ID);
+      setGroupMemberId(ids.filter(data => data != userInfo?.id));
+    }
+  }, [groupMembers]);
 
   const handleContentSizeChange = event => {
     const newHeight = event.nativeEvent.contentSize.height;
@@ -148,6 +176,8 @@ const ChatSection = ({navigation, route}) => {
             inputValue,
             friendId,
             msgId,
+            tabIndex,
+            groupMemberId,
           );
           if (response) {
             const updatedMessage = {
@@ -163,12 +193,14 @@ const ChatSection = ({navigation, route}) => {
         }
       } else {
         if (inputValue.trim() !== '') {
-          await sendMessage(
+          const response = await sendMessage(
             userInfo?.memberToken,
             userInfo?.LoginToken,
             inputValue,
             friendId,
             '',
+            tabIndex,
+            groupMemberId,
           );
         }
       }
@@ -274,217 +306,212 @@ const ChatSection = ({navigation, route}) => {
     return (
       <>
         <IOScrollView>
-            {item.IsDateShow == item.Id && (
-              <Text style={styles1.date}>{messageDate}</Text>
+          {item.IsDateShow == item.Id && (
+            <Text style={styles1.date}>{messageDate}</Text>
+          )}
+          <View
+            style={{
+              display: 'flex',
+              paddingLeft: isCurrentUser ? 0 : 10,
+              paddingRight: isCurrentUser ? 10 : 0,
+              flexDirection: 'row',
+              alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+            }}>
+            {!isCurrentUser && (
+              <View style={styles.recvImg}>
+                <Image
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    resizeMode: 'cover',
+                    alignSelf: 'baseline',
+                    backgroundColor: 'white',
+                  }}
+                  source={
+                    isCurrentUser
+                      ? {uri: userInfo.memberPhoto}
+                      : friendPhoto
+                      ? {uri: friendPhoto}
+                      : default_photo
+                  }
+                />
+              </View>
             )}
             <View
-              style={{
-                display: 'flex',
-                paddingLeft: isCurrentUser ? 0 : 10,
-                paddingRight: isCurrentUser ? 10 : 0,
-                flexDirection: 'row',
-                alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
-              }}>
-              {!isCurrentUser && (
-                <View style={styles.recvImg}>
-                  <Image
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      resizeMode: 'cover',
-                      alignSelf: 'baseline',
-                      backgroundColor: 'white',
-                    }}
-                    source={
-                      isCurrentUser
-                        ? {uri: userInfo.memberPhoto}
-                        : friendPhoto
-                        ? {uri: friendPhoto}
-                        : default_photo
-                    }
-                  />
-                </View>
-              )}
-              <View
-                style={[
-                  styles1.messageContainer,
-                  longPressedIndex === index
-                    ? styles1.longPressed
-                    : isCurrentUser
-                    ? styles.sendMsg
-                    : styles1.rcvMsg,
-                  isYoutubeUrl(item?.Message) && {
-                    backgroundColor: 'white',
-                  },
-                  isMedia && {
-                    backgroundColor:
-                      longPressedIndex == index ? 'lightgreen' : 'white',
-                  },
-                ]}>
-                {isMedia ? (
-                  <TouchableWithoutFeedback>
-                    <View>
-                      {messageType === 'video' ? (
-                        <VideoThumbnail
-                          thumbnailUri={
-                            messageType === 'image'
-                              ? item
-                              : item.Media_Thumbnail
-                          }
-                          onPress={() => handleOpenModal(item.MediaPath)}
-                          onLongPress={() => {
-                            setLongPressedIndex(index);
-                            handleLongPress1();
-                            setMsgID(item.Id);
-                            setPressMedia(item);
-                          }}
-                        />
-                      ) : messageType === 'image' ? (
-                        <TouchableOpacity
-                          onPress={() => handleOpenModal(item.MediaPath)}
-                          onLongPress={() => {
-                            setLongPressedIndex(index);
-                            handleLongPress1();
-                            setMsgID(item.Id);
-                            setPressMedia(item);
-                          }}>
-                          <Image
-                            o
-                            style={styles1.media}
-                            source={{uri: item.MediaPath}}
-                          />
-                        </TouchableOpacity>
-                      ) : messageType === 'audio' ? (
-                        <TouchableOpacity
-                          onLongPress={() => {
-                            setLongPressedIndex(index);
-                            handleLongPress1();
-                            setMsgID(item.Id);
-                            setPressMedia(item);
-                          }}>
-                          <AudioPlayer documentPath={item?.MediaPath} />
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          onPress={() =>
-                            downloadFile(item?.MediaPath, getDocType(item))
-                          }
-                          onLongPress={() => {
-                            setLongPressedIndex(index);
-                            handleLongPress1();
-                            setMsgID(item.Id);
-                            setPressMsg(item);
-                          }}>
-                          <Image style={styles1.media1} source={doc_photo} />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </TouchableWithoutFeedback>
-                ) : (
-                  <TouchableWithoutFeedback
-                    onLongPress={() => {
-                      handleLongPress();
-                      setLongPressedIndex(index);
-                      setMsgID(item.Id);
-                      setPressMsg(item?.Message);
-                    }}>
-                    <View style={{flexDirection: 'row'}}>
-                      {isYoutubeUrl(item?.Message) ? (
-                        <View style={{flexDirection: 'column'}}>
-                          <View
-                            style={{
-                              backgroundColor: 'white',
-                              height: 150,
-                              width: 250,
-                              padding: 5,
-                            }}>
-                            <View
-                              style={{
-                                borderRadius: 10,
-                              }}>
-                              <YoutubePlayer
-                                key={index}
-                                height={150}
-                                width={250}
-                                videoId={extractYouTubeID(item?.Message)}
-                                play={false}
-                                onChangeState={event => console.log(event)}
-                              />
-                            </View>
-                          </View>
-                          <Text
-                            key={`${index}` + 1}
-                            style={styles.sendMsg}
-                            onPress={() => openURL(item?.Message)}>
-                            {item?.Message}
-                          </Text>
-                        </View>
-                      ) : (
-                        item?.Message.split(urlRegex).map(
-                          (messagePart, idx) => {
-                            if (urlRegex.test(messagePart)) {
-                              return (
-                                <Text
-                                  key={`${index}_${idx}`}
-                                  style={[
-                                    styles1.messageText,
-                                    styles1.link,
-                                    {color: isCurrentUser ? 'white' : 'blue'},
-                                  ]}
-                                  onPress={() => openURL(messagePart)}>
-                                  {messagePart}
-                                </Text>
-                              );
-                            } else {
-                              const htmlContent = `<p><a>${messagePart}</a></p>`;
-                              return (
-                                <HTMLView
-                                  value={htmlContent}
-                                  key={`${index}_${idx}`}
-                                  stylesheet={isCurrentUser ? styles2 : styles3}
-                                />
-                              );
-                            }
-                          },
-                        )
-                      )}
-                    </View>
-                  </TouchableWithoutFeedback>
-                )}
-              </View>
-
-              {isCurrentUser && (
-                <View style={styles.recvImg}>
-                  <Image
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      resizeMode: 'cover',
-                      alignSelf: 'baseline',
-                      backgroundColor: 'white',
-                    }}
-                    source={
-                      isCurrentUser
-                        ? {uri: userInfo.memberPhoto}
-                        : friendPhoto
-                        ? {uri: friendPhoto}
-                        : default_photo
-                    }
-                  />
-                </View>
-              )}
-            </View>
-            <Text
               style={[
-                styles1.messageTime,
-                {
-                  marginRight: 50,
-                  alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
-                  marginLeft: !isCurrentUser ? 50 : 0,
+                styles1.messageContainer,
+                longPressedIndex === index
+                  ? styles1.longPressed
+                  : isCurrentUser
+                  ? styles.sendMsg
+                  : styles1.rcvMsg,
+                isYoutubeUrl(item?.Message) && {
+                  backgroundColor: 'white',
+                },
+                isMedia && {
+                  backgroundColor:
+                    longPressedIndex == index ? 'lightgreen' : 'white',
                 },
               ]}>
-              {messageTime} {isCurrentUser && '✔️'}
-            </Text>
+              {isMedia ? (
+                <TouchableWithoutFeedback>
+                  <View>
+                    {messageType === 'video' ? (
+                      <VideoThumbnail
+                        thumbnailUri={
+                          messageType === 'image' ? item : item.Media_Thumbnail
+                        }
+                        onPress={() => handleOpenModal(item.MediaPath)}
+                        onLongPress={() => {
+                          setLongPressedIndex(index);
+                          handleLongPress1();
+                          setMsgID(item.Id);
+                          setPressMedia(item);
+                        }}
+                      />
+                    ) : messageType === 'image' ? (
+                      <TouchableOpacity
+                        onPress={() => handleOpenModal(item.MediaPath)}
+                        onLongPress={() => {
+                          setLongPressedIndex(index);
+                          handleLongPress1();
+                          setMsgID(item.Id);
+                          setPressMedia(item);
+                        }}>
+                        <Image
+                          o
+                          style={styles1.media}
+                          source={{uri: item.MediaPath}}
+                        />
+                      </TouchableOpacity>
+                    ) : messageType === 'audio' ? (
+                      <TouchableOpacity
+                        onLongPress={() => {
+                          setLongPressedIndex(index);
+                          handleLongPress1();
+                          setMsgID(item.Id);
+                          setPressMedia(item);
+                        }}>
+                        <AudioPlayer documentPath={item?.MediaPath} />
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() =>
+                          downloadFile(item?.MediaPath, getDocType(item))
+                        }
+                        onLongPress={() => {
+                          setLongPressedIndex(index);
+                          handleLongPress1();
+                          setMsgID(item.Id);
+                          setPressMsg(item);
+                        }}>
+                        <Image style={styles1.media1} source={doc_photo} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </TouchableWithoutFeedback>
+              ) : (
+                <TouchableWithoutFeedback
+                  onLongPress={() => {
+                    handleLongPress();
+                    setLongPressedIndex(index);
+                    setMsgID(item.Id);
+                    setPressMsg(item?.Message);
+                  }}>
+                  <View style={{flexDirection: 'row'}}>
+                    {isYoutubeUrl(item?.Message) ? (
+                      <View style={{flexDirection: 'column'}}>
+                        <View
+                          style={{
+                            backgroundColor: 'white',
+                            height: 150,
+                            width: 250,
+                            padding: 5,
+                          }}>
+                          <View
+                            style={{
+                              borderRadius: 10,
+                            }}>
+                            <YoutubePlayer
+                              key={index}
+                              height={150}
+                              width={250}
+                              videoId={extractYouTubeID(item?.Message)}
+                              play={false}
+                              onChangeState={event => console.log(event)}
+                            />
+                          </View>
+                        </View>
+                        <Text
+                          key={`${index}` + 1}
+                          style={styles.sendMsg}
+                          onPress={() => openURL(item?.Message)}>
+                          {item?.Message}
+                        </Text>
+                      </View>
+                    ) : (
+                      item?.Message.split(urlRegex).map((messagePart, idx) => {
+                        if (urlRegex.test(messagePart)) {
+                          return (
+                            <Text
+                              key={`${index}_${idx}`}
+                              style={[
+                                styles1.messageText,
+                                styles1.link,
+                                {color: isCurrentUser ? 'white' : 'blue'},
+                              ]}
+                              onPress={() => openURL(messagePart)}>
+                              {messagePart}
+                            </Text>
+                          );
+                        } else {
+                          const htmlContent = `<p><a>${messagePart}</a></p>`;
+                          return (
+                            <HTMLView
+                              value={htmlContent}
+                              key={`${index}_${idx}`}
+                              stylesheet={isCurrentUser ? styles2 : styles3}
+                            />
+                          );
+                        }
+                      })
+                    )}
+                  </View>
+                </TouchableWithoutFeedback>
+              )}
+            </View>
+            {isCurrentUser && (
+              <View style={styles.recvImg}>
+                <Image
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    resizeMode: 'cover',
+                    alignSelf: 'baseline',
+                    backgroundColor: 'white',
+                  }}
+                  source={
+                    isCurrentUser
+                      ? {uri: item?.Mem_photo}
+                      : friendPhoto
+                      ? {uri: friendPhoto}
+                      : default_photo
+                  }
+                />
+              </View>
+            )}
+          </View>
+          <Text
+            style={[
+              styles1.messageTime,
+              {
+                marginRight: 50,
+                alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+                marginLeft: !isCurrentUser ? 50 : 0,
+              },
+            ]}>
+            {messageTime} {isCurrentUser && '✔️'}
+          </Text>
         </IOScrollView>
       </>
     );
@@ -610,8 +637,8 @@ const ChatSection = ({navigation, route}) => {
                   imageUrls={[{url: documentPath}]}
                   enableSwipeDown={true}
                   onCancel={handleCloseModal}
-                  />
-                  </SafeAreaView>
+                />
+              </SafeAreaView>
             ) : allowMedia(documentPath) === 'video' ? (
               <View
                 style={{
@@ -638,9 +665,7 @@ const ChatSection = ({navigation, route}) => {
           refreshing={refreshing}
           contentContainerStyle={{flexGrow: 1}}
         />
-        {isMediaUploading && 
-           <MediaUploadLoader />
-           }
+        {isMediaUploading && <MediaUploadLoader />}
         <View style={[styles.sendBox, {width: width}]}>
           {showButtons && (
             <View style={styles.leftAreaBtn}>
@@ -652,6 +677,8 @@ const ChatSection = ({navigation, route}) => {
                     userInfo.LoginToken,
                     friendId,
                     setIsMediaUploading,
+                    tabIndex,
+                    groupMemberId,
                   )
                 }>
                 <Image
@@ -666,6 +693,8 @@ const ChatSection = ({navigation, route}) => {
                     userInfo.LoginToken,
                     friendId,
                     setIsMediaUploading,
+                    tabIndex,
+                    groupMemberId,
                   )
                 }
                 style={styles.leftBtn}>
@@ -681,23 +710,27 @@ const ChatSection = ({navigation, route}) => {
               position: 'relative',
               width: showButtons ? '65%' : '86.4%',
             }}>
-              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <TextInput
-              multiline
-              value={inputValue}
-              onChangeText={handleInputChange}
-              onContentSizeChange={handleContentSizeChange}
-              style={[styles.messageBox, {height: Math.min(height, maxHeight)}]}
-              placeholder="Type message..."
-              placeholderTextColor="#888"
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+              <TextInput
+                multiline
+                value={inputValue}
+                onChangeText={handleInputChange}
+                onContentSizeChange={handleContentSizeChange}
+                style={[
+                  styles.messageBox,
+                  {height: Math.min(height, maxHeight)},
+                ]}
+                placeholder="Type message..."
+                placeholderTextColor="#888"
               />
-              </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
           </View>
           {isSendingMessage ? (
             <Image
-            source={require('../assets/png/mediaLoader.png')}
-            style={styles.image}
-          />
+              source={require('../assets/png/mediaLoader.png')}
+              style={styles.image}
+            />
           ) : (
             <TouchableOpacity
               style={styles.sendBtn}
