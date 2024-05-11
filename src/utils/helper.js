@@ -192,6 +192,8 @@ export async function downloadFile(documentPath, result) {
     try {
       if (result.length === 2) {
         const downloadDest = `${dirToSave}/${result[0]}.${result[1]}`;
+
+
         console.log('DOwnload is : ', downloadDest);
         const options = {
           fromUrl: documentPath,
@@ -274,7 +276,8 @@ const sendMessage = async (
   LoginToken,
   friendId,
   mediaPath,
-  media,
+  tabIndex,
+  groupMemberId,
 ) => {
   const formData = new FormData();
   formData.append('messageText', '');
@@ -283,6 +286,12 @@ const sendMessage = async (
   formData.append('IsCallMsg', false);
   formData.append('EventType', 'Click');
   formData.append('MediaPath', mediaPath);
+  formData.append('IsFriendCircle', tabIndex);
+  if (tabIndex === 1) {
+    groupMemberId.map(data => {
+      formData.append('FriendsId', data);
+    });
+  }
   const config = {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -312,6 +321,8 @@ const uploadChatMedia = async (
   memberToken,
   LoginToken,
   ReceiverID,
+  tabIndex,
+  groupMemberId,
 ) => {
   const formData = new FormData();
   formData.append('MemberToken', memberToken);
@@ -321,6 +332,12 @@ const uploadChatMedia = async (
     name: MediaPath.uri?.fileName,
     type: MediaPath.uri?.type,
   });
+  formData.append('IsFriendCircle', tabIndex);
+  if (tabIndex === 1) {
+    groupMemberId.map(data => {
+      formData.append('FriendsId', data);
+    });
+  }
   try {
     const {data} = await axios.post(configURL.sendMediaURL, formData, {
       headers: {
@@ -335,7 +352,8 @@ const uploadChatMedia = async (
         LoginToken,
         ReceiverID,
         data.Media_Path,
-        MediaPath,
+        tabIndex,
+        groupMemberId,
       );
       return true;
     } else {
@@ -346,7 +364,14 @@ const uploadChatMedia = async (
   }
 };
 
-const uploadDoc = async (MediaPath, memberToken, LoginToken, ReceiverID) => {
+const uploadDoc = async (
+  MediaPath,
+  memberToken,
+  LoginToken,
+  ReceiverID,
+  tabIndex,
+  groupMemberId,
+) => {
   const formData = new FormData();
   formData.append('MemberToken', memberToken);
   formData.append('ReceiverID', ReceiverID);
@@ -355,6 +380,12 @@ const uploadDoc = async (MediaPath, memberToken, LoginToken, ReceiverID) => {
     name: MediaPath?.uri?.name,
     type: MediaPath?.uri?.type,
   });
+  formData.append('IsFriendCircle', tabIndex);
+  if (tabIndex === 1) {
+    groupMemberId.map(data => {
+      formData.append('FriendsId', data);
+    });
+  }
   try {
     const {data} = await axios.post(configURL.sendMediaURL, formData, {
       headers: {
@@ -369,7 +400,8 @@ const uploadDoc = async (MediaPath, memberToken, LoginToken, ReceiverID) => {
         LoginToken,
         ReceiverID,
         data.Media_Path,
-        MediaPath,
+        tabIndex,
+        groupMemberId,
       );
       return true;
     } else {
@@ -386,6 +418,8 @@ const handleImageResponse = async (
   loginToken,
   ReceiverID,
   setIsMediaUploading,
+  tabIndex,
+  groupMemberId,
 ) => {
   setIsMediaUploading(true);
   if (response.didCancel) {
@@ -403,6 +437,8 @@ const handleImageResponse = async (
       memberToken,
       loginToken,
       ReceiverID,
+      tabIndex,
+      groupMemberId,
     );
     setIsMediaUploading(false);
     return resp;
@@ -415,11 +451,20 @@ const handleDocResponse = async (
   loginToken,
   ReceiverID,
   setIsMediaUploading,
+  tabIndex,
+  groupMemberId,
 ) => {
   setIsMediaUploading(true);
   let source = {uri: response[0]};
   if (source) {
-    await uploadDoc(source, memberToken, loginToken, ReceiverID);
+    await uploadDoc(
+      source,
+      memberToken,
+      loginToken,
+      ReceiverID,
+      tabIndex,
+      groupMemberId,
+    );
     setIsMediaUploading(false);
   } else {
     console.log('No document selected');
@@ -431,6 +476,8 @@ export const pickImage = async (
   loginToken,
   ReceiverID,
   setIsMediaUploading,
+  tabIndex,
+  groupMemberId,
 ) => {
   const options = {
     title: 'Select Image',
@@ -446,6 +493,8 @@ export const pickImage = async (
       loginToken,
       ReceiverID,
       setIsMediaUploading,
+      tabIndex,
+      groupMemberId,
     );
   });
 };
@@ -455,6 +504,8 @@ export const pickDocument = async (
   loginToken,
   ReceiverID,
   setIsMediaUploading,
+  tabIndex,
+  groupMemberId,
 ) => {
   try {
     const doc = await DocumentPicker.pick();
@@ -464,6 +515,8 @@ export const pickDocument = async (
       loginToken,
       ReceiverID,
       setIsMediaUploading,
+      tabIndex,
+      groupMemberId,
     );
   } catch (err) {
     if (DocumentPicker.isCancel()) {
