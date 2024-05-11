@@ -687,12 +687,40 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const getGroupMembers = async (
+    loginToken,
+    memberToken,
+    groupId,
+    page,
+    pageSize = 30,
+  ) => {
+    try {
+      const {data} = await axios.get(
+        configURL.getGroupListURL +
+          `${memberToken}&GroupId=${groupId}&page=${page}&pageSize=${pageSize}`,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            MemberToken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      return data;
+    } catch (error) {
+      console.log('Error in getting getGroupMembers : ', error);
+      throw error;
+    }
+  };
+
   const sendMessage = async (
     memberToken,
     loginToken,
     messageText,
     friendId,
     msgId,
+    isFriendCircle,
+    groupMemberId,
   ) => {
     const formData = new FormData();
     formData.append('MemberToken', memberToken);
@@ -700,6 +728,12 @@ export const AuthProvider = ({children}) => {
     formData.append('ReceiverID', friendId);
     formData.append('MessageId', msgId);
     formData.append('IsCallMsg', false);
+    formData.append('IsFriendCircle', isFriendCircle);
+    if (isFriendCircle === 1) {
+      groupMemberId.map(data => {
+        formData.append('FriendsId', data);
+      });
+    }
 
     const config = {
       headers: {
@@ -714,9 +748,9 @@ export const AuthProvider = ({children}) => {
         formData,
         config,
       );
-      if (data?.Result?.MessageId) {
-        return data?.Result?.message;
-      }else {
+      if (data?.MessageId) {
+        return data?.message;
+      } else {
         return false;
       }
     } catch (err) {
@@ -778,6 +812,7 @@ export const AuthProvider = ({children}) => {
         messageFriends,
         getGroups,
         fetchChatHistory,
+        getGroupMembers,
         sendMessage,
         deleteMsg,
       }}>

@@ -26,6 +26,7 @@ const configURL = {
     unFriendRequestURL: baseURL + 'User/UnFriendRequest',
     groupURL: baseURL + 'post/_view_group_list?MemberToken=',
     chatHistoryURL: baseURL + 'message/_chat_history?MemberToken=',
+    getGroupListURL: baseURL + 'post/_groupMemberList?MemberToken=',
     sendPrivateMsgURL: baseURL + 'message/sendPrivateMessage',
     sendMediaURL: baseURL + 'message/_uploadChatMedia',
     _getUserInfoURL: baseURL + 'user/_getBasicInfoByMemId?MemberToken=',
