@@ -29,11 +29,8 @@ const FindFriends = ({navigation}) => {
     isLoading,
     setIsLoading,
     userInfo,
-    getSuggestedUsers,
     searchFriends,
     sendFriendRequest,
-    cancelFriendRequest,
-    error,
     setError,
   } = useContext(AuthContext);
 

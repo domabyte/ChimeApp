@@ -1,8 +1,12 @@
-import {useState} from 'react';
+import {useState, useContext} from 'react';
 import {Image, StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {AuthContext} from '../context/AuthContext';
+const default_photo = require('../assets/png/default-profile.png');
 
 const Header = ({navigation}) => {
   const [selectTab, setselectTab] = useState(0);
+  const {userInfo} =
+  useContext(AuthContext);
   return (
     <>
       <View style={styles.Bottomheader}>
@@ -62,9 +66,13 @@ const Header = ({navigation}) => {
             style={styles.profile}
             onPress={() => navigation.navigate('myProfile')}>
             <Image
-              style={{width: '100%', height: '100%', resizeMode: 'cover'}}
-              source={require('../assets/png/user4.png')}
-            />
+              style={{width: '100%', height: '100%'}}
+              source={
+                userInfo.memberPhoto && typeof userInfo.memberPhoto === 'string'
+                ? {uri: userInfo.memberPhoto}
+                : default_photo
+              }
+              />
           </TouchableOpacity>
         </View>
       </View>

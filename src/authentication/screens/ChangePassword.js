@@ -158,9 +158,23 @@ const ChangePassword = ({ navigation, route }) => {
             {error ? <Text style={Styles.errorText}>{error}</Text> : null}
             <TouchableOpacity
               style={Styles.blueBtn}
+              disabled={strength !== 'Very Good'}
               onPress={handleResetPassword}>
               <Text style={Styles.buttonStyle}>Submit</Text>
             </TouchableOpacity>
+            <View style={Styles.orText}>
+                <Text style={{color: 'black'}}>
+                  Already registered? Click login.
+                </Text>
+              </View>
+            <TouchableOpacity
+                style={Styles.whiteBtn}
+                onPress={() => navigation.navigate('Login')}>
+                <Text
+                  style={{color: '#1866B4', fontWeight: '500', fontSize: 18}}>
+                  Login
+                </Text>
+              </TouchableOpacity>
           </View>
         </ScrollView>
       </ImageBackground>
@@ -181,6 +195,24 @@ const Styles = StyleSheet.create({
   center: {
     alignItems: 'center',
     display: 'flex',
+  },
+  orText: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+  },
+  whiteBtn: {
+    height: 45,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#1866B4',
+    marginBottom: 25,
   },
   logo: {
     justifyContent: 'center',

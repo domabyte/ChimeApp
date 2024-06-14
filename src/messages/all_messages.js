@@ -129,19 +129,19 @@ const AllMessages = ({navigation}) => {
               )}
             </View>
             <View style={styles.magtextarea}>
-              <Text numberOfLines={1} style={[styles.msgText, {width: '50%'}]}>
+              <Text numberOfLines={1} style={[styles.msgText, {width: '90%'}]}>
                 {item?.LastMessage !== null && item?.LastMessage !== ''
                   ? item?.LastMessage
                   : item?.MediaPath !== null && item?.MediaPath !== ''
                   ? 'Media'
                   : 'No message available'}
               </Text>
-              <View style={styles.dot}></View>
-              <Text style={styles.msgText}>
+              {/* <View style={styles.dot}></View> */}
+              {/* <Text style={styles.msgText}>
                 {item?.LastMessageDateTime !== '0001-01-01T00:00:00'
                   ? formatDateString(item?.LastMessageDateTime)
                   : 'No date available'}
-              </Text>
+              </Text> */}
             </View>
           </View>
         </TouchableOpacity>
@@ -217,7 +217,7 @@ const AllMessages = ({navigation}) => {
           <View>
             <View style={styles.searchSection}>
               <TextInput
-                placeholder="Search Friends"
+                placeholder="Search friends and groups"
                 style={styles.searchBox}
                 value={searchKeyword}
                 onChangeText={text => setSearchKeyword(text)}
@@ -243,7 +243,7 @@ const AllMessages = ({navigation}) => {
           <View>
             <View style={styles.searchSection}>
               <TextInput
-                placeholder="Search Friends in Group"
+                placeholder="Search groups"
                 style={styles.searchBox}
                 value={groupSearchKeyword}
                 onChangeText={text => setGroupSearchKeyword(text)}

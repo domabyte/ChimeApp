@@ -31,5 +31,8 @@ const configURL = {
     sendMediaURL: baseURL + 'message/_uploadChatMedia',
     _getUserInfoURL: baseURL + 'user/_getBasicInfoByMemId?MemberToken=',
     deleteMsgURL: baseURL + 'message/deleteMessageById',
+    getFCMTokenURL: baseURL + 'user/GetMemberDeviceDetailById',
+    callURL: 'https://3q9cbtsj-3002.inc1.devtunnels.ms/api/call',
+    endCallURL: 'https://3q9cbtsj-3002.inc1.devtunnels.ms/api/endCall',
 };
 export default configURL;

@@ -1,17 +1,16 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Navigation from './components/Navigation';
 import {AuthProvider} from './context/AuthContext';
 import {SocketProvider} from './context/SocketContext';
-import { RootSiblingParent } from 'react-native-root-siblings';
-
+import {RootSiblingParent} from 'react-native-root-siblings';
 const App = () => {
   return (
-    <RootSiblingParent> 
-    <AuthProvider>
-      <SocketProvider>
+    <RootSiblingParent>
+      <AuthProvider>
+        <SocketProvider>
           <Navigation />
-      </SocketProvider>
-    </AuthProvider>
+        </SocketProvider>
+      </AuthProvider>
     </RootSiblingParent>
   );
 };

@@ -8,6 +8,7 @@ import {
   ScrollView,
   StatusBar,
   ImageBackground,
+  KeyboardAvoidingView,
   Image,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -53,10 +54,12 @@ const ForgotPassword = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
+      <KeyboardAvoidingView behavior='padding' style={Styles.container}>
       <ImageBackground
         source={require('../../assets/png/LoginBg.png')}
         style={Styles.backgroundImg}>
         <ScrollView style={Styles.mainView}>
+          
           <Spinner visible={isLoading} />
           <View style={Styles.logo}>
             <Image
@@ -105,6 +108,7 @@ const ForgotPassword = ({navigation}) => {
           </View>
         </ScrollView>
       </ImageBackground>
+      </KeyboardAvoidingView>
     </>
   );
 };
@@ -114,7 +118,8 @@ export default ForgotPassword;
 const Styles = StyleSheet.create({
   backgroundImg: {
     resizeMode: 'cover',
-    height: '100%',
+    // height: '100%',
+    flex: 1,
   },
   container: {
     flex: 1,

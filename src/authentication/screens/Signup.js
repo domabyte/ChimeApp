@@ -9,8 +9,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  ScrollViewBase,
-  Alert,
 } from 'react-native';
 import passwordShow from '../../assets/png/eye-open.png';
 import passwordHide from '../../assets/png/eye-close.png';
@@ -268,7 +266,7 @@ const Signup = ({navigation}) => {
               </TouchableOpacity>
               <View style={styles.orText}>
                 <Text style={{color: 'black'}}>
-                  Already registered? Click login.
+                  OR
                 </Text>
               </View>
               <TouchableOpacity

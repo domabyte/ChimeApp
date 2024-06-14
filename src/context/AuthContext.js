@@ -4,6 +4,7 @@ import config from '../config/config';
 import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 import configURL from '../config/config';
+import {requestUserPermission} from '../utils/NotificationService';
 
 export const AuthContext = createContext();
 
@@ -26,9 +27,10 @@ export const AuthProvider = ({children}) => {
     navigationCallback,
   ) => {
     setIsLoading(true);
+    const token = await requestUserPermission();
     const queryString =
       config.registrationURL +
-      `?Mem_Name=${firstName}&Mem_LName=${lastName}&Email=${email}&Password=${newPassword}&ConfirmPassword=${confirmPassword}&Captcha=${encryptedCaptcha}&UserCaptcha=${confirmCaptcha}&termcondition=${isChecked}`;
+      `?Mem_Name=${firstName}&Mem_LName=${lastName}&Email=${email}&Password=${newPassword}&ConfirmPassword=${confirmPassword}&Captcha=${encryptedCaptcha}&UserCaptcha=${confirmCaptcha}&termcondition=${isChecked}&DeviceId=${token.deviceToken}&DeviceToken=${token.fcmToken}`;
     try {
       const {data} = await axios.post(queryString);
       if (data.Mem_ID && data.Mem_ID > 0) {
@@ -197,7 +199,8 @@ export const AuthProvider = ({children}) => {
 
   const login = async (email, password, rememberMe) => {
     setIsLoading(true);
-    const url = config.loginURL + email + '&password=' + password;
+    const token = await requestUserPermission();
+    const url = config.loginURL + email + '&password=' + password + '&DeviceId=' + token.deviceToken + '&DeviceToken=' + token.fcmToken;
     try {
       const {data} = await axios.get(url);
       if (data.Mem_ID && data.Mem_ID > 0) {
@@ -208,6 +211,7 @@ export const AuthProvider = ({children}) => {
           memberToken: data.MemberToken,
           LoginToken: data.LoginToken,
           memberPhoto: data.Mem_photo,
+          userId: data.UserName,
         };
         let userInfo = value;
         setUserInfo(userInfo);
@@ -779,6 +783,46 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const getFCMToken = async (memId, memberToken, loginToken) => {
+    try {
+      const {data} = await axios.post(configURL.getFCMTokenURL,
+        {
+          "Mem_Id": memId,
+        },
+        {
+          headers: {
+            "LoginToken": loginToken,
+            "MemberToken": memberToken,
+          }
+      });
+      if (data.length > 0) {
+      const deviceTokens = data.map(item => item.DeviceToken).filter(token => token !== null && token !== undefined);
+      return deviceTokens;
+      } 
+      return [];
+    } catch(err) {
+      console.log("Error fetching the FCM token : ",{err});
+    } 
+  }
+
+  const doCall = async (tokens, friendName, userId, id, token, type) => {
+    try {
+      const {data} = await axios.post(configURL.callURL, {
+        fcmTokens : tokens,
+        friendName,
+        userId,
+        id,
+        token,
+        type,
+      });
+      if (data.code) {
+        return data;
+      }
+    } catch(err) {
+      console.log("Error in doCall : ",{err});
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -815,6 +859,8 @@ export const AuthProvider = ({children}) => {
         getGroupMembers,
         sendMessage,
         deleteMsg,
+        getFCMToken,
+        doCall,
       }}>
       {children}
     </AuthContext.Provider>

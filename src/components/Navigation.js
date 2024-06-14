@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
+import {ActivityIndicator} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SplashScreen from '../authentication/screens/SplashScreen.js';
 import LoginScreen from '../authentication/screens/Login.js';
 import RegisterScreen from '../authentication/screens/Signup.js';
@@ -22,9 +22,21 @@ import {AuthContext} from '../context/AuthContext.js';
 import AllMessages from '../messages/All_messages.js';
 import ChatSection from '../messages/ChatSection.js';
 import LongPressPopup from '../messages/ForwordMsg.js';
+import AudioCall from '../Call/AudioCall.js';
+import VideoCall from '../Call/VideoCall.js';
 import {createStackNavigator} from '@react-navigation/stack';
 
 const Stack = createStackNavigator();
+
+const linking = {
+  prefixes: ['chimeApp://'],
+  config: {
+    screens: {
+      audioCall: 'audioCall',
+      videoCall: 'videoCall',
+    },
+  },
+};
 
 const AuthStack = () => (
   <Stack.Navigator initialRouteName="Login">
@@ -56,7 +68,10 @@ const AuthStack = () => (
     <Stack.Screen
       name="changePassword"
       component={ChangePassword}
-      options={{headerShown: false}}
+      options={{
+        headerShown: false,
+        gestureEnabled: false,
+      }}
     />
     <Stack.Screen
       name="successPassword"
@@ -71,13 +86,21 @@ const AuthStack = () => (
     <Stack.Screen
       name="information"
       component={Information}
-      options={{headerShown: false}}
+      options={{
+        headerShown: false,
+        gestureEnabled: false,
+      }}
     />
   </Stack.Navigator>
 );
 
 const AppStack = () => (
   <Stack.Navigator>
+    <Stack.Screen
+      name="allMessages"
+      component={AllMessages}
+      options={{headerShown: false}}
+    />
     <Stack.Screen
       name="myFriend"
       component={MyFriends}
@@ -119,11 +142,6 @@ const AppStack = () => (
       options={{headerShown: false}}
     />
     <Stack.Screen
-      name="allMessages"
-      component={AllMessages}
-      options={{headerShown: false}}
-    />
-    <Stack.Screen
       name="chatSection"
       component={ChatSection}
       options={{headerShown: false}}
@@ -133,13 +151,27 @@ const AppStack = () => (
       component={LongPressPopup}
       options={{headerShown: false}}
     />
+    <Stack.Screen
+      name="audioCall"
+      component={AudioCall}
+      options={{headerShown: false,
+        gestureEnabled: false,
+      }}
+    />
+    <Stack.Screen
+      name="videoCall"
+      component={VideoCall}
+      options={{headerShown: false, 
+        gestureEnabled: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
 const Navigation = () => {
   const {userInfo, splashLoading} = useContext(AuthContext);
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking} fallback={<ActivityIndicator animating /> }>
       {splashLoading ? (
         <Stack.Navigator>
           <Stack.Screen

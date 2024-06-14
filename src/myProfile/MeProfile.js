@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -242,6 +242,15 @@ const styles = StyleSheet.create({
   },
   followerBox: {
     width: 100,
+  },
+  sendBtn: {
+    backgroundColor: '#1866B4',
+    width: 80,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+    margin: 20,
   },
 });
 

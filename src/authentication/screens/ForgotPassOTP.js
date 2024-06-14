@@ -7,11 +7,13 @@ import {
   View,
   ScrollView,
   ImageBackground,
+  KeyboardAvoidingView,
   StatusBar,
   Image,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ForgotPassOTP = ({navigation, route}) => {
   const {Mem_ID, email} = route.params;
@@ -76,11 +78,16 @@ const ForgotPassOTP = ({navigation, route}) => {
 
   return (
     <>
+    
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
+      
       <ImageBackground
         source={require('../../assets/png/LoginBg.png')}
         style={Styles.backgroundImg}>
+          <SafeAreaView style={{height:'100%'}}>
         <ScrollView style={Styles.mainView}>
+          <View  >
+        <KeyboardAvoidingView  behavior='padding' style={{marginBottom:100}}> 
           <Spinner visible={isLoading} />
           <View style={Styles.logo}>
             <Image
@@ -184,8 +191,12 @@ const ForgotPassOTP = ({navigation, route}) => {
               <Text style={Styles.buttonStyle}>Confirm Security Code</Text>
             </TouchableOpacity>
           </View>
+          </KeyboardAvoidingView>
+          </View>
         </ScrollView>
+        </SafeAreaView>
       </ImageBackground>
+     
     </>
   );
 };
@@ -195,9 +206,12 @@ const Styles = StyleSheet.create({
   backgroundImg: {
     resizeMode: 'cover',
     height: '100%',
+    alignContent: 'center',
+    backgroundColor:'#333333'
   },
   container: {
     flex: 1,
+    alignContent: 'center',
   },
   center: {
     alignItems: 'center',
@@ -207,7 +221,7 @@ const Styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     alignItems: 'center',
-    marginTop: 170,
+    marginTop: 70,
   },
   errorText: {
     color: 'red',
@@ -217,6 +231,7 @@ const Styles = StyleSheet.create({
   mainView: {
     flex: 1,
     padding: 20,
+    alignContent:'center',
   },
   title: {
     fontSize: 24,
@@ -263,6 +278,7 @@ const Styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 25,
     marginTop: 20,
+    marginBottom:50,
   },
   hide: {
     display: 'none',

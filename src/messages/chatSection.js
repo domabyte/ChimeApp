@@ -1,301 +1,329 @@
-import React, {useContext, useState, useEffect, useRef, memo} from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Modal,
-  TouchableWithoutFeedback,
-  FlatList,
-  TextInput,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import YoutubePlayer from 'react-native-youtube-iframe';
-import HTMLView from 'react-native-htmlview';
-import LongPressPopup from './ForwordMsg';
-import VideoThumbnail from '../utils/Video';
-import {AuthContext} from '../context/AuthContext';
-import SocketContext from '../context/SocketContext';
-import {IOScrollView, InView} from 'react-native-intersection-observer';
-import {
-  allowMedia,
-  downloadFile,
-  extractYouTubeID,
-  formatDateString,
-  getDocType,
-  getTimeFromDateByZone,
-  isYoutubeUrl,
-  openURL,
-  pickDocument,
-  pickImage,
-  urlRegex,
-} from '../utils/helper';
-import ImageViewer from 'react-native-image-zoom-viewer';
-import VideoPlayer from '../utils/VideoPlayer';
-import Orientation from 'react-native-orientation-locker';
-import AudioPlayer from '../utils/AudioPlayer';
-import MediaUploadLoader from '../utils/MediaUploadLoader';
+  import React, {useContext, useState, useEffect, useRef} from 'react';
+  import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+    Dimensions,
+    Modal,
+    TouchableWithoutFeedback,
+    FlatList,
+    TextInput,
+    SafeAreaView,
+    KeyboardAvoidingView,
+    Linking,
+  } from 'react-native';
+  import YoutubePlayer from 'react-native-youtube-iframe';
+  import HTMLView from 'react-native-htmlview';
+  import LongPressPopup from './ForwordMsg';
+  import VideoThumbnail from '../utils/Video';
+  import {AuthContext} from '../context/AuthContext';
+  import SocketContext from '../context/SocketContext';
+  import {IOScrollView, InView} from 'react-native-intersection-observer';
+  import {requestUserPermission} from '../utils/NotificationService';
+  import {
+    allowMedia,
+    downloadFile,
+    extractYouTubeID,
+    formatDateString,
+    getDocType,
+    getTimeFromDateByZone,
+    isYoutubeUrl,
+    openURL,
+    pickDocument,
+    pickImage,
+    urlRegex,
+  } from '../utils/helper';
+  import ImageViewer from 'react-native-image-zoom-viewer';
+  import VideoPlayer from '../utils/VideoPlayer';
+  import Orientation from 'react-native-orientation-locker';
+  import AudioPlayer from '../utils/AudioPlayer';
+  import MediaUploadLoader from '../utils/MediaUploadLoader';
 
-const default_photo = require('../assets/png/default-profile.png');
-const doc_photo = require('../assets/png/doc.png');
-const cross_photo = require('../assets/png/Cross.png');
+  const default_photo = require('../assets/png/default-profile.png');
+  const doc_photo = require('../assets/png/doc.png');
+  const cross_photo = require('../assets/png/Cross.png');
 
-const ChatSection = ({navigation, route}) => {
-  const {friendId, friendName, friendPhoto, tabIndex} = route.params;
-  const {width} = Dimensions.get('window');
-  const [isOnline, setIsOnline] = useState('Offline');
-  const {
-    userInfo,
-    fetchChatHistory,
-    deleteMsg,
-    setIsLoading,
-    getUserOnlineStatus,
-    sendMessage,
-    getGroupMembers,
-  } = useContext(AuthContext);
-  const {socket, joinRoom, leaveRoom} = useContext(SocketContext);
-  const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [showButtons, setShowButtons] = useState(true);
-  const [isPopupVisible, setPopupVisible] = useState(false);
-  const maxHeight = 100;
-  const [height, setHeight] = useState(40);
-  const [isPopupSend, setPopupSend] = useState(false);
-  const [imgPopupVisible, setimgPopupVisible] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [documentPath, setDocumentPath] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-  const [isMediaUploading, setIsMediaUploading] = useState(false);
-  const [longPressedIndex, setLongPressedIndex] = useState(null);
-  const [msgId, setMsgID] = useState(null);
-  const [pressMsg, setPressMsg] = useState('');
-  const [pressMedia, setPressMedia] = useState({});
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const [groupMembers, setGroupMembers] = useState([]);
-  const [groupMemberId, setGroupMemberId] = useState([]);
-  const curPage = useRef(1);
+  const ChatSection = ({navigation, route}) => {
+    const {friendId, friendName, friendPhoto, tabIndex} = route.params;
+    const {width} = Dimensions.get('window');
+    const [isOnline, setIsOnline] = useState('Offline');
+    const [ isCallOngoing, setIsCallOngoing ] = useState(false);
+    const {
+      userInfo,
+      fetchChatHistory,
+      deleteMsg,
+      setIsLoading,
+      getUserOnlineStatus,
+      sendMessage,
+      getGroupMembers,
+      getFCMToken,
+      doCall,
+    } = useContext(AuthContext);
+    const {socket, joinRoom, leaveRoom} = useContext(SocketContext);
+    const [messages, setMessages] = useState([]);
+    const [inputValue, setInputValue] = useState('');
+    const [showButtons, setShowButtons] = useState(true);
+    const [isPopupVisible, setPopupVisible] = useState(false);
+    const maxHeight = 100;
+    const [height, setHeight] = useState(40);
+    const [isPopupSend, setPopupSend] = useState(false);
+    const [imgPopupVisible, setimgPopupVisible] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const [documentPath, setDocumentPath] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
+    const [isMediaUploading, setIsMediaUploading] = useState(false);
+    const [longPressedIndex, setLongPressedIndex] = useState(null);
+    const [msgId, setMsgID] = useState(null);
+    const [pressMsg, setPressMsg] = useState('');
+    const [pressMedia, setPressMedia] = useState({});
+    const [isSendingMessage, setIsSendingMessage] = useState(false);
+    const [groupMembers, setGroupMembers] = useState([]);
+    const [groupMemberId, setGroupMemberId] = useState([]);
+    const curPage = useRef(1);
 
-  const fetchMessages = async () => {
-    try {
-      const result = await fetchChatHistory(
-        userInfo.memberToken,
-        friendId,
-        curPage.current,
-      );
-      if (!result.length > 0) {
-        return;
+    const fetchMessages = async () => {
+      try {
+        const result = await fetchChatHistory(
+          userInfo.memberToken,
+          friendId,
+          curPage.current,
+        );
+        if (!result.length > 0) {
+          return;
+        }
+        const result1 = result.reverse();
+        setMessages(prevMessages => [...prevMessages, ...result1]);
+        curPage.current += 1;
+      } catch (err) {
+        console.log('Failed to fetch chat history');
+      } finally {
+        setRefreshing(false);
+        setIsLoading(false);
       }
-      const result1 = result.reverse();
-      setMessages(prevMessages => [...prevMessages, ...result1]);
-      curPage.current += 1;
-    } catch (err) {
-      console.log('Failed to fetch chat history');
-    } finally {
-      setRefreshing(false);
-      setIsLoading(false);
-    }
-  };
+    };
 
-  const fetchUserOnlineStatus = async () => {
-    const resp = await getUserOnlineStatus(
-      userInfo.memberToken,
-      userInfo.LoginToken,
-      friendId,
-    );
-    if (
-      resp.ConnectionID == null ||
-      resp.ConnectionID === '' ||
-      resp.ConnectionID === '0' ||
-      resp.LoginStatus === 0
-    ) {
-      setIsOnline('Offline');
-    } else if (resp.LoginStatus === 1) {
-      setIsOnline('Online');
-    } else if (resp.LoginStatus === 2) {
-      setIsOnline('Away');
-    } else if (resp.LoginStatus === 3) {
-      setIsOnline('Do not Disturb');
-    } else if (resp.LoginStatus === 4) {
-      setIsOnline('Offline');
-    } else {
-      setIsOnline('Offline');
-    }
-  };
-
-  const getGroupList = async () => {
-    try {
-      const response = await getGroupMembers(
+    const fetchUserOnlineStatus = async () => {
+      const resp = await getUserOnlineStatus(
         userInfo.memberToken,
         userInfo.LoginToken,
         friendId,
       );
-      if (response) {
-        setGroupMembers(response);
+      if (
+        resp.ConnectionID == null ||
+        resp.ConnectionID === '' ||
+        resp.ConnectionID === '0' ||
+        resp.LoginStatus === 0
+      ) {
+        setIsOnline('Offline');
+      } else if (resp.LoginStatus === 1) {
+        setIsOnline('Online');
+      } else if (resp.LoginStatus === 2) {
+        setIsOnline('Away');
+      } else if (resp.LoginStatus === 3) {
+        setIsOnline('Do not Disturb');
+      } else if (resp.LoginStatus === 4) {
+        setIsOnline('Offline');
+      } else {
+        setIsOnline('Offline');
       }
-    } catch (err) {
-      console.log('Error in getGroupList : ', err);
-    }
-  };
-
-  useEffect(() => {
-    joinRoom({userId: userInfo.id, friendId}, fetchMessages);
-    fetchUserOnlineStatus();
-    if (tabIndex) {
-      getGroupList();
-    }
-    return () => {
-      leaveRoom({userId: userInfo.id, friendId});
-      setIsOnline(false);
     };
-  }, []);
 
-  useEffect(() => {
-    if (groupMembers && groupMembers.length > 0) {
-      const ids = groupMembers.map(member => member.Mem_ID);
-      setGroupMemberId(ids.filter(data => data != userInfo?.id));
-    }
-  }, [groupMembers]);
+    const getGroupList = async () => {
+      try {
+        const response = await getGroupMembers(
+          userInfo.memberToken,
+          userInfo.LoginToken,
+          friendId,
+        );
+        if (response) {
+          setGroupMembers(response);
+        }
+      } catch (err) {
+        console.log('Error in getGroupList : ', err);
+      }
+    };
 
-  const handleContentSizeChange = event => {
-    const newHeight = event.nativeEvent.contentSize.height;
-    setHeight(newHeight > maxHeight ? maxHeight : newHeight);
-  };
+    useEffect(() => {
+      joinRoom({userId: userInfo.id, friendId}, fetchMessages);
+      fetchUserOnlineStatus();
+      if (tabIndex) {
+        getGroupList();
+      }
+      return () => {
+        leaveRoom({userId: userInfo.id, friendId});
+        setIsOnline(false);
+      };
+    }, []);
 
-  const handleSendMessage = async () => {
-    setIsSendingMessage(true);
-    try {
-      if (msgId) {
-        if (inputValue.trim() !== '') {
-          const response = await sendMessage(
-            userInfo?.memberToken,
-            userInfo?.LoginToken,
-            inputValue,
-            friendId,
-            msgId,
-            tabIndex,
-            groupMemberId,
-          );
-          if (response) {
-            const updatedMessage = {
-              ...messages.find(msg => msg.Id === msgId),
-              Message: inputValue,
-            };
-            setMessages(prevMessages =>
-              prevMessages.map(msg =>
-                msg.Id === msgId ? updatedMessage : msg,
-              ),
+    useEffect(() => {
+      if (groupMembers && groupMembers.length > 0) {
+        const ids = groupMembers.map(member => member.Mem_ID);
+        setGroupMemberId(ids.filter(data => data != userInfo?.id));
+      }
+    }, [groupMembers]);
+
+    const handleContentSizeChange = event => {
+      const newHeight = event.nativeEvent.contentSize.height;
+      setHeight(newHeight > maxHeight ? maxHeight : newHeight);
+    };
+
+    const handleSendMessage = async () => {
+      setIsSendingMessage(true);
+      try {
+        if (msgId) {
+          if (inputValue.trim() !== '') {
+            const response = await sendMessage(
+              userInfo?.memberToken,
+              userInfo?.LoginToken,
+              inputValue,
+              friendId,
+              msgId,
+              tabIndex,
+              groupMemberId,
+            );
+            if (response) {
+              const updatedMessage = {
+                ...messages.find(msg => msg.Id === msgId),
+                Message: inputValue,
+              };
+              setMessages(prevMessages =>
+                prevMessages.map(msg =>
+                  msg.Id === msgId ? updatedMessage : msg,
+                ),
+              );
+            }
+          }
+        } else {
+          if (inputValue.trim() !== '') {
+            await sendMessage(
+              userInfo?.memberToken,
+              userInfo?.LoginToken,
+              inputValue,
+              friendId,
+              '',
+              tabIndex,
+              groupMemberId,
             );
           }
         }
-      } else {
-        if (inputValue.trim() !== '') {
-          const response = await sendMessage(
-            userInfo?.memberToken,
-            userInfo?.LoginToken,
-            inputValue,
-            friendId,
-            '',
-            tabIndex,
-            groupMemberId,
-          );
-        }
-      }
-    } catch (err) {
-      console.log('Failed to send message to the server : ', err);
-    } finally {
-      setIsSendingMessage(false);
-    }
-  };
-
-  const handleEdit = () => {
-    setInputValue(pressMsg);
-  };
-
-  const handleReceiveMessage = data => {
-    if (!msgId) {
-      setMessages(prevMessages => [data.msgResp, ...prevMessages]);
-    } else {
-      setPopupVisible(false);
-      setLongPressedIndex(null);
-      setMsgID(null);
-      setPressMsg('');
-    }
-    setInputValue('');
-  };
-
-  useEffect(() => {
-    if (socket) {
-      socket.on('receiveMessage', handleReceiveMessage);
-    }
-    return () => {
-      if (socket) {
-        socket.off('receiveMessage', handleReceiveMessage);
+      } catch (err) {
+        console.log('Failed to send message to the server : ', err);
+      } finally {
+        setIsSendingMessage(false);
+        setShowButtons(true);
       }
     };
-  }, [socket, msgId]);
 
-  const handleLongPress = () => {
-    setPopupVisible(true);
-  };
-
-  const handleClosePopup = () => {
-    setPopupVisible(false);
-    setimgPopupVisible(false);
-    setLongPressedIndex(null);
-    setInputValue('');
-  };
-
-  const handleClosePopup2 = () => {
-    setPopupSend(false);
-  };
-
-  const handleMsgDelete = async () => {
-    try {
-      await deleteMsg(userInfo.memberToken, userInfo.LoginToken, msgId);
-      setMessages(prevMessages =>
-        prevMessages.filter(message => message.Id !== msgId),
+    const fetchTokensForCalls = async (type) => {
+      // setIsCallOngoing(true);
+      const data = await getFCMToken(
+        friendId,
+        userInfo.memberToken,
+        userInfo.LoginToken,
       );
-      handleClosePopup();
-      setMsgID(null);
-    } catch (error) {
-      console.log('Failed to delete message: ', error);
-    }
-  };
+      if (data) {
+        const token = await requestUserPermission();
+        const callId = await doCall(
+          data,
+          friendName,
+          userInfo.userId,
+          userInfo.id,
+          token.fcmToken,
+          type,
+        );
+        Linking.openURL(
+          `chimeApp://${type}Call?meetingName=${callId.callId}&userName=${userInfo.name}&fcmToken=${callId.fcmTokens}`,
+        );
+      }
+    };
 
-  const handlePopSend = () => {
-    setPopupSend(true);
-  };
+    const handleEdit = () => {
+      setInputValue(pressMsg);
+    };
 
-  const handleInputChange = text => {
-    setInputValue(text);
-    setShowButtons(text.length === 0);
-  };
+    const handleReceiveMessage = data => {
+      if (!msgId) {
+        setMessages(prevMessages => [data.msgResp, ...prevMessages]);
+      } else {
+        setPopupVisible(false);
+        setLongPressedIndex(null);
+        setMsgID(null);
+        setPressMsg('');
+      }
+      setInputValue('');
+    };
 
-  const handleLongPress1 = () => {
-    setimgPopupVisible(true);
-  };
+    useEffect(() => {
+      if (socket) {
+        socket.on('receiveMessage', handleReceiveMessage);
+      }
+      return () => {
+        if (socket) {
+          socket.off('receiveMessage', handleReceiveMessage);
+        }
+      };
+    }, [socket, msgId]);
 
-  const handleOpenModal = item => {
-    setDocumentPath(item);
-    if (
-      allowMedia(item) === 'image' ||
-      allowMedia(item) === 'video' ||
-      allowMedia(item) === 'audio'
-    ) {
-      setOpenModal(true);
-    } else {
-      console.log('Reach for documents is limited');
-    }
-  };
+    const handleLongPress = () => {
+      setPopupVisible(true);
+    };
 
-  const handleCloseModal = () => {
-    Orientation.lockToPortrait();
-    setOpenModal(false);
-  };
+    const handleClosePopup = () => {
+      setPopupVisible(false);
+      setimgPopupVisible(false);
+      setLongPressedIndex(null);
+      setInputValue('');
+    };
+
+    const handleClosePopup2 = () => {
+      setPopupSend(false);
+    };
+
+    const handleMsgDelete = async () => {
+      try {
+        await deleteMsg(userInfo.memberToken, userInfo.LoginToken, msgId);
+        setMessages(prevMessages =>
+          prevMessages.filter(message => message.Id !== msgId),
+        );
+        handleClosePopup();
+        setMsgID(null);
+      } catch (error) {
+        console.log('Failed to delete message: ', error);
+      }
+    };
+
+    const handlePopSend = () => {
+      setPopupSend(true);
+    };
+
+    const handleInputChange = text => {
+      setInputValue(text);
+      setShowButtons(text.length === 0);
+    };
+
+    const handleLongPress1 = () => {
+      setimgPopupVisible(true);
+    };
+
+    const handleOpenModal = item => {
+      setDocumentPath(item);
+      if (
+        allowMedia(item) === 'image' ||
+        allowMedia(item) === 'video' ||
+        allowMedia(item) === 'audio'
+      ) {
+        setOpenModal(true);
+      } else {
+        console.log('Reach for documents is limited');
+      }
+    };
+
+    const handleCloseModal = () => {
+      Orientation.lockToPortrait();
+      setOpenModal(false);
+    };
 
   const renderItem = ({item, index}) => {
     const isCurrentUser = item.SenderID === userInfo?.id;
@@ -316,6 +344,7 @@ const ChatSection = ({navigation, route}) => {
               paddingRight: isCurrentUser ? 10 : 0,
               flexDirection: 'row',
               alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+              height: '100vh',
             }}>
             {!isCurrentUser && (
               <View style={styles.recvImg}>
@@ -519,7 +548,7 @@ const ChatSection = ({navigation, route}) => {
 
   return (
     <SafeAreaView style={{height: '100%'}}>
-      <View style={styles1.container}>
+      <KeyboardAvoidingView behavior="padding" style={styles1.container}>
         <View style={styles.chatHead}>
           <View style={styles.chatTop}>
             {!isPopupVisible && !imgPopupVisible ? (
@@ -607,21 +636,52 @@ const ChatSection = ({navigation, route}) => {
             </View>
           ) : (
             <View style={styles.callSection}>
-              <TouchableOpacity>
-                <Image
-                  style={{width: 22, height: 22}}
-                  source={require('../assets/png/videoCall.png')}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Image
-                  style={{width: 22, height: 22}}
-                  source={require('../assets/png/call.png')}
-                />
-              </TouchableOpacity>
+              {/* {isCallOngoing ? (
+                <TouchableOpacity>
+                  <Image
+                    style={{width: 22, height: 22}}
+                    source={require('../assets/png/call.png')}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => fetchTokensForCalls('audio', setIsCallOngoing)}>
+                  <Image
+                    style={{width: 22, height: 22}}
+                    source={require('../assets/png/call.png')}
+                  />
+                </TouchableOpacity>
+              )}
+              {isCallOngoing ? (
+                <TouchableOpacity>
+                  <Image
+                    style={{width: 22, height: 22}}
+                    source={require('../assets/png/videoCall.png')}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => fetchTokensForCalls('video', setIsCallOngoing)}>
+                  <Image
+                    style={{width: 22, height: 22}}
+                    source={require('../assets/png/videoCall.png')}
+                  />
+                </TouchableOpacity>
+              )} */}
+              <TouchableOpacity onPress={() => fetchTokensForCalls('audio')}>
+                  <Image
+                    style={{width: 22, height: 22}}
+                    source={require('../assets/png/call.png')}
+                  />
+                </TouchableOpacity>
+              <TouchableOpacity onPress={() => fetchTokensForCalls('video')}>
+                  <Image
+                    style={{width: 22, height: 22}}
+                    source={require('../assets/png/videoCall.png')}
+                  />
+                </TouchableOpacity>
             </View>
           )}
         </View>
+
         <Modal visible={openModal}>
           <View style={styles1.modalContainer}>
             <TouchableOpacity
@@ -656,6 +716,7 @@ const ChatSection = ({navigation, route}) => {
             ) : null}
           </View>
         </Modal>
+
         <FlatList
           // ref={flatListRef}
           inverted
@@ -666,6 +727,7 @@ const ChatSection = ({navigation, route}) => {
           contentContainerStyle={{flexGrow: 1}}
         />
         {isMediaUploading && <MediaUploadLoader />}
+
         <View style={[styles.sendBox, {width: width}]}>
           {showButtons && (
             <View style={styles.leftAreaBtn}>
@@ -710,21 +772,15 @@ const ChatSection = ({navigation, route}) => {
               position: 'relative',
               width: showButtons ? '65%' : '86.4%',
             }}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-              <TextInput
-                multiline
-                value={inputValue}
-                onChangeText={handleInputChange}
-                onContentSizeChange={handleContentSizeChange}
-                style={[
-                  styles.messageBox,
-                  {height: Math.min(height, maxHeight)},
-                ]}
-                placeholder="Type message..."
-                placeholderTextColor="#888"
-              />
-            </KeyboardAvoidingView>
+            <TextInput
+              multiline
+              value={inputValue}
+              onChangeText={handleInputChange}
+              onContentSizeChange={handleContentSizeChange}
+              style={[styles.messageBox, {minHeight: 40, maxHeight: 100}]}
+              placeholder="Type message..."
+              placeholderTextColor="#888"
+            />
           </View>
           {isSendingMessage ? (
             <Image
@@ -742,13 +798,14 @@ const ChatSection = ({navigation, route}) => {
             </TouchableOpacity>
           )}
         </View>
+
         <LongPressPopup
           isVisible={isPopupSend}
           onClose={handleClosePopup2}
           pressMsg={pressMsg}
           handleClosePopup={handleClosePopup}
         />
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
