@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "139406099975",
+    "project_id": "actpal-449c3",
+    "storage_bucket": "actpal-449c3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139406099975:android:bad225af66172f819d4ca2",
+        "android_client_info": {
+          "package_name": "com.actpal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv2fL1IL0yUC3zaDV6OgepMn5kR5dCFHo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

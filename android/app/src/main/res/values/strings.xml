@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ChimeApp</string>
+    <string name="screen_capture_notification_tile">Screen Capture</string>
+    <string name="screen_capture_notification_text">Your screen is being shared.</string>
 </resources>
