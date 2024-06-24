@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../context/AuthContext';
+import Footer from '../components/Footer';
+import { responsiveWidth } from 'react-native-responsive-dimensions';
 
 const Myprofile = ({navigation}) => {
   const {isLoading, logout} = useContext(AuthContext);
@@ -155,6 +157,7 @@ const Myprofile = ({navigation}) => {
         </View>
       </ScrollView>
     </View>
+    <Footer/>
     </SafeAreaView>
   );
 };
@@ -234,10 +237,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between'
   },
   post: {
-    width: 130,
-    height: 130,
+    width: responsiveWidth(33.3),
+    height: responsiveWidth(33),
     resizeMode: 'cover',
   },
   followerBox: {

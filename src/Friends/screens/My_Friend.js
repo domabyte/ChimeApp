@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -9,21 +9,24 @@ import {
   TextInput,
   FlatList,
   RefreshControl,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Header from '../../components/Header';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 const default_photo = require('../../assets/png/default-profile.png');
 import Spinner from 'react-native-loading-spinner-overlay';
-import {useIsFocused} from '@react-navigation/core';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/core';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Footer from '../../components/Footer';
+import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 
-const MyFriends = ({navigation}) => {
+const MyFriends = ({ navigation }) => {
   const [myFriends, setMyFriends] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
-  const {isLoading, userInfo, getAllFriends, unFriendRequest, error, setError} =
+  const { isLoading, userInfo, getAllFriends, unFriendRequest, error, setError } =
     useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const isFocused = useIsFocused();
@@ -100,14 +103,14 @@ const MyFriends = ({navigation}) => {
     }
   };
 
-  const renderItem = ({item, index}) => (
+  const renderItem = ({ item, index }) => (
     <View style={styles.friendList}>
       <View style={styles.userImage}>
         <Image
-          style={{width: '100%', height: '100%'}}
+          style={{ width: '100%', height: '100%' }}
           source={
             item.Mem_Photo && typeof item.Mem_Photo === 'string'
-              ? {uri: item.Mem_Photo}
+              ? { uri: item.Mem_Photo }
               : default_photo
           }
         />
@@ -115,16 +118,16 @@ const MyFriends = ({navigation}) => {
       <View>
         <Text
           ellipsizeMode="tail"
-          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
+          style={{ fontSize: 18, color: 'black', fontWeight: '500' }}>
           {item.Mem_Name}
         </Text>
-        <Text style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
+        <Text style={{ fontSize: 12, color: '#1866B4', fontWeight: '500' }}>
           {item.Mem_Designation.trim() === 'Not Added'
             ? ''
             : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Image
               style={styles.mutualImg}
               source={require('../../assets/png/user1.png')}
@@ -138,18 +141,18 @@ const MyFriends = ({navigation}) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{color: 'black'}}>
+          <Text style={{ color: 'black' }}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
         <View style={styles.buttonArea}>
           <TouchableOpacity
-            style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}
+            style={[styles.blueBtn, { backgroundColor: '#1e293c' }]}
             onPress={() => handleUnfriend(item?.FriendList_Id, index)}>
-            <Text style={{color: 'white'}}>UnFriend</Text>
+            <Text style={{ color: 'white' }}>UnFriend</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
+            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
             onPress={() =>
               navigation.navigate('chatSection', {
                 friendId: item?.Mem_ID,
@@ -157,7 +160,7 @@ const MyFriends = ({navigation}) => {
                 friendPhoto: item?.Mem_Photo,
               })
             }>
-            <Text style={{color: 'black'}}>Message</Text>
+            <Text style={{ color: 'black' }}>Message</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -165,30 +168,22 @@ const MyFriends = ({navigation}) => {
   );
 
   const renderNoResults = () => (
-    <View style={styles.noResults}>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignContent: 'center',
-        }}>
-        <Image
-          style={{width: 200, height: 200}}
-          source={require('../../assets/png/no-post.png')}
-        />
-      </View>
-      <View>
-        <Text>Here is no more member!</Text>
-        <Text>Please wait for some days.</Text>
-        <TouchableOpacity
-          onPress={() => {
-            setSearchButtonClicked(false);
-            setSearchKeyword('');
-          }}>
-          <Text style={styles.goBackText} onPress={handleGoBack}>
-            Go Back
-          </Text>
-        </TouchableOpacity>
+    <View style={styles.emptyBox}>
+      <View style={styles.noResults}>
+        <View>
+          <Image
+            style={{ width: responsiveWidth(34), height: responsiveWidth(25) }}
+            source={require('../../assets/png/no-post.png')}
+          />
+        </View>
+        <View>
+          <Text style={{ fontSize: responsiveFontSize(2), width: responsiveWidth(70), textAlign: 'center', marginTop: responsiveWidth(4) }}>Here is no more member! Please wait for some days.</Text>
+          <TouchableOpacity>
+            <Text style={styles.goBackText} onPress={handleGoBack}>
+              Go Back
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -199,13 +194,16 @@ const MyFriends = ({navigation}) => {
   };
 
   return (
-    <>
-      <SafeAreaView style={{height: '100%'}}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={{ height: '100%' }}>
         <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
         <Header navigation={navigation} />
         <View style={styles.container}>
           <Spinner visible={isLoading} />
-          <View style={{marginHorizontal: 16, marginVertical: 10}}>
+          <View style={{ marginHorizontal: 16, marginVertical: 10 }}>
             <FriendHeader navigation={navigation} index={0} />
           </View>
           <View
@@ -217,7 +215,7 @@ const MyFriends = ({navigation}) => {
             {searchButtonClicked && (
               <TouchableOpacity onPress={handleGoBack}>
                 <Image
-                  style={{width: 30, height: 30}}
+                  style={{ width: 30, height: 30 }}
                   source={require('../../assets/png/leftArrow.png')}
                 />
               </TouchableOpacity>
@@ -225,7 +223,7 @@ const MyFriends = ({navigation}) => {
             <Text style={styles.FriendTex}>
               {' '}
               Friends{' '}
-              <Text style={{color: '#1866B4'}}>
+              <Text style={{ color: '#1866B4' }}>
                 {searchButtonClicked ? searchResults.length : myFriends.length}
               </Text>
             </Text>
@@ -241,7 +239,7 @@ const MyFriends = ({navigation}) => {
               style={styles.searchbtn}
               onPress={handleMyFriendRequest}>
               <Image
-                style={{width: 24, height: 24}}
+                style={{ width: 24, height: 24 }}
                 source={require('../../assets/png/search.png')}
               />
             </TouchableOpacity>
@@ -259,8 +257,9 @@ const MyFriends = ({navigation}) => {
             ListEmptyComponent={renderNoResults}
           />
         </View>
+        <Footer />
       </SafeAreaView>
-    </>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -286,11 +285,9 @@ const styles = StyleSheet.create({
     right: 15,
   },
   noResults: {
-    flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
-    marginBottom: 20,
   },
   noResultsText: {
     fontSize: 18,
@@ -360,6 +357,12 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     marginBottom: 10,
   },
+  emptyBox: {
+    flex: 1,
+    height: responsiveHeight(48),
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
 });
 
 export default MyFriends;

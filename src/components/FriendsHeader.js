@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
+import { responsiveWidth } from 'react-native-responsive-dimensions';
 
 const FriendHeader = ({ navigation , index }) => {
   return (
@@ -66,8 +67,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    marginLeft: 10,
     marginVertical: 10,
+    marginRight: 10
   },
 });
 export default FriendHeader;

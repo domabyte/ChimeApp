@@ -10,7 +10,7 @@ RNCallKeep.addEventListener('answerCall', ({callUUID}) => {
     RNCallKeep.backToForeground();
     setTimeout(async () => {
       Linking.openURL(
-        `chimeApp://${callDetails.type}Call?meetingName=${callUUID}&userName=${callDetails.name}`,
+        `actpal://${callDetails.type}Call?meetingName=${callUUID}&userName=${callDetails.name}`,
       );
       RNCallKeep.endCall(callUUID);
       try {
@@ -34,7 +34,7 @@ RNCallKeep.addEventListener('answerCall', ({callUUID}) => {
   RNCallKeep.addEventListener('endCall', () => console.log('End the call'));
   
   messaging().onMessage(async remoteMessage => {
-    // console.log("Remote messages are : ",remoteMessage.data);
+    // console.log("Remote message: " + JSON.stringify(remoteMessage));
     callDetails = Object.assign({}, callDetails, {token: remoteMessage.data?.token, type: remoteMessage.data?.navigationId, name: remoteMessage.data?.friendName, fcmToken: remoteMessage.data?.fcmtoken});
     if (remoteMessage.data?.pickUp === '1') {
       RNCallKeep.displayIncomingCall(

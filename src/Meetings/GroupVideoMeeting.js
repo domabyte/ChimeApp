@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, FlatList, Alert, StyleSheet, BackHandler, TouchableOpacity, SafeAreaView } from 'react-native';
+import {View, Text, FlatList, Alert, StyleSheet, BackHandler } from 'react-native';
 import {
   NativeFunction,
   getSDKEventEmitter,
@@ -20,7 +20,7 @@ const ringtone = require('../assets/audio/ringtone.mp3');
 const attendeeNameMap = {};
 Sound.setCategory('Playback', true);
 
-export class VideoMeeting extends React.Component {
+export class GroupVideoMeeting extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -30,8 +30,6 @@ export class VideoMeeting extends React.Component {
       selfVideoEnabled: false,
       screenShareTile: null,
       isMeetingActive: false,
-      isSpeakerActive: false,
-      tileVideoId: null,
     };
     this.sound = null;
     this.timer = null;
@@ -261,9 +259,6 @@ export class VideoMeeting extends React.Component {
     NativeFunction.switchMicrophoneToSpeaker()
       .then(response => {
         console.log(response);
-        this.setState(prevState => ({
-          isSpeakerActive: !prevState.isSpeakerActive
-        }));
       })
       .catch(error => {
         console.error(error);
@@ -306,82 +301,15 @@ export class VideoMeeting extends React.Component {
     return true;
   };
 
-  handleTilePress = (tileId) => {
-    console.log("Tile id : ",tileId);
-    this.setState({tileVideoId: tileId});
-  };
-
   render() {
     const currentMuted = this.state.mutedAttendee.includes(
       this.props.selfAttendeeId,
     );
 
     return (
-      <SafeAreaView>
-      <View style={[styles.container]}>
+      <View style={[styles.container, {justifyContent: 'flex-start'}]}>
         {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
-        {/* <Text style={styles.title}>{this.props.userName}</Text> */}
-        
-        {/* <Text style={styles.title}>Video</Text> */}
-        <View style={[styles.videoContainer, this.state.videoTiles.length==1 && this.state.tileVideoId === null ? styles.oneVideo:
-                this.state.videoTiles.length==2 && this.state.tileVideoId === null? styles.twoVideo: styles.NoVideo
-              , this.state.tileVideoId !== null?styles.fullScreenVideo:'']}>
-          {this.state.videoTiles.length > 0 ? (
-            this.state.videoTiles.map(tileId => (
-              <TouchableOpacity key={tileId} onPress={() => this.handleTilePress(tileId)} 
-              style={[
-                this.state.tileVideoId === null
-                  ? styles.videoWrapper
-                  : 
-                      this.state.tileVideoId === tileId ? styles.fullWrapper : styles.smallWrapper
-                    ]
-              }
-              >
-              <RNVideoRenderView
-                style={
-                  this.state.tileVideoId === null
-                    ? styles.video
-                    : [
-                        this.state.tileVideoId === tileId ? styles.selectedVideo : styles.smallVideo
-                      ]
-                }
-                tileId={tileId}
-                />
-                      
-               </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.subtitle}>
-              No one is sharing video at this moment
-            </Text>
-          )}
-        </View>
-        {/* {!!this.state.screenShareTile && (
-          <React.Fragment>
-            <Text style={styles.title}>Screen Share</Text>
-            <View style={styles.videoContainer}>
-              <RNVideoRenderView
-                style={styles.screenShare}
-                key={this.state.screenShareTile}
-                tileId={this.state.screenShareTile}
-              />
-            </View>
-          </React.Fragment>
-        )} */}
-        {/* <Text style={styles.title}>Attendee</Text>
-        <FlatList
-          style={styles.attendeeList}
-          data={this.state.attendees}
-          renderItem={({item}) => (
-            <AttendeeItem
-              attendeeName={
-                attendeeNameMap[item] ? attendeeNameMap[item] : item
-              }
-              muted={this.state.mutedAttendee.includes(item)}
-            />
-          )}
-          keyExtractor={item => item}
-        /> */}
+        <Text style={styles.title}>{this.props.userName}</Text>
         <View style={styles.buttonContainer}>
           <MuteButton
             muted={currentMuted}
@@ -389,7 +317,6 @@ export class VideoMeeting extends React.Component {
           />
           <SwitchMicrophoneToSpeakerButton
             onPress={this.switchMicrophoneToSpeaker}
-            isSpeakerActive={this.state.isSpeakerActive}
           />
           <CameraButton
             disabled={this.state.selfVideoEnabled}
@@ -403,71 +330,62 @@ export class VideoMeeting extends React.Component {
           {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
           <HangOffButton onPress={this.HangUp} />
         </View>
+        <Text style={styles.title}>Video</Text>
+        <View style={styles.videoContainer}>
+          {this.state.videoTiles.length > 0 ? (
+            this.state.videoTiles.map(tileId => (
+              <RNVideoRenderView
+                style={styles.video}
+                key={tileId}
+                tileId={tileId}
+              />
+            ))
+          ) : (
+            <Text style={styles.subtitle}>
+              No one is sharing video at this moment
+            </Text>
+          )}
+        </View>
+        {!!this.state.screenShareTile && (
+          <React.Fragment>
+            <Text style={styles.title}>Screen Share</Text>
+            <View style={styles.videoContainer}>
+              <RNVideoRenderView
+                style={styles.screenShare}
+                key={this.state.screenShareTile}
+                tileId={this.state.screenShareTile}
+              />
+            </View>
+          </React.Fragment>
+        )}
+        <Text style={styles.title}>Attendee</Text>
+        <FlatList
+          style={styles.attendeeList}
+          data={this.state.attendees}
+          renderItem={({item}) => (
+            <AttendeeItem
+              attendeeName={
+                attendeeNameMap[item] ? attendeeNameMap[item] : item
+              }
+              muted={this.state.mutedAttendee.includes(item)}
+            />
+          )}
+          keyExtractor={item => item}
+        />
       </View>
-      </SafeAreaView>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    width:'100%',
+    justifyContent: 'center',
     alignItems: 'center',
-    height: '100%',
-    backgroundColor: 'gray',
-  },
-  oneVideo: {
-    width: '100%',
-    height: '100%',
-  },
-  twoVideo:{
-    flex:1,
-    flexDirection: 'column',
-    borderColor:'#333',
-    borderTopColor:"#f00",
-    borderWidth:2,
-    width:'100%',
-    height:'100%',
-  },
-  NoVideo: {
-    width: '100%',
-    height: '100%',
-  },
-  videoWrapper:{
-    width: '100%',
-    height: '50%',
-  },
- 
-  video: {
-    flex:1,
-    width: '100%',
-    height: '50%',
-    objectFit:'cover',
-  },
-  selectedVideo: {
-    width: '100%',
-    height: '100%',
-    position:'relative',
-    zIndex:1,
-  },
-  fullScreenVideo:{
-    width: '100%',
-    height: '100%',
-    flex: 1,
-    position: 'relative',
-    zIndex:0,
-  },
-  fullWrapper:{
-    width:'100%',
-    height: '100%',
-    flex: 1,
+    height: '95%',
+    backgroundColor: 'white',
   },
   buttonContainer: {
-    position: 'absolute',
     flexDirection: 'row',
-    bottom:10,
-    gap:10,
-    zIndex:99,
     justifyContent: 'space-between',
   },
   title: {
@@ -475,7 +393,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   viewContainer: {
-    width: '100%',
+    width: '90%',
     flexDirection: 'row',
     justifyContent: 'space-evenly',
   },
@@ -494,33 +412,13 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 400,
   },
+  video: {
+    width: '45%',
+    height: 300,
+  },
   attendeeList: {
     width: '90%',
   },
-  smallWrapper:{
-    width: 100,
-    height:100,
-    position:'absolute',
-    bottom:100,
-    right:20,
-    zIndex:999,
-    borderRadius:10,
-    borderColor:'#333',
-    borderWidth:2,
-  },
-  smallVideo:{
-    flex: 1,
-    left:0,
-    top:0,
-    width: '100%',
-    height: '100%',
-    objectFit:'cover',
-    zIndex:9999,
-    position:'relative',
-    width: '100%',
-    height: '100%',
-  },
-  
 });
 
 export default VideoMeeting;

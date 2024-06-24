@@ -16,7 +16,7 @@ const ringtone = require('../assets/audio/ringtone.mp3');
 const attendeeNameMap = {};
 Sound.setCategory('Playback', true);
 
-export class AudioMeeting extends React.Component {
+export class GroupAudioMeeting extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -25,12 +25,11 @@ export class AudioMeeting extends React.Component {
       meetingTitle: props.meetingTitle || '',
       isMeetingActive: false,
       meetingDuration: 0,
-      isSpeakerActive: false,
-      startTime: null,
     };
     this.sound = null;
     this.timer = null;
     this.meetingTimer = null;
+    this.startTime = null;
   }
 
   componentDidMount() {
@@ -56,9 +55,7 @@ export class AudioMeeting extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.attendees.length >= 2 && prevState.attendees.length < 2) {
-      this.setState({ isMeetingActive: true, startTime: Date.now() }, () => {
-        this.startMeetingTimer();
-      });
+      this.setState({ isMeetingActive: true });
       try {
         this.sound.release();
       } catch (err) {
@@ -68,10 +65,6 @@ export class AudioMeeting extends React.Component {
         clearTimeout(this.timer);
         this.timer = null;
       }
-    } else if (this.state.attendees.length < 2 && prevState.attendees.length >= 2) {
-      this.setState({ isMeetingActive: false });
-      this.stopMeetingTimer();
-      this.HangUp();
     } else if (this.state.attendees.length === 1 && prevState.attendees.length === 0) {
       this.startOneMinuteTimer();
     } else if (
@@ -93,10 +86,6 @@ export class AudioMeeting extends React.Component {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
-    }
-    if (this.meetingTimer) {
-      clearTimeout(this.meetingTimer);
-      this.meetingTimer = null;
     }
     this.backHandler.remove();
   }
@@ -228,9 +217,6 @@ export class AudioMeeting extends React.Component {
     NativeFunction.switchMicrophoneToSpeaker()
       .then(response => {
         console.log(response);
-        this.setState(prevState => ({
-          isSpeakerActive: !prevState.isSpeakerActive
-        }));
       })
       .catch(error => {
         console.error(error);
@@ -255,41 +241,25 @@ export class AudioMeeting extends React.Component {
     return true;
   };
 
-  startMeetingTimer = () => {
-    this.meetingTimer = setInterval(() => {
-      this.setState({ meetingDuration: Date.now() - this.state.startTime });
-    }, 1000);
-  };
-
-  stopMeetingTimer = () => {
-    if (this.meetingTimer) {
-      clearInterval(this.meetingTimer);
-      this.meetingTimer = null;
-    }
-  };
-
-  formatDuration = (milliseconds) => {
-    if (!milliseconds || milliseconds < 0) return '00:00:00';
-
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return [
-      hours.toString().padStart(2, '0'),
-      minutes.toString().padStart(2, '0'),
-      seconds.toString().padStart(2, '0'),
-    ].join(':');
-  };
-
   render() {
-    const { selfAttendeeId } = this.props;
+    const { selfAttendeeId, userName } = this.props;
     const currentMuted = this.state.mutedAttendee.includes(selfAttendeeId);
-    const meetingDuration = this.formatDuration(this.state.meetingDuration);
 
     return (
       <View style={[styles.container, { justifyContent: 'flex-start' }]}>
+        <Text style={styles.title}>{userName}</Text>
+        <View style={styles.buttonContainer}>
+          <MuteButton
+            muted={currentMuted}
+            onPress={() => NativeFunction.setMute(!currentMuted)}
+          />
+          <SwitchMicrophoneToSpeakerButton
+            onPress={this.switchMicrophoneToSpeaker}
+          />
+          <HangOffButton onPress={this.HangUp} />
+        </View>
+        <Text style={styles.title}>Audio</Text>
+        <Text style={styles.title}>Attendee</Text>
         <FlatList
           style={styles.attendeeList}
           data={this.state.attendees}
@@ -297,22 +267,10 @@ export class AudioMeeting extends React.Component {
             <AttendeeItem
               attendeeName={attendeeNameMap[item] || item}
               muted={this.state.mutedAttendee.includes(item)}
-              meetingDuration={meetingDuration}
             />
           )}
           keyExtractor={item => item}
         />
-         <View style={styles.buttonContainer}>
-          <MuteButton
-            muted={currentMuted}
-            onPress={() => NativeFunction.setMute(!currentMuted)}
-          />
-          <SwitchMicrophoneToSpeakerButton
-            onPress={this.switchMicrophoneToSpeaker}
-            isSpeakerActive={this.state.isSpeakerActive}
-          />
-          <HangOffButton onPress={this.HangUp} />
-        </View>
       </View>
     );
   }
@@ -322,29 +280,46 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100%',
+    height: '95%',
     backgroundColor: 'white',
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    width: '100%',
-    marginBottom: 15,
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 30,
     fontWeight: '700',
-    marginTop: 50,
   },
-  title1: {
-    fontSize: 30,
-    fontWeight: '500',
-    marginTop: 30,
+  viewContainer: {
+    width: '90%',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  subtitle: {
+    marginBottom: 25,
+    marginTop: 10,
+    color: 'grey',
+  },
+  videoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  video: {
+    width: '100%',
+    margin: '1%',
+    aspectRatio: 16 / 9,
+  },
+  screenShare: {
+    width: '90%',
+    margin: '1%',
+    aspectRatio: 16 / 9,
   },
   attendeeList: {
     flex: 1,
     width: '80%',
-    marginTop: 30,
   },
   attendeeContainer: {
     fontSize: 20,
@@ -352,13 +327,31 @@ const styles = StyleSheet.create({
     padding: 5,
     height: 30,
     backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'space-between',
     flexDirection: 'row',
   },
   attendeeMuteImage: {
     resizeMode: 'contain',
     width: 20,
     height: 20,
+  },
+  ringingText: {
+    alignContent: 'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+  },
+  inputBox: {
+    height: 40,
+    borderColor: 'black',
+    borderWidth: 1,
+    margin: 5,
+    width: '50%',
+    padding: 10,
+    color: 'black',
+  },
+  meetingButton: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 50,
   },
 });

@@ -16,6 +16,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 import { useIsFocused } from '@react-navigation/core';
+import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const SentRequest = ({ navigation }) => {
@@ -180,7 +181,7 @@ const SentRequest = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={{height:'100%'}}>
+    <SafeAreaView style={{ height: '100%' }}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <Header navigation={navigation} />
       <View style={styles.container}>
@@ -233,32 +234,22 @@ const SentRequest = ({ navigation }) => {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
           ListEmptyComponent={
-            <View style={styles.noResults}>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                }}
-              >
-                <Image
-                  style={{ width: 200, height: 200 }}
-                  source={require('../../assets/png/no-post.png')}
-                />
-              </View>
-              <View>
-                <Text>Here is no more member!</Text>
-                <Text>Please wait for some days.</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSearchButtonClicked(false);
-                    setSearchKeyword('');
-                  }}
-                >
-                  <Text style={styles.goBackText} onPress={handleGoBack}>
-                    Go Back
-                  </Text>
-                </TouchableOpacity>
+            <View style={styles.emptyBox}>
+              <View style={styles.noResults}>
+                <View>
+                  <Image
+                    style={{ width: responsiveWidth(34), height: responsiveWidth(25) }}
+                    source={require('../../assets/png/no-post.png')}
+                  />
+                </View>
+                <View>
+                  <Text style={{ fontSize: responsiveFontSize(2), width: responsiveWidth(70), textAlign: 'center', marginTop: responsiveWidth(4) }}>Here is no more member! Please wait for some days.</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.goBackText} onPress={handleGoBack}>
+                      Go Back
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           }
@@ -296,11 +287,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   noResults: {
-    flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
-    marginBottom: 20,
   },
   noResultsText: {
     fontSize: 18,
@@ -365,6 +354,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 12,
   },
+  emptyBox: {
+    flex: 1,
+    height: responsiveHeight(48),
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
 });
 
 export default SentRequest;

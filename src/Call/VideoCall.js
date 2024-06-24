@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {VideoMeeting} from '../Meetings/VideoMeeting';
 import {createMeetingRequest} from '../utils/Api';
+import { AuthContext } from '../context/AuthContext';
 import {
   getSDKEventEmitter,
   MobileSDKEvent,
@@ -22,6 +23,7 @@ const VideoCall = ({navigation, route}) => {
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
   const {meetingName, userName, fcmToken} = route.params;
+  const {userInfo} = useContext(AuthContext);
 
   useEffect(() => {
     const onMeetingStartSubscription = getSDKEventEmitter().addListener(
@@ -48,7 +50,7 @@ const VideoCall = ({navigation, route}) => {
       },
     );
 
-    initializeMeetingSession(meetingName, userName);
+    initializeMeetingSession(meetingName, userInfo?.id);
 
     return () => {
       onMeetingStartSubscription.remove();
@@ -105,6 +107,7 @@ const VideoCall = ({navigation, route}) => {
           <VideoMeeting
             meetingTitle={meetingTitle}
             userName={userName}
+            userInfo={userInfo}
             selfAttendeeId={selfAttendeeId}
             endCall={endCall}
             navigation={navigation}

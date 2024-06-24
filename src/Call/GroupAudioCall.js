@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext} from 'react';
+import React, { useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -6,8 +6,7 @@ import {
   ActivityIndicator,
   View,
 } from 'react-native';
-import {AudioMeeting} from '../Meetings/AudioMeeting';
-import {AuthContext} from '../context/AuthContext';
+import {GroupAudioMeeting} from '../Meetings/GroupAudioMeeting';
 import {createMeetingRequest} from '../utils/Api';
 import {
   getSDKEventEmitter,
@@ -17,14 +16,12 @@ import {
 import axios from 'axios';
 import configURL from '../config/config';
 
-
-const AudioCall = ({navigation, route}) => {
+const GroupAudioCall = ({navigation, route}) => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
   const {meetingName, userName, fcmToken} = route.params;
-  const { userInfo } = useContext(AuthContext);
 
   useEffect(() => {
     const onMeetingStartSubscription = getSDKEventEmitter().addListener(
@@ -51,7 +48,7 @@ const AudioCall = ({navigation, route}) => {
       },
     );
 
-    initializeMeetingSession(meetingName, userInfo?.id);
+    initializeMeetingSession(meetingName, userName);
 
     return () => {
       onMeetingStartSubscription.remove();
@@ -104,8 +101,9 @@ const AudioCall = ({navigation, route}) => {
           </View>
         )}
         {isInMeeting && !isLoading && (
-          <AudioMeeting
+          <GroupAudioMeeting
             meetingTitle={meetingTitle}
+            userName={userName}
             selfAttendeeId={selfAttendeeId}
             endCall={endCall}
             navigation={navigation}
@@ -116,4 +114,4 @@ const AudioCall = ({navigation, route}) => {
   );
 };
 
-export default AudioCall;
+export default GroupAudioCall;

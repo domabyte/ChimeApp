@@ -200,7 +200,16 @@ export const AuthProvider = ({children}) => {
   const login = async (email, password, rememberMe) => {
     setIsLoading(true);
     const token = await requestUserPermission();
-    const url = config.loginURL + email + '&password=' + password + '&DeviceId=' + token.deviceToken + '&DeviceToken=' + token.fcmToken;
+    console.log('token : ', token);
+    const url =
+      config.loginURL +
+      email +
+      '&password=' +
+      password +
+      '&DeviceId=' +
+      token.deviceToken +
+      '&DeviceToken=' +
+      token.fcmToken;
     try {
       const {data} = await axios.get(url);
       if (data.Mem_ID && data.Mem_ID > 0) {
@@ -295,15 +304,26 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    console.log('User info is : ', userInfo);
     setIsLoading(true);
+    const token = await requestUserPermission();
+    const queryString = `${configURL.logoutURL}${userInfo.memberToken}&DeviceId=${token?.deviceToken}`;
     try {
-      AsyncStorage.removeItem('userInfo');
-      setUserInfo({});
-      setIsLoading(false);
-      setError(null);
+      const {data} = await axios.get(queryString, {
+        headers: {
+          MemberToken: userInfo.memberToken,
+          LoginToken: userInfo.LoginToken,
+        },
+      });
+      if (data?.message) {
+        AsyncStorage.removeItem('userInfo');
+        setUserInfo({});
+        setIsLoading(false);
+        setError(null);
+      }
     } catch (err) {
-      console.log(`logout error ${e}`);
+      console.log(`logout error ${err}`);
       setIsLoading(false);
     }
   };
@@ -785,30 +805,34 @@ export const AuthProvider = ({children}) => {
 
   const getFCMToken = async (memId, memberToken, loginToken) => {
     try {
-      const {data} = await axios.post(configURL.getFCMTokenURL,
+      const {data} = await axios.post(
+        configURL.getFCMTokenURL,
         {
-          "Mem_Id": memId,
+          Mem_Id: memId,
         },
         {
           headers: {
-            "LoginToken": loginToken,
-            "MemberToken": memberToken,
-          }
-      });
+            LoginToken: loginToken,
+            MemberToken: memberToken,
+          },
+        },
+      );
       if (data.length > 0) {
-      const deviceTokens = data.map(item => item.DeviceToken).filter(token => token !== null && token !== undefined);
-      return deviceTokens;
-      } 
+        const deviceTokens = data
+          .map(item => item.DeviceToken)
+          .filter(token => token !== null && token !== undefined);
+        return deviceTokens;
+      }
       return [];
-    } catch(err) {
-      console.log("Error fetching the FCM token : ",{err});
-    } 
-  }
+    } catch (err) {
+      console.log('Error fetching the FCM token : ', {err});
+    }
+  };
 
   const doCall = async (tokens, friendName, userId, id, token, type) => {
     try {
       const {data} = await axios.post(configURL.callURL, {
-        fcmTokens : tokens,
+        fcmTokens: tokens,
         friendName,
         userId,
         id,
@@ -818,8 +842,60 @@ export const AuthProvider = ({children}) => {
       if (data.code) {
         return data;
       }
-    } catch(err) {
-      console.log("Error in doCall : ",{err});
+    } catch (err) {
+      console.log('Error in doCall : ', {err});
+    }
+  };
+
+  const getUserInfo = async (memberToken, loginToken, memId) => {
+    setIsLoading(true);
+    try {
+      const url = configURL._getUserInfoURL + memberToken + '&MemId=' + memId;
+      const {data} = await axios.get(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          MemberToken: memberToken,
+          LoginToken: loginToken,
+        },
+      });
+      if (data) {
+        setIsLoading(false);
+        return data;
+      } else {
+        setIsLoading(false);
+        return false;
+      }
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  const groupCall = async (groupId, memberToken, loginToken, calltype) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.get(
+        configURL.groupCallURL,
+        {
+          GroupId: groupId,
+          MemberToken: memberToken,
+          CallType: calltype,
+        },
+        {
+          headers: {
+            MemberToken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      if (data) {
+        console.log('data is : ', data);
+        setIsLoading(false);
+        return data;
+      }
+    } catch (err) {
+      console.log('Error in groupCall : ', {err});
+      setIsLoading(false);
     }
   };
 
@@ -861,6 +937,8 @@ export const AuthProvider = ({children}) => {
         deleteMsg,
         getFCMToken,
         doCall,
+        getUserInfo,
+        groupCall,
       }}>
       {children}
     </AuthContext.Provider>
