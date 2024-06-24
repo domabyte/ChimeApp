@@ -12,11 +12,11 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		5E4783272C1C406300726B26 /* GoogleService-Info 2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5E4783262C1C406300726B26 /* GoogleService-Info 2.plist */; };
 		5E47832C2C1C407E00726B26 /* MeetingObservers.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E4783292C1C407E00726B26 /* MeetingObservers.m */; };
 		5E47832D2C1C407E00726B26 /* NativeMobileSDKBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E47832B2C1C407E00726B26 /* NativeMobileSDKBridge.m */; };
 		5E4783312C1C409500726B26 /* ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 5E47832E2C1C409500726B26 /* ringtone.mp3 */; };
 		5E4783322C1C409500726B26 /* RNVideoViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E4783302C1C409500726B26 /* RNVideoViewManager.m */; };
+		5E4783342C1D544700726B26 /* GoogleService-Info 2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5E4783332C1D544700726B26 /* GoogleService-Info 2.plist */; };
 		7699B88040F8A987B510C191 /* libPods-ChimeApp-ChimeAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-ChimeApp-ChimeAppTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
@@ -46,7 +46,6 @@
 		5709B34CF0A7D63546082F79 /* Pods-ChimeApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChimeApp.release.xcconfig"; path = "Target Support Files/Pods-ChimeApp/Pods-ChimeApp.release.xcconfig"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-ChimeApp-ChimeAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChimeApp-ChimeAppTests.debug.xcconfig"; path = "Target Support Files/Pods-ChimeApp-ChimeAppTests/Pods-ChimeApp-ChimeAppTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-ChimeApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ChimeApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5E4783262C1C406300726B26 /* GoogleService-Info 2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info 2.plist"; sourceTree = "<group>"; };
 		5E4783282C1C407E00726B26 /* MeetingObservers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MeetingObservers.h; sourceTree = "<group>"; };
 		5E4783292C1C407E00726B26 /* MeetingObservers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MeetingObservers.m; sourceTree = "<group>"; };
 		5E47832A2C1C407E00726B26 /* NativeMobileSDKBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NativeMobileSDKBridge.h; sourceTree = "<group>"; };
@@ -54,6 +53,8 @@
 		5E47832E2C1C409500726B26 /* ringtone.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = ringtone.mp3; sourceTree = "<group>"; };
 		5E47832F2C1C409500726B26 /* RNVideoViewManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNVideoViewManager.h; sourceTree = "<group>"; };
 		5E4783302C1C409500726B26 /* RNVideoViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNVideoViewManager.m; sourceTree = "<group>"; };
+		5E4783332C1D544700726B26 /* GoogleService-Info 2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info 2.plist"; sourceTree = "<group>"; };
+		5E4783352C1D555D00726B26 /* ChimeApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ChimeApp.entitlements; path = ChimeApp/ChimeApp.entitlements; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ChimeApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-ChimeApp-ChimeAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChimeApp-ChimeAppTests.release.xcconfig"; path = "Target Support Files/Pods-ChimeApp-ChimeAppTests/Pods-ChimeApp-ChimeAppTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -99,6 +100,8 @@
 		13B07FAE1A68108700A75B9A /* ChimeApp */ = {
 			isa = PBXGroup;
 			children = (
+				5E4783352C1D555D00726B26 /* ChimeApp.entitlements */,
+				5E4783332C1D544700726B26 /* GoogleService-Info 2.plist */,
 				5E47832E2C1C409500726B26 /* ringtone.mp3 */,
 				5E47832F2C1C409500726B26 /* RNVideoViewManager.h */,
 				5E4783302C1C409500726B26 /* RNVideoViewManager.m */,
@@ -106,7 +109,6 @@
 				5E4783292C1C407E00726B26 /* MeetingObservers.m */,
 				5E47832A2C1C407E00726B26 /* NativeMobileSDKBridge.h */,
 				5E47832B2C1C407E00726B26 /* NativeMobileSDKBridge.m */,
-				5E4783262C1C406300726B26 /* GoogleService-Info 2.plist */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -264,8 +266,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E4783312C1C409500726B26 /* ringtone.mp3 in Resources */,
+				5E4783342C1D544700726B26 /* GoogleService-Info 2.plist in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
-				5E4783272C1C406300726B26 /* GoogleService-Info 2.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -453,6 +455,7 @@
 			baseConfigurationReference = 5B7EB9410499542E8C5724F5 /* Pods-ChimeApp-ChimeAppTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 6L85YUY8GF;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -469,7 +472,7 @@
 					"-lc++",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimeapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChimeApp.app/ChimeApp";
 			};
@@ -481,6 +484,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 6L85YUY8GF;
 				INFOPLIST_FILE = ChimeAppTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -493,7 +497,7 @@
 					"-lc++",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimeapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChimeApp.app/ChimeApp";
 			};
@@ -505,7 +509,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = ChimeApp/ChimeApp.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8LR99G7A89;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ChimeApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -518,7 +524,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimeapp;
 				PRODUCT_NAME = ChimeApp;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -532,7 +538,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = ChimeApp/ChimeApp.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8LR99G7A89;
 				INFOPLIST_FILE = ChimeApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -544,7 +552,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.chimeapp;
 				PRODUCT_NAME = ChimeApp;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

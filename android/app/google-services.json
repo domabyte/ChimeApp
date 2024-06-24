@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "139406099975",
-    "project_id": "actpal-449c3",
-    "storage_bucket": "actpal-449c3.appspot.com"
+    "project_number": "353827641409",
+    "project_id": "chimeapp-4c2a4",
+    "storage_bucket": "chimeapp-4c2a4.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:139406099975:android:bad225af66172f819d4ca2",
+        "mobilesdk_app_id": "1:353827641409:android:3b99f278789c71abe20ec0",
         "android_client_info": {
-          "package_name": "com.actpal"
+          "package_name": "com.chimeapp"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDv2fL1IL0yUC3zaDV6OgepMn5kR5dCFHo"
+          "current_key": "AIzaSyBX93WBhXGvTyPvvuESGnpaldqd2jW6GUE"
         }
       ],
       "services": {
