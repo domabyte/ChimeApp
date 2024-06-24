@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   ImageBackground,
   View,
@@ -11,26 +11,28 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import {Dropdown} from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import axios from 'axios';
 import config from '../../config/config';
+import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
-const Information = ({navigation, route}) => {
-  const {userInfo} = route.params;
+const Information = ({ navigation, route }) => {
+  const { userInfo } = route.params;
   const [country, setCountry] = useState([]);
-  const [state, setState] = useState([{label: 'Select a state', value: null}]);
+  const [state, setState] = useState([{ label: 'Select a state', value: null }]);
   const [countryValue, setCountryValue] = useState(null);
   const [stateValue, setStateValue] = useState(null);
   const [countryName, setCountryName] = useState(null);
   const [stateName, setStateName] = useState(null);
   const [postalCode, setPostalCode] = useState(null);
   const [location, setLocation] = useState('');
-  const {isLoading, basicInfo, error, setError} = useContext(AuthContext);
+  const { isLoading, basicInfo, error, setError } = useContext(AuthContext);
 
   const fetchCountryDetails = async () => {
-    const {data} = await axios.get(config.countryListURL);
+    const { data } = await axios.get(config.countryListURL);
     if (data) {
       const countries = data.map(response => ({
         label: response?.CountryName,
@@ -43,7 +45,7 @@ const Information = ({navigation, route}) => {
   useEffect(() => {
     if (countryValue) {
       const fetchStateDetails = async () => {
-        const {data} = await axios.get(config.stateListURL + countryValue);
+        const { data } = await axios.get(config.stateListURL + countryValue);
         if (data) {
           const states = data.map(state => ({
             label: state?.StateOrProvinceName,
@@ -104,130 +106,145 @@ const Information = ({navigation, route}) => {
       if (isNaN(postalCode)) {
         setError('Postal code should be numeric');
         return;
-      }else {
-       const response = await basicInfo(location, countryValue, userInfo.id, stateValue, postalCode, userInfo.name);
-       const encryptToken = userInfo.encryptToken;
-       const loginToken = userInfo.LoginToken;
-       const memberToken = userInfo.memberToken;
-       if(response) {
-         navigation.navigate('addProfile', {response,countryName, stateName, encryptToken, loginToken, memberToken});
-       }
+      } else {
+        const response = await basicInfo(location, countryValue, userInfo.id, stateValue, postalCode, userInfo.name);
+        const encryptToken = userInfo.encryptToken;
+        const loginToken = userInfo.LoginToken;
+        const memberToken = userInfo.memberToken;
+        if (response) {
+          navigation.navigate('addProfile', { response, countryName, stateName, encryptToken, loginToken, memberToken });
+        }
       }
     }
   };
 
   return (
-    <SafeAreaView style={{height:'100%'}}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={styles.backgroundImg}>
-        <ScrollView>
-          <View style={styles.center}>
+      <ScrollView>
+        <>
+          <View style={[styles.center, { marginTop: responsiveWidth(30) }]}>
             <Spinner visible={isLoading} />
+            <Text style={{ color: '#1866B4', fontWeight: '500', fontSize: responsiveFontSize(1.8) }}>Step 1 of 2</Text>
             <Text
               style={{
-                fontSize: 24,
+                fontSize: responsiveFontSize(3),
                 color: 'black',
-                marginTop: 150,
                 fontWeight: '500',
+                marginTop: responsiveWidth(2)
               }}>
               Personal Information
             </Text>
             <Text
               style={{
-                fontSize: 14,
+                fontSize: responsiveFontSize(1.8),
+                width: responsiveWidth(74),
                 color: 'black',
                 marginHorizontal: 20,
                 textAlign: 'center',
                 marginTop: 12,
               }}>
-              Let's start your profile, connect to people you know, and engage
-              with them on topics you care about
+              Let’s start your profile, connect to people you know, and engage with them on topics you care about
             </Text>
           </View>
+
           <View
             style={{
               flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              marginTop: 20,
+              marginHorizontal: responsiveWidth(4)
             }}>
-            <Dropdown
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              iconStyle={styles.iconStyle}
-              containerStyle={styles.dropBackground}
-              data={country}
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder="Country*"
-              value={countryValue}
-              onChange={item => {
-                setCountryValue(item.value);
-                setCountryName(item.label);
-              }}
-              renderLeftIcon={() => (
-                <Image
-                  style={styles.icon}
-                  source={require('../../assets/png/Arrow.png')}
-                />
-              )}
-              renderItem={renderItem}
-            />
-            <Dropdown
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              iconStyle={styles.iconStyle}
-              containerStyle={styles.dropBackground}
-              data={state}
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder="State*"
-              value={stateValue}
-              onChange={item => {
-                setStateValue(item.value);
-                setStateName(item.label);
-              }}
-              renderLeftIcon={() => (
-                <Image
-                  style={styles.icon}
-                  source={require('../../assets/png/Arrow.png')}
-                />
-              )}
-              renderItem={renderItem}
-            />
-            <TextInput
-              placeholder="Postal code*"
-              style={styles.inputBox}
-              keyboardType="numeric"
-              required
-              value={postalCode}
-              onChangeText={text => setPostalCode(text)}
-            />
-            <TextInput
-              placeholder="Location within this area*"
-              style={styles.inputBox}
-              required
-              value={location}
-              onChangeText={text => setLocation(text)}
-            />
+            <View style={{ marginTop: responsiveWidth(5), position: 'relative' }}>
+              <Text style={styles.Label}>Address <Text style={{ color: '#1866B4' }}>*</Text></Text>
+              <TextInput
+                placeholder="Enter your address."
+                style={styles.inputBox}
+                required
+                value={location}
+                onChangeText={text => setLocation(text)}
+              />
+            </View>
+            <View style={{ marginTop: responsiveWidth(3), position: 'relative' }}>
+              <Text style={styles.Label}>Select Country <Text style={{ color: '#1866B4' }}>*</Text></Text>
+              <Dropdown
+                style={[styles.inputBox, { paddingRight: responsiveWidth(4) }]}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                inputSearchStyle={styles.inputSearchStyle}
+                iconStyle={styles.iconStyle}
+                containerStyle={styles.dropBackground}
+                data={country}
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder="Country*"
+                value={countryValue}
+                onChange={item => {
+                  setCountryValue(item.value);
+                  setCountryName(item.label);
+                }}
+                renderLeftIcon={() => (
+                  <Image
+                    style={styles.icon}
+                    source={require('../../assets/png/Arrow.png')}
+                  />
+                )}
+                renderItem={renderItem}
+              />
+            </View>
+            <View style={{ marginTop: responsiveWidth(3), position: 'relative' }}>
+              <Text style={styles.Label}>State <Text style={{ color: '#1866B4' }}>*</Text></Text>
+              <Dropdown
+                style={[styles.inputBox, { paddingRight: responsiveWidth(4) }]}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                inputSearchStyle={styles.inputSearchStyle}
+                iconStyle={styles.iconStyle}
+                containerStyle={styles.dropBackground}
+                data={state}
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder="State*"
+                value={stateValue}
+                onChange={item => {
+                  setStateValue(item.value);
+                  setStateName(item.label);
+                }}
+                renderLeftIcon={() => (
+                  <Image
+                    style={styles.icon}
+                    source={require('../../assets/png/Arrow.png')}
+                  />
+                )}
+                renderItem={renderItem}
+              />
+            </View>
+            <View style={{ marginTop: responsiveWidth(3), position: 'relative' }}>
+              <Text style={styles.Label}>Zip Code <Text style={{ color: '#1866B4' }}>*</Text></Text>
+              <TextInput
+                placeholder="Enter Code"
+                style={styles.inputBox}
+                keyboardType="numeric"
+                required
+                value={postalCode}
+                onChangeText={text => setPostalCode(text)}
+              />
+
+            </View>
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            <TouchableOpacity style={styles.blueBtn} onPress={handleContinue}>
-              <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
+          </View>
+        </>
+        <View style={{ marginHorizontal: responsiveWidth(4), marginBottom: responsiveWidth(4) }}>
+          <TouchableOpacity onPress={handleContinue} style={{ alignSelf: 'stretch', }}>
+            <LinearGradient style={styles.blueBtn} colors={['#3B7DBF', '#1866B4']}>
+              <Text style={{ color: '#fff', fontWeight: '500', fontSize: 18 }}>
                 Continue
               </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </ImageBackground>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -235,25 +252,14 @@ const Information = ({navigation, route}) => {
 export default Information;
 
 const styles = StyleSheet.create({
-  backgroundImg: {
-    resizeMode: 'cover',
-    height: '100%',
-  },
+
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
   center: {
     alignItems: 'center',
     display: 'flex',
-  },
-  dropdown: {
-    marginTop: 18,
-    height: 50,
-    width: '90%',
-    borderColor: '#CED4DA',
-    borderWidth: 1,
-    borderRadius: 30,
-    paddingHorizontal: 20,
   },
   icon: {
     width: 20,
@@ -267,7 +273,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   placeholderStyle: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(2),
     color: 'black',
   },
   selectedTextStyle: {
@@ -302,22 +308,24 @@ const styles = StyleSheet.create({
   inputBox: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 50,
-    paddingLeft: 20,
-    height: 50,
-    fontSize: 16,
-    width: '90%',
-    marginTop: 18,
+    borderRadius: 14,
+    paddingLeft: responsiveWidth(5),
+    height: responsiveWidth(12),
+    fontSize: responsiveFontSize(2),
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 20,
-    width: '90%',
-    marginBottom: 20,
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(8),
+    padding: responsiveWidth(3),
+  },
+  Label: {
+    fontSize: responsiveFontSize(2),
+    color: 'black',
+    marginLeft: responsiveWidth(1),
+    marginBottom: responsiveWidth(1.5)
   },
 });

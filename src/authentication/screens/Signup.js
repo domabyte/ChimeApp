@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,13 @@ import {
 import passwordShow from '../../assets/png/eye-open.png';
 import passwordHide from '../../assets/png/eye-close.png';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import axios from 'axios';
 import config from '../../config/config';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
-const Signup = ({navigation}) => {
+const Signup = ({ navigation }) => {
   const [firstName, setFirstName] = useState(null);
   const [lastName, setLastName] = useState(null);
   const [email, setEmail] = useState(null);
@@ -29,7 +31,7 @@ const Signup = ({navigation}) => {
   const [encryptedCaptcha, setEncryptedCaptcha] = useState(null);
   const [confirmCaptcha, setConfirmCaptcha] = useState(null);
   const [isChecked, setIsChecked] = useState(false);
-  const {isLoading, register, error, setError} = useContext(AuthContext);
+  const { isLoading, register, error, setError } = useContext(AuthContext);
 
   const toggleNewPasswordVisibility = () => {
     setShowNewPassword(!showNewPassword);
@@ -44,7 +46,7 @@ const Signup = ({navigation}) => {
   };
 
   const fetchCaptcha = async () => {
-    const {data} = await axios.get(config.captchaURL);
+    const { data } = await axios.get(config.captchaURL);
     setCaptcha(data.SecurityCode1 + data.SecurityCode2);
     setEncryptedCaptcha(data.SecurityCodeEncrypt);
   };
@@ -109,7 +111,7 @@ const Signup = ({navigation}) => {
           encryptedCaptcha,
           confirmCaptcha,
           isChecked,
-          resend=false,
+          resend = false,
           (Mem_ID, message, firstName, lastName, email, newPassword, confirmPassword, encryptedCaptcha, confirmCaptcha, isChecked) =>
             navigation.navigate('OtpVerification', {
               Mem_ID,
@@ -130,157 +132,168 @@ const Signup = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={styles.backgroundImg}>
-        <ScrollView>
-          <Spinner visible={isLoading} />
-          <View sytle={styles.container}>
-            <View style={styles.logo}>
+      <ScrollView>
+        <Spinner visible={isLoading} />
+        <View sytle={styles.container}>
+          {/* <View style={styles.logo}>
+            <Image
+              style={{ width: 100, height: 53, resizeMode: 'cover' }}
+              source={require('../../assets/png/Actpal_logo.png')}
+            />
+          </View> */}
+          <View style={[styles.center, { marginTop: responsiveWidth(10) }]}>
+            <Text style={{ fontSize: responsiveFontSize(3), color: '#0E121B' }}>Create Account</Text>
+            <Text style={{ fontSize: responsiveFontSize(2), fontWeight: '400', color: '#525866' }}>
+              Sign up to your account to continue
+            </Text>
+          </View>
+          <View style={{ marginHorizontal: 20, marginTop: 20 }}>
+            <Text style={styles.Label}>First Name <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/user.png')} style={styles.icon} />
+            <TextInput
+              value={firstName}
+              placeholder="First name"
+              onChangeText={text => setFirstName(text)}
+              style={styles.inputBox}
+            />
+          </View>
+          <View style={{ marginHorizontal: 20, marginTop: 15 }}>
+            <Text style={styles.Label}>Last Name <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/user.png')} style={styles.icon} />
+            <TextInput
+              value={lastName}
+              placeholder="Last name"
+              onChangeText={text => setLastName(text)}
+              style={styles.inputBox}
+            />
+          </View>
+          <View style={{ marginHorizontal: 20, marginTop: 15 }}>
+            <Text style={styles.Label}>Email Address <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/mail-line.png')} style={styles.icon} />
+            <TextInput
+              value={email}
+              placeholder="Email"
+              onChangeText={text => setEmail(text)}
+              style={styles.inputBox}
+            />
+          </View>
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginTop: 15,
+              position: 'relative',
+            }}>
+            <Text style={styles.Label}>Password <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/lock-2-line.png')} style={styles.icon} />
+            <TextInput
+              style={styles.inputBox}
+              secureTextEntry={!showNewPassword}
+              placeholder="New Password"
+              value={newPassword}
+              onChangeText={text => setNewPassword(text)}
+            />
+            <TouchableOpacity
+              style={{ position: 'absolute', top: responsiveWidth(9), right: responsiveWidth(3.5) }}
+              onPress={toggleNewPasswordVisibility}>
               <Image
-                style={{width: 100, height: 53, resizeMode: 'cover'}}
-                source={require('../../assets/png/Actpal_logo.png')}
+                source={showNewPassword ? passwordShow : passwordHide}
+                style={{ width: responsiveWidth(5.8), height: responsiveWidth(5.8) }}
               />
-            </View>
-            <View style={[styles.center, {marginTop: 22}]}>
-              <Text style={{fontSize: 18, fontWeight: '400', color: 'black'}}>
-                Sign up to your account to continue
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginTop: 15,
+              position: 'relative',
+            }}>
+            <Text style={styles.Label}>Confirm Password <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/lock-2-line.png')} style={styles.icon} />
+            <TextInput
+              style={styles.inputBox}
+              secureTextEntry={!showConfirmPassword}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChangeText={text => setConfirmPassword(text)}
+            />
+            <TouchableOpacity
+              style={{ position: 'absolute', top: responsiveWidth(9), right: responsiveWidth(3.5) }}
+              onPress={toggleConfirmPasswordVisibility}>
+              <Image
+                source={showConfirmPassword ? passwordShow : passwordHide}
+                style={{ width: responsiveWidth(5.8), height: responsiveWidth(5.8) }}
+              />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              marginHorizontal: 20,
+              flexDirection: 'row',
+              gap: 12,
+              marginTop: 15,
+            }}>
+            <View style={styles.captcha}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: '#ccc',
+                  textAlign: 'center',
+                  position: 'relative',
+                  textDecorationLine: 'line-through',
+                }}>
+                {captcha}
               </Text>
+              <View sytle={styles.captchaLine}></View>
             </View>
-            <View style={{marginHorizontal: 20, marginTop: 20}}>
+            <View style={{ width: responsiveWidth(44) }}>
               <TextInput
-                value={firstName}
-                placeholder="First name"
-                onChangeText={text => setFirstName(text)}
+                value={confirmCaptcha}
+                placeholder="Enter Captcha"
                 style={styles.inputBox}
+                onChangeText={text => setConfirmCaptcha(text)}
               />
-            </View>
-            <View style={{marginHorizontal: 20, marginTop: 15}}>
-              <TextInput
-                value={lastName}
-                placeholder="Last name"
-                onChangeText={text => setLastName(text)}
-                style={styles.inputBox}
-              />
-            </View>
-            <View style={{marginHorizontal: 20, marginTop: 15}}>
-              <TextInput
-                value={email}
-                placeholder="Email"
-                onChangeText={text => setEmail(text)}
-                style={styles.inputBox}
-              />
-            </View>
-            <View
-              style={{
-                marginHorizontal: 20,
-                marginTop: 15,
-                position: 'relative',
-              }}>
-              <TextInput
-                style={styles.inputBox}
-                secureTextEntry={!showNewPassword}
-                placeholder="New Password"
-                value={newPassword}
-                onChangeText={text => setNewPassword(text)}
-              />
-              <TouchableOpacity
-                style={{position: 'absolute', top: 11, right: 15}}
-                onPress={toggleNewPasswordVisibility}>
-                <Image
-                  source={showNewPassword ? passwordShow : passwordHide}
-                  style={{width: 26, height: 26}}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                marginHorizontal: 20,
-                marginTop: 15,
-                position: 'relative',
-              }}>
-              <TextInput
-                style={styles.inputBox}
-                secureTextEntry={!showConfirmPassword}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChangeText={text => setConfirmPassword(text)}
-              />
-              <TouchableOpacity
-                style={{position: 'absolute', top: 11, right: 15}}
-                onPress={toggleConfirmPasswordVisibility}>
-                <Image
-                  source={showConfirmPassword ? passwordShow : passwordHide}
-                  style={{width: 26, height: 26}}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                marginHorizontal: 20,
-                flexDirection: 'row',
-                gap: 12,
-                marginTop: 15,
-              }}>
-              <View style={styles.captcha}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    color: '#ccc',
-                    textAlign: 'center',
-                    position: 'relative',
-                    textDecorationLine: 'line-through',
-                  }}>
-                  {captcha}
-                </Text>
-                <View sytle={styles.captchaLine}></View>
-              </View>
-              <View style={{width: '48%'}}>
-                <TextInput
-                  value={confirmCaptcha}
-                  placeholder="Enter Captcha"
-                  style={styles.inputBox}
-                  onChangeText={text => setConfirmCaptcha(text)}
-                />
-              </View>
-            </View>
-            <View style={{marginHorizontal: 30, marginTop: 15}}>
-              <TouchableOpacity
-                onPress={toggleCheckbox}
-                style={styles.checkbtn}>
-                <View style={[styles.checkbox, isChecked && styles.checked]}>
-                  {isChecked && <View style={styles.checkmark}></View>}
-                </View>
-                <Text style={styles.label}>
-                  Terms and condition should be connected to ACTPAL's
-                  <Text style={{color: '#1866B4'}}>Terms & Conditions</Text>
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            <View style={{marginHorizontal: 20}}>
-              <TouchableOpacity style={styles.blueBtn} onPress={handleSignup}>
-                <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
-                  Continue
-                </Text>
-              </TouchableOpacity>
-              <View style={styles.orText}>
-                <Text style={{color: 'black'}}>
-                  OR
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.whiteBtn}
-                onPress={() => navigation.navigate('Login')}>
-                <Text
-                  style={{color: '#1866B4', fontWeight: '500', fontSize: 18}}>
-                  Login
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </ImageBackground>
+
+          <View style={{ marginHorizontal: 30, marginTop: 15 }}>
+            <TouchableOpacity
+              onPress={toggleCheckbox}
+              style={styles.checkbtn}>
+              <View style={[styles.checkbox, isChecked && styles.checked]}>
+                {isChecked && <Image source={require('../../assets/png/check.png')} style={styles.checkmark} />}
+              </View>
+              <Text style={styles.label}>
+                I accept ACTPAL
+                <Text style={{ color: '#1866B4' }}>Terms & Conditions</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          <View style={{ marginHorizontal: 20 }}>
+            <TouchableOpacity onPress={handleSignup}>
+              <LinearGradient style={styles.blueBtn} colors={['#3B7DBF', '#1866B4']}>
+                <Text style={{ color: '#fff', fontWeight: '500', fontSize: 18 }}>
+                  Continue
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <View style={styles.orText}>
+              <Text style={{ color: 'black', fontSize: responsiveFontSize(2) }}>
+                Already have an account?
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.whiteBtn}
+              onPress={() => navigation.navigate('Login')}>
+              <Text
+                style={{ color: '#1866B4', fontWeight: '500', fontSize: 18 }}>
+                Login
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </>
   );
 };
@@ -294,6 +307,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   logo: {
     justifyContent: 'center',
@@ -308,20 +322,20 @@ const styles = StyleSheet.create({
   inputBox: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 50,
-    paddingLeft: 20,
-    height: 50,
-    fontSize: 16,
+    borderRadius: 14,
+    paddingLeft: responsiveWidth(9.5),
+    height: responsiveWidth(11),
+    fontSize: responsiveFontSize(2),
   },
   captcha: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 50,
-    height: 50,
-    fontSize: 16,
-    width: '48%',
+    borderRadius: 14,
+    height: responsiveWidth(11),
+    fontSize: responsiveFontSize(2),
+    width: responsiveWidth(44),
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   errorText: {
     color: 'red',
@@ -330,12 +344,12 @@ const styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 20,
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(8),
+    padding: responsiveWidth(3)
   },
   orText: {
     justifyContent: 'center',
@@ -345,50 +359,60 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   whiteBtn: {
-    height: 45,
-    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 16,
     borderWidth: 1,
-    borderColor: '#1866B4',
-    marginBottom: 25,
+    borderColor: '#0E121B30',
+    borderRadius: responsiveWidth(4),
+    padding: responsiveWidth(2.5),
+    marginTop: responsiveWidth(3)
   },
   checkbtn: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 12,
+    width: responsiveWidth(5.5),
+    height: responsiveWidth(5.5),
+    borderRadius: responsiveWidth(1.5),
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: '#1B1C1D40',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 6,
-    marginTop: 2,
   },
   checked: {
     backgroundColor: 'White',
   },
   checkmark: {
-    width: 11,
-    height: 11,
-    borderRadius: 20,
-    backgroundColor: '#1866B4',
+    width: responsiveWidth(4),
+    height: responsiveWidth(4),
   },
   label: {
-    fontSize: 14,
+    fontSize: responsiveFontSize(1.8),
     fontWeight: '400',
     color: 'black',
+    paddingLeft: responsiveWidth(1)
   },
   captchaLine: {
     backgroundColor: 'black',
-    width: 45,
+    width: responsiveWidth(2),
     height: 1,
     top: 1,
     left: 1,
   },
+  Label: {
+    fontSize: responsiveFontSize(1.8),
+    color: 'black',
+    marginLeft: responsiveWidth(1),
+    marginBottom: responsiveWidth(1.5)
+  },
+  icon: {
+    width: responsiveWidth(5.5),
+    height: responsiveWidth(5.5),
+    position: 'absolute',
+    top: responsiveWidth(9),
+    left: responsiveWidth(2.5),
+  }
 });

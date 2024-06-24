@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,13 +10,16 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   Image,
+  Pressable,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
-const ForgotPassword = ({navigation}) => {
+const ForgotPassword = ({ navigation }) => {
   const [email, setEmail] = useState(null);
-  const {isLoading, forgotPassword, error, setError} = useContext(AuthContext);
+  const { isLoading, forgotPassword, error, setError } = useContext(AuthContext);
 
   useEffect(() => {
     setError('');
@@ -55,59 +58,58 @@ const ForgotPassword = ({navigation}) => {
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <KeyboardAvoidingView behavior='padding' style={Styles.container}>
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={Styles.backgroundImg}>
         <ScrollView style={Styles.mainView}>
-          
+
           <Spinner visible={isLoading} />
           <View style={Styles.logo}>
             <Image
-              style={{width: 100, height: 53, resizeMode: 'cover'}}
-              source={require('../../assets/png/Actpal_logo.png')}
+              style={{ width: responsiveWidth(25), height: responsiveWidth(25), resizeMode: 'cover' }}
+              source={require('../../assets/png/forgotIcon.png')}
             />
           </View>
-          <View style={[Styles.center, {marginTop: 20}]}>
-            <Text style={{fontSize: 22, fontWeight: '600', color: 'black'}}>
-              Forgot Password
+          <View style={[Styles.center, { marginTop: responsiveWidth(3) }]}>
+            <Text style={{ fontSize: responsiveFontSize(2.6), fontWeight: '600', color: 'black' }}>
+              Reset Password
             </Text>
             <Text
               style={{
-                fontSize: 16,
+                fontSize: responsiveFontSize(2),
                 marginTop: 6,
                 fontWeight: '400',
-                color: 'black',
+                color: '#525866',
               }}>
-              Enter your email address to receive a security code
+              Enter vour email to reset vour password
             </Text>
           </View>
-          <View>
+          <View style={{ marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(5), position: 'relative' }}>
+            <Text style={Styles.Label}>Email Address <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/mail-line.png')} style={Styles.icon} />
             <TextInput
               value={email}
               onChangeText={text => setEmail(text)}
               placeholder="Enter Your Email Address"
               style={Styles.inputBox}
+              placeholderTextColor={'#99A0AE'}
             />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: responsiveWidth(1.5) }}><Image source={require('../../assets/png/i-icon.png')} style={{ width: responsiveWidth(5), height: responsiveWidth(5), marginRight: responsiveWidth(1) }} /><Text style={{ fontSize: responsiveFontSize(1.5), color: '#000' }}>Enter the email with which you've registered.</Text></View>
             {error && <Text style={Styles.errorMsg}>{error}</Text>}
-            <TouchableOpacity style={Styles.blueBtn} onPress={sendSecurityCode}>
-              <Text style={Styles.buttonStyle}>Send Security Code</Text>
+
+            <TouchableOpacity onPress={sendSecurityCode}>
+              <LinearGradient colors={['#3B7DBF', '#1866B4']} style={Styles.blueBtn}>
+                <Text style={Styles.buttonStyle}>Reset Password</Text>
+              </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                Styles.blueBtn,
-                {
-                  backgroundColor: 'transparent',
-                  marginTop: 20,
-                  marginBottom: 40,
-                },
-              ]}
-              onPress={() => navigation.goBack()}>
-              <Text style={[Styles.buttonStyle, {color: '#1866B4'}]}>Back</Text>
-            </TouchableOpacity>
+            <View style={{alignItems: 'center', marginTop: responsiveWidth(5)}}>
+              <Text style={{fontSize: responsiveFontSize(1.9), fontWeight: '500'}}>Don’t have access anymore?</Text>
+              <Pressable style={{marginTop: responsiveWidth(1)}}>
+                <Text style={{fontSize: responsiveFontSize(2), color: 'black', textDecorationLine: 'underline'}}>Try another method</Text>
+              </Pressable>
+            </View>
+
+             
           </View>
         </ScrollView>
-      </ImageBackground>
       </KeyboardAvoidingView>
     </>
   );
@@ -132,7 +134,7 @@ const Styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     alignItems: 'center',
-    marginTop: 170,
+    marginTop: responsiveWidth(30),
   },
   errorText: {
     color: 'red',
@@ -141,7 +143,8 @@ const Styles = StyleSheet.create({
   },
   mainView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: responsiveWidth(2),
+    backgroundColor: 'white'
   },
   title: {
     fontSize: 24,
@@ -155,11 +158,11 @@ const Styles = StyleSheet.create({
   inputBox: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 50,
-    paddingLeft: 20,
-    height: 50,
-    fontSize: 16,
-    marginTop: 50,
+    borderRadius: 14,
+    paddingLeft: responsiveWidth(11),
+    height: responsiveWidth(12),
+    fontSize: responsiveFontSize(2),
+    color: '#000'
   },
   errorMsg: {
     color: 'red',
@@ -178,11 +181,24 @@ const Styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 20,
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(5),
+    padding: responsiveWidth(3)
   },
+  Label: {
+    fontSize: responsiveFontSize(2),
+    color: 'black',
+    marginLeft: responsiveWidth(1),
+    marginBottom: responsiveWidth(1.5)
+  },
+  icon: {
+    width: responsiveWidth(6.5),
+    height: responsiveWidth(6.5),
+    position: 'absolute',
+    top: responsiveWidth(10),
+    left: responsiveWidth(2.5)
+  }
 });

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,13 @@ import {
 } from 'react-native';
 import passwordShow from '../../assets/png/eye-open.png';
 import passwordHide from '../../assets/png/eye-close.png';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import Spinner from 'react-native-loading-spinner-overlay';
 import * as Keychain from 'react-native-keychain';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions'
+import LinearGradient from 'react-native-linear-gradient';
 
-const Login = ({navigation}) => {
+const Login = ({ navigation }) => {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [showPass, setShowPass] = useState(false);
@@ -24,7 +26,7 @@ const Login = ({navigation}) => {
   const toggleCheckbox = () => {
     setIsChecked(!isChecked);
   };
-  const {isLoading, login, error, setError} = useContext(AuthContext);
+  const { isLoading, login, error, setError } = useContext(AuthContext);
 
   useEffect(() => {
     setError('');
@@ -68,107 +70,128 @@ const Login = ({navigation}) => {
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={styles.backgroundImg}>
-        <ScrollView>
-          <View sytle={styles.container}>
-            <Spinner visible={isLoading} />
-            <View style={styles.logo}>
-              <Image
-                style={{width: 100, height: 53, resizeMode: 'cover'}}
-                source={require('../../assets/png/Actpal_logo.png')}
-              />
-            </View>
-            <View style={[styles.center, {marginTop: 28}]}>
-              <Text style={{fontSize: 22, fontWeight: '400', color: 'black'}}>
-                Welcome Back!
-              </Text>
-              <Text
-                style={{
-                  fontSize: 16,
-                  marginTop: 6,
-                  fontWeight: '400',
-                  color: 'black',
-                }}>
-                Login to your account to continue
-              </Text>
-            </View>
-            <View style={{marginHorizontal: 20, marginTop: 60}}>
-              <TextInput
-                value={email}
-                placeholder="Enter Your Email Address"
-                onChangeText={text => setEmail(text)}
-                style={styles.inputBox}
-                required
-              />
-            </View>
-            <View
-              style={{
-                marginHorizontal: 20,
-                marginTop: 20,
-                position: 'relative',
-              }}>
-              <TextInput
-                value={password}
-                onChangeText={text => setPassword(text)}
-                placeholder="Password"
-                style={styles.inputBox}
-                secureTextEntry={!showPass}
-              />
-              <TouchableOpacity
-                style={{position: 'absolute', top: 11, right: 15}}
-                onPress={() => setShowPass(!showPass)}>
-                <Image
-                  source={showPass ? passwordShow : passwordHide}
-                  style={{width: 26, height: 26}}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 35,
-                marginTop: 10,
-              }}>
-              <TouchableOpacity
-                onPress={toggleCheckbox}
-                style={styles.checkbtn}>
-                <View style={[styles.checkbox, isChecked && styles.checked]}>
-                  {isChecked && <View style={styles.checkmark}></View>}
-                </View>
-                <Text style={styles.label}>Remember me</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('forgotPassword')}>
-                <Text style={{color: '#1866B4', fontSize: 16}}>
-                  Forgot Password ?
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            <View style={{marginHorizontal: 20}}>
-              <TouchableOpacity style={styles.blueBtn} onPress={handleLogin}>
-                <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
-                  Sign In
-                </Text>
-              </TouchableOpacity>
-              <View style={styles.orText}>
-                <Text style={{color: 'black'}}>Don’t have an account?</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.whiteBtn}
-                onPress={() => navigation.navigate('Register')}>
-                <Text
-                  style={{color: '#1866B4', fontWeight: '500', fontSize: 18}}>
-                  Create An Account
-                </Text>
-              </TouchableOpacity>
-            </View>
+      <ScrollView>
+        <View sytle={styles.container}>
+          <Spinner visible={isLoading} />
+          <View style={styles.logo}>
+            <Image
+              style={{ width: responsiveWidth(34), height: responsiveWidth(16), resizeMode: 'cover' }}
+              source={require('../../assets/png/Actpal_logo.png')}
+            />
           </View>
-        </ScrollView>
-      </ImageBackground>
+          <View style={[styles.center, { marginTop: responsiveWidth(3) }]}>
+            <Text style={{ fontSize: responsiveFontSize(2.5), fontWeight: '400', color: 'black' }}>
+              Welcome Back!
+            </Text>
+            <Text
+              style={{
+                fontSize: responsiveFontSize(2),
+                marginTop: responsiveWidth(2),
+                fontWeight: '400',
+                color: '#525866',
+              }}>
+              Login to your account to continue
+            </Text>
+          </View>
+          <View style={{ marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(12), position: 'relative' }}>
+            <Text style={styles.Label}>Email Address <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/mail-line.png')} style={styles.icon} />
+            <TextInput
+              value={email}
+              placeholder="Enter Your Email Address"
+              placeholderTextColor={'#99A0AE'}
+              onChangeText={text => setEmail(text)}
+              style={styles.inputBox}
+              required
+            />
+          </View>
+          <View
+            style={{
+              marginHorizontal: responsiveWidth(4),
+              marginTop: responsiveWidth(3),
+              position: 'relative',
+            }}>
+            <Text style={styles.Label}>Password <Text style={{ color: '#1866B4' }}>*</Text></Text>
+            <Image source={require('../../assets/png/lock-2-line.png')} style={styles.icon} />
+            <TextInput
+              value={password}
+              onChangeText={text => setPassword(text)}
+              placeholder="Password"
+              style={styles.inputBox}
+              secureTextEntry={!showPass}
+              placeholderTextColor={'#99A0AE'}
+            />
+            <TouchableOpacity
+              style={{ position: 'absolute', top: responsiveWidth(9.5), right: responsiveWidth(3) }}
+              onPress={() => setShowPass(!showPass)}>
+              <Image
+                source={showPass ? passwordShow : passwordHide}
+                style={{ width: responsiveWidth(6.5), height: responsiveWidth(6.5) }}
+              />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginHorizontal: 35,
+              marginTop: 10,
+            }}>
+            <TouchableOpacity
+              onPress={toggleCheckbox}
+              style={styles.checkbtn}>
+              <View style={[styles.checkbox, isChecked && styles.checked]}>
+                {isChecked && <Image source={require('../../assets/png/check.png')} style={styles.checkmark} />}
+              </View>
+              <Text style={styles.label}>Remember me</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('forgotPassword')}>
+              <Text style={{ color: '#525866', fontSize: 16, textDecorationLine: 'underline' }}>
+                Forgot Password ?
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          <View style={{ marginHorizontal: 20 }}>
+            <TouchableOpacity onPress={handleLogin}>
+              <LinearGradient colors={['#3B7DBF', '#1866B4']} style={styles.blueBtn}>
+                <Text style={{ color: '#fff', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
+                  Login
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* <View style={styles.orText}>
+              <View style={styles.line}></View>
+              <Text>OR</Text>
+              <View style={styles.line}></View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.whiteBtn}
+              onPress={() => navigation.navigate('Register')}>
+              <Image source={require('../../assets/png/googleIcon.png')} style={{width: responsiveWidth(6), height: responsiveWidth(6), marginRight: responsiveWidth(1)}} />
+              <Text
+                style={{ color: '#525866', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
+                Continue with Google
+              </Text>
+            </TouchableOpacity> */}
+
+            <View style={styles.orText}>
+              <Text style={{ color: 'black', fontSize: responsiveFontSize(2) }}>Don’t have an account?</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.whiteBtn}
+              onPress={() => navigation.navigate('Register')}>
+              <Text
+                style={{ color: '#525866', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
+                Create An Account
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </>
   );
 };
@@ -196,21 +219,21 @@ const styles = StyleSheet.create({
   inputBox: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 50,
-    paddingLeft: 20,
-    height: 50,
-    fontSize: 16,
+    borderRadius: 14,
+    paddingLeft: responsiveWidth(11),
+    height: responsiveWidth(12),
+    fontSize: responsiveFontSize(2),
   },
   checkbtn: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 12,
+    width: responsiveWidth(5.5),
+    height: responsiveWidth(5.5),
+    borderRadius: responsiveWidth(1.5),
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: '#1B1C1D40',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 6,
@@ -219,10 +242,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'White',
   },
   checkmark: {
-    width: 11,
-    height: 11,
-    borderRadius: 20,
-    backgroundColor: '#1866B4',
+    width: responsiveWidth(4),
+    height: responsiveWidth(4),
   },
   label: {
     fontSize: 16,
@@ -236,34 +257,46 @@ const styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 50,
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(10),
+    padding: responsiveWidth(3)
   },
   orText: {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
-    marginTop: 16,
+    marginTop: responsiveWidth(4),
   },
   line: {
-    width: 100,
-    backgroundColor: '#CCCCCC',
-    height: 0.5,
+    width: responsiveWidth(40),
+    backgroundColor: '#0E121B25',
+    height: 1.5,
   },
   whiteBtn: {
-    height: 45,
-    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 16,
     borderWidth: 1,
-    borderColor: '#1866B4',
-    marginBottom: 25,
+    borderColor: '#0E121B30',
+    borderRadius: responsiveWidth(4),
+    padding: responsiveWidth(2.5),
+    marginTop: responsiveWidth(3)
   },
+  Label: {
+    fontSize: responsiveFontSize(2),
+    color: 'black',
+    marginLeft: responsiveWidth(1),
+    marginBottom: responsiveWidth(1.5)
+  },
+  icon: {
+    width: responsiveWidth(6.5),
+    height: responsiveWidth(6.5),
+    position: 'absolute',
+    top: responsiveWidth(10),
+    left: responsiveWidth(2.5)
+  }
 });

@@ -1,4 +1,4 @@
-import {useState, useContext} from 'react';
+import { useState, useContext } from 'react';
 import {
   ImageBackground,
   StatusBar,
@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
-const AddProfile = ({navigation, route}) => {
+const AddProfile = ({ navigation, route }) => {
   const {
     response,
     countryName,
@@ -24,7 +26,7 @@ const AddProfile = ({navigation, route}) => {
     memberToken,
   } = route.params;
   const [selectedImage, setSelectedImage] = useState(null);
-  const {isLoading, setUserInfo, updatePhotoInfo} = useContext(AuthContext);
+  const { isLoading, setUserInfo, updatePhotoInfo } = useContext(AuthContext);
   const value = {
     name: response.Mem_Name + ' ' + response.Mem_LName,
     id: response.Mem_ID,
@@ -55,7 +57,7 @@ const AddProfile = ({navigation, route}) => {
     } else if (response.error) {
       console.log('ImagePicker Error: ', response.error);
     } else {
-      const source = {uri: response.assets[0]};
+      const source = { uri: response.assets[0] };
       setSelectedImage(source);
     }
   };
@@ -68,7 +70,7 @@ const AddProfile = ({navigation, route}) => {
     const response = await updatePhotoInfo(selectedImage, userInfo);
     if (response) {
       setUserInfo(userInfo);
-      navigation.navigate('suggestedFriends', {userInfo});
+      navigation.navigate('suggestedFriends', { userInfo });
     }
   };
 
@@ -78,86 +80,105 @@ const AddProfile = ({navigation, route}) => {
   };
 
   return (
-    <>
+    <View style={styles.container}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={styles.backgroundImg}>
-        <Spinner visible={isLoading} />
-        <View style={styles.center}>
-          <Text
-            style={{
-              fontSize: 24,
-              color: 'black',
-              marginTop: 150,
-              fontWeight: '500',
-              textAlign: 'center',
-            }}>
-            Adding a photo helps people recognize you
-          </Text>
+      <Spinner visible={isLoading} />
+      <View style={[styles.center, { marginTop: responsiveWidth(30) }]}>
+        <Text style={{ color: '#1866B4', fontWeight: '500', fontSize: responsiveFontSize(1.8) }}>Step 2 of 2</Text>
+        <Text style={{ color: 'black', fontSize: responsiveFontSize(2.5), marginTop: responsiveWidth(1), fontWeight: '500' }}>Profile Photo</Text>
+        <Text
+          style={{
+            fontSize: responsiveFontSize(2),
+            width: responsiveWidth(75),
+            textAlign: 'center',
+            color: '#525866',
+            fontWeight: '400',
+            marginTop: responsiveWidth(1)
+          }}>
+          Adding a photo helps people recognize you
+        </Text>
+        <View
+          style={{ alignItems: 'center', position: 'relative', marginTop: 50 }}>
           <View
-            style={{alignItems: 'center', position: 'relative', marginTop: 50}}>
-            <View
-              style={{
-                width: 160,
-                height: 160,
-                borderRadius: 100,
-                overflow: 'hidden',
-              }}>
-              <TouchableOpacity onPress={pickImage}>
-                {selectedImage && (
-                  <Image
-                    source={selectedImage?.uri}
-                    style={{width: '100%', height: '100%'}}
-                  />
-                )}
-                {!selectedImage && (
-                  <Image
-                    source={require('../../assets/png/defaultImage.png')}
-                    style={{width: '100%', height: '100%'}}
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-            <View style={styles.deleteBtnBox}>
-              {selectedImage && (
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={deleteImage}>
-                  <Image
-                    style={{width: 18, height: 18}}
-                    source={require('../../assets/png/delete.png')}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-          <Text
             style={{
-              fontSize: 20,
-              fontWeight: '700',
-              color: 'black',
-              marginTop: 30,
+              width: responsiveWidth(28),
+              height: responsiveWidth(28),
+              borderRadius: 100,
+              overflow: 'hidden',
             }}>
-            {response?.Mem_Name + ' ' + response?.Mem_LName}
-          </Text>
-          <Text style={{fontSize: 16, fontWeight: '400', marginTop: 15}}>
-            {response.Mem_Address}, {stateName}, {countryName} -{' '}
-            {response.Mem_ZipCode}
-          </Text>
-          <TouchableOpacity style={styles.blueBtn} onPress={handleAddPhoto}>
-            <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
-              Add Photo
-            </Text>
+            <TouchableOpacity onPress={pickImage}>
+              {selectedImage && (
+                <Image
+                  source={selectedImage?.uri}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              )}
+              {!selectedImage && (
+                <Image
+                  source={require('../../assets/png/defaultImage.png')}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.deleteBtnBox}>
+            {selectedImage && (
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={deleteImage}>
+                <Image
+                  style={{ width: 18, height: 18 }}
+                  source={require('../../assets/png/delete.png')}
+                />
+              </TouchableOpacity>
+            )}
+          </View> */}
+        </View>
+        <Text
+          style={{
+            fontSize: responsiveFontSize(2.5),
+            fontWeight: '700',
+            color: 'black',
+            marginTop: responsiveWidth(4),
+          }}>
+          {response?.Mem_Name + ' ' + response?.Mem_LName}
+        </Text>
+        <Text style={{ fontSize: 16, fontWeight: '400', marginTop: responsiveWidth(2), width: responsiveWidth(70), textAlign: 'center' }}>
+          {response.Mem_Address}, {stateName}, {countryName} -{' '}
+          {response.Mem_ZipCode}
+        </Text>
+
+        <View style={{flexDirection: 'row', gap: 10}}>
+        {selectedImage && (
+          <TouchableOpacity onPress={deleteImage} style={{ borderColor: '#FB3748', borderWidth: 1, borderRadius: responsiveWidth(2.5), paddingHorizontal: responsiveWidth(4), paddingVertical: responsiveWidth(1.5), marginTop: responsiveWidth(4) }}>
+            <Text style={{ fontSize: responsiveFontSize(1.6), color: '#FB3748' }}>Remove</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.whiteBtn} onPress={skipPhoto}>
-            <Text style={{color: '#1866B4', fontWeight: '500', fontSize: 18}}>
-              Skip
-            </Text>
+        )}
+          
+          <TouchableOpacity style={{ borderColor: '#0E121B30', borderWidth: 1, borderRadius: responsiveWidth(2.5), paddingHorizontal: responsiveWidth(4), paddingVertical: responsiveWidth(1.5), marginTop: responsiveWidth(4) }} onPress={pickImage}>
+            {selectedImage ? (
+              <Text style={{ fontSize: responsiveFontSize(1.6) }}>Change</Text>
+            ) : (
+              <Text style={{ fontSize: responsiveFontSize(1.6) }}>Add Photo</Text>
+            )}
           </TouchableOpacity>
         </View>
-      </ImageBackground>
-    </>
+
+        <TouchableOpacity style={styles.whiteBtn} onPress={skipPhoto}>
+          <Text style={{ color: '#525866', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
+            I’ll do later
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleAddPhoto}>
+          <LinearGradient colors={['#3B7DBF', '#1866B4']} style={styles.blueBtn}>
+            <Text style={{ color: '#fff', fontWeight: '500', fontSize: 18 }}>
+              Add Photo
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
+      </View>
+    </View>
   );
 };
 
@@ -168,15 +189,17 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   center: {
     alignItems: 'center',
     display: 'flex',
+    justifyContent: 'center'
   },
   deleteBtn: {
     backgroundColor: '#fff',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
@@ -191,23 +214,24 @@ const styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 30,
-    width: '90%',
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(5),
+    padding: responsiveWidth(3),
+    width: responsiveWidth(90)
   },
   whiteBtn: {
-    height: 45,
-    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 16,
-    marginBottom: 25,
-    width: '90%',
+    borderWidth: 1,
+    borderColor: '#0E121B30',
+    borderRadius: responsiveWidth(4),
+    padding: responsiveWidth(2.5),
+    marginTop: responsiveWidth(8),
+    width: responsiveWidth(90)
   },
 });
 

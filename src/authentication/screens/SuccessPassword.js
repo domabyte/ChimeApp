@@ -10,46 +10,46 @@ import {
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { AuthContext } from '../../context/AuthContext';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
-const SuccessPassword = ({navigation}) => {
-    const {isLoading} = useContext(AuthContext);
+const SuccessPassword = ({ navigation }) => {
+  const { isLoading } = useContext(AuthContext);
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <Spinner visible={isLoading} />
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={styles.backgroundImg}>
-        <View style={styles.container}>
-          <View style={styles.successImg}>
-            <Image
-              style={{width: 160, height: 160}}
-              source={require('../../assets/png/success_icon.png')}
-            />
-          </View>
-          <View style={styles.text}>
-            <Text
-              style={{
-                fontSize: 24,
-                textAlign: 'center',
-                color: '#000',
-                fontWeight: '600',
-                marginTop: 20,
-              }}>
-              Your password has been successfully changed!
-            </Text>
-          </View>
-          <View style={{marginHorizontal: 25}}>
-            <TouchableOpacity style={styles.blueBtn}  onPress={()=>{
-                navigation.navigate('Login');
-              }}>
-              <Text style={{color: '#fff', fontWeight: '500', fontSize: 18}}>
+      <View style={styles.container}>
+        <View style={styles.successImg}>
+          <Image
+            style={{ width: responsiveWidth(30), height: responsiveWidth(30) }}
+            source={require('../../assets/png/success_icon.png')}
+          />
+        </View>
+        <View style={styles.text}>
+          <Text
+            style={{
+              fontSize: responsiveFontSize(2.5),
+              textAlign: 'center',
+              color: '#000',
+              fontWeight: '600',
+              marginTop: 20,
+            }}>
+            Your password has been successfully changed!
+          </Text>
+        </View>
+        <View style={{ marginHorizontal: 25 }}>
+          <TouchableOpacity onPress={() => {
+            navigation.navigate('Login');
+          }}>
+            <LinearGradient style={styles.blueBtn} colors={['#3B7DBF', '#1866B4']} >
+              <Text style={{ color: '#fff', fontWeight: '500', fontSize: 18 }}>
                 LogIn
               </Text>
-            </TouchableOpacity>
-          </View>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
-      </ImageBackground>
+      </View>
     </>
   );
 };
@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    backgroundColor: 'white'
   },
   successImg: {
     alignItems: 'center',
@@ -72,12 +73,13 @@ const styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 20,
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(10),
+    padding: responsiveWidth(3),
+    width: responsiveWidth(90)
   },
 });
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, createRef, useContext} from 'react';
+import React, { useState, useEffect, useRef, createRef, useContext } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,15 +12,17 @@ import {
   Image,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
+import LinearGradient from 'react-native-linear-gradient';
 
-const ForgotPassOTP = ({navigation, route}) => {
-  const {Mem_ID, email} = route.params;
+const ForgotPassOTP = ({ navigation, route }) => {
+  const { Mem_ID, email } = route.params;
   const [otpValues, setOtpValues] = useState(Array(6).fill(''));
   const [timer, setTimer] = useState(60);
   const [securityCodeTimer, setSecurityCodeTimer] = useState(20 * 60);
-  const {isLoading, forgotOTPVerification, forgotPassword, error, setError} =
+  const { isLoading, forgotOTPVerification, forgotPassword, error, setError } =
     useContext(AuthContext);
 
   const inputRefs = useRef(otpValues.map(() => createRef()));
@@ -52,7 +54,7 @@ const ForgotPassOTP = ({navigation, route}) => {
     if (otpString.length === 6) {
       const response = await forgotOTPVerification(Mem_ID, otpString);
       if (response) {
-        navigation.navigate('changePassword', {Mem_ID: Mem_ID});
+        navigation.navigate('changePassword', { Mem_ID: Mem_ID });
       }
     } else {
       setError('Please fill in all OTP fields');
@@ -78,125 +80,120 @@ const ForgotPassOTP = ({navigation, route}) => {
 
   return (
     <>
-    
+
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      
-      <ImageBackground
-        source={require('../../assets/png/LoginBg.png')}
-        style={Styles.backgroundImg}>
-          <SafeAreaView style={{height:'100%'}}>
+      <SafeAreaView style={{ height: '100%' }}>
         <ScrollView style={Styles.mainView}>
           <View  >
-        <KeyboardAvoidingView  behavior='padding' style={{marginBottom:100}}> 
-          <Spinner visible={isLoading} />
-          <View style={Styles.logo}>
-            <Image
-              style={{width: 100, height: 53, resizeMode: 'cover'}}
-              source={require('../../assets/png/Actpal_logo.png')}
-            />
-          </View>
-          <View style={[Styles.center, {marginTop: 20}]}>
-            <Text style={{fontSize: 22, fontWeight: '600', color: 'black'}}>
-              We sent a code to your email
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                marginTop: 26,
-                fontWeight: '400',
-                color: 'black',
-                textAlign: 'center',
-              }}>
-              We sent a code to your email {formatEmail(email)}
-              <Text
-                onPress={() => navigation.goBack()}
-                style={{fontSize: 16, color: '#1866B4', lineHeight: 20}}>
-                {' '}
-                .change e-mail address
-              </Text>
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                color: 'black',
-                marginTop: 18,
-                fontWeight: '500',
-              }}>
-              Your Code
-            </Text>
-          </View>
-          <View>
-            <View style={Styles.otpContainer}>
-              {otpValues.map((value, index) => (
-                <TextInput
-                  key={index}
-                  ref={input => {
-                    inputRefs.current[index] = input;
-                  }}
-                  onChangeText={text => setOtpValue(text, index)}
-                  value={value}
-                  maxLength={1}
-                  keyboardType="numeric"
-                  style={Styles.otpInput}
-                  onKeyPress={({nativeEvent}) => {
-                    if (
-                      nativeEvent.key === 'Backspace' &&
-                      index !== 0 &&
-                      otpValues[index] === ''
-                    ) {
-                      inputRefs.current[index - 1].focus();
-                    }
-                  }}
+            <KeyboardAvoidingView behavior='padding' style={{ marginBottom: 100 }}>
+              <Spinner visible={isLoading} />
+              <View style={Styles.logo}>
+                <Image
+                  style={{ width: responsiveWidth(25), height: responsiveWidth(25), resizeMode: 'cover' }}
+                  source={require('../../assets/png/EmailVerify.png')}
                 />
-              ))}
-            </View>
-
-            <Text
-              style={{
-                color: 'black',
-                textAlign: 'center',
-                fontSize: 16,
-                marginTop: 18,
-              }}>
-              Security Code will be valid for{' '}
-              <Text style={{fontWeight: '500'}}>
-                {formatTimer(securityCodeTimer)}
-              </Text>
-            </Text>
-
-            {timer > 0 ? (
-              <Text
-                style={{
-                  color: '#666',
-                  textAlign: 'center',
-                  fontSize: 16,
-                  marginTop: 10,
-                }}>
-                <Text style={{color: '#1866B4'}}>Security code sent.</Text>{' '}
-                Resend in <Text style={{color: '#111'}}>{timer}</Text> seconds
-              </Text>
-            ) : (
-              <TouchableOpacity style={{marginTop: 18}}>
-                <Text
-                  style={{color: '#1866B4', textAlign: 'center', fontSize: 16}}
-                  onPress={handleResendOTP}>
-                  Resend OTP
+              </View>
+              <View style={[Styles.center, { marginTop: 20 }]}>
+                <Text style={{ fontSize: 22, fontWeight: '600', color: 'black' }}>
+                  Enter Verification Code
                 </Text>
-              </TouchableOpacity>
-            )}
-            {error ? <Text style={Styles.errorText}>{error}</Text> : null}
-            <TouchableOpacity
-              style={Styles.blueBtn}
-              onPress={handleVerifyPress}>
-              <Text style={Styles.buttonStyle}>Confirm Security Code</Text>
-            </TouchableOpacity>
-          </View>
-          </KeyboardAvoidingView>
+                <Text
+                  style={{
+                    fontSize: responsiveFontSize(2),
+                    marginTop: responsiveWidth(3),
+                    fontWeight: '400',
+                    color: 'black',
+                    textAlign: 'center',
+                  }}>
+                  We’ve sent a code to {formatEmail(email)}
+                </Text>
+                <Text
+                  onPress={() => navigation.goBack()}
+                  style={{ fontSize: 16, color: '#1866B4', lineHeight: 20 }}>
+                  {' '}
+                  change e-mail address
+                </Text>
+                {/* <Text
+                  style={{
+                    fontSize: 16,
+                    color: 'black',
+                    marginTop: 18,
+                    fontWeight: '500',
+                  }}>
+                  Your Code
+                </Text> */}
+              </View>
+              <View>
+                <View style={Styles.otpContainer}>
+                  {otpValues.map((value, index) => (
+                    <TextInput
+                      key={index}
+                      ref={input => {
+                        inputRefs.current[index] = input;
+                      }}
+                      onChangeText={text => setOtpValue(text, index)}
+                      value={value}
+                      maxLength={1}
+                      keyboardType="numeric"
+                      style={Styles.otpInput}
+                      onKeyPress={({ nativeEvent }) => {
+                        if (
+                          nativeEvent.key === 'Backspace' &&
+                          index !== 0 &&
+                          otpValues[index] === ''
+                        ) {
+                          inputRefs.current[index - 1].focus();
+                        }
+                      }}
+                    />
+                  ))}
+                </View>
+
+                <Text
+                  style={{
+                    color: 'black',
+                    textAlign: 'center',
+                    fontSize: 16,
+                    marginTop: 18,
+                  }}>
+                  Security Code will be valid for{' '}
+                  <Text style={{ fontWeight: '500' }}>
+                    {formatTimer(securityCodeTimer)}
+                  </Text>
+                </Text>
+
+                {timer > 0 ? (
+                  <Text
+                    style={{
+                      color: '#666',
+                      textAlign: 'center',
+                      fontSize: 16,
+                      marginTop: 10,
+                    }}>
+                    <Text style={{ color: '#1866B4' }}>Security code sent.</Text>{' '}
+                    Resend in <Text style={{ color: '#111' }}>{timer}</Text> seconds
+                  </Text>
+                ) : (
+                  <TouchableOpacity style={{ marginTop: 18 }}>
+                    <Text
+                      style={{ color: '#1866B4', textAlign: 'center', fontSize: 16 }}
+                      onPress={handleResendOTP}>
+                      Resend OTP
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {error ? <Text style={Styles.errorText}>{error}</Text> : null}
+                <TouchableOpacity onPress={handleVerifyPress}>
+                  <LinearGradient style={Styles.blueBtn} colors={['#3B7DBF', '#1866B4']} >
+                    <Text style={Styles.buttonStyle}>Confirm Security Code</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
           </View>
         </ScrollView>
-        </SafeAreaView>
-      </ImageBackground>
-     
+      </SafeAreaView>
+
     </>
   );
 };
@@ -207,7 +204,7 @@ const Styles = StyleSheet.create({
     resizeMode: 'cover',
     height: '100%',
     alignContent: 'center',
-    backgroundColor:'#333333'
+    backgroundColor: '#333333'
   },
   container: {
     flex: 1,
@@ -221,7 +218,7 @@ const Styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     alignItems: 'center',
-    marginTop: 70,
+    marginTop: responsiveWidth(30),
   },
   errorText: {
     color: 'red',
@@ -230,8 +227,8 @@ const Styles = StyleSheet.create({
   },
   mainView: {
     flex: 1,
-    padding: 20,
-    alignContent:'center',
+    paddingHorizontal: responsiveWidth(2),
+    backgroundColor: 'white'
   },
   title: {
     fontSize: 24,
@@ -249,13 +246,13 @@ const Styles = StyleSheet.create({
   otpInput: {
     borderWidth: 1,
     borderColor: 'black',
-    borderRadius: 10,
-    width: 50,
-    height: 50,
+    borderRadius: responsiveWidth(3),
+    width: responsiveWidth(12),
+    height: responsiveWidth(12),
     textAlign: 'center',
     fontSize: 20,
     marginHorizontal: 5,
-    marginTop: 18,
+    marginTop: responsiveWidth(7),
   },
   timerText: {
     fontSize: 14,
@@ -272,13 +269,13 @@ const Styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 45,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    marginTop: 20,
-    marginBottom:50,
+    borderRadius: responsiveWidth(4),
+    marginTop: responsiveWidth(5),
+    padding: responsiveWidth(3),
+    marginHorizontal: responsiveWidth(4)
   },
   hide: {
     display: 'none',
