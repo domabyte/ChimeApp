@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -17,14 +17,13 @@ import {
 import axios from 'axios';
 import configURL from '../config/config';
 
-
 const AudioCall = ({navigation, route}) => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
   const {meetingName, userName, fcmToken} = route.params;
-  const { userInfo } = useContext(AuthContext);
+  const {userInfo} = useContext(AuthContext);
 
   useEffect(() => {
     const onMeetingStartSubscription = getSDKEventEmitter().addListener(
@@ -79,6 +78,7 @@ const AudioCall = ({navigation, route}) => {
           `There was an issue finding that meeting. The meeting may have already ended, or your authorization may have expired.\n ${error}`,
         );
         setIsLoading(false);
+        navigation.goBack();
       });
   };
 
@@ -88,10 +88,10 @@ const AudioCall = ({navigation, route}) => {
         token: fcmToken,
         callId: meetingName,
       });
-    } catch(err) {
-      console.log("Error ending the call ",err);
+    } catch (err) {
+      console.log('Error ending the call ', err);
     }
-  }
+  };
 
   return (
     <>

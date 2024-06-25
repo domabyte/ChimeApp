@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import {VideoMeeting} from '../Meetings/VideoMeeting';
 import {createMeetingRequest} from '../utils/Api';
-import { AuthContext } from '../context/AuthContext';
+import {AuthContext} from '../context/AuthContext';
 import {
   getSDKEventEmitter,
   MobileSDKEvent,
@@ -78,6 +78,7 @@ const VideoCall = ({navigation, route}) => {
           `There was an issue finding that meeting. The meeting may have already ended, or your authorization may have expired.\n ${error}`,
         );
         setIsLoading(false);
+        navigation.goBack();
       });
   };
 
@@ -87,11 +88,10 @@ const VideoCall = ({navigation, route}) => {
         token: fcmToken,
         callId: meetingName,
       });
-    } catch(err) {
-      console.log("Error ending the call ",err);
+    } catch (err) {
+      console.log('Error ending the call ', err);
     }
-  }
-
+  };
 
   return (
     <>

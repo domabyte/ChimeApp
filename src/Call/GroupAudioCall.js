@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -7,21 +7,21 @@ import {
   View,
 } from 'react-native';
 import {GroupAudioMeeting} from '../Meetings/GroupAudioMeeting';
+import {AuthContext} from '../context/AuthContext';
 import {createMeetingRequest} from '../utils/Api';
 import {
   getSDKEventEmitter,
   MobileSDKEvent,
   NativeFunction,
 } from '../utils/Bridge';
-import axios from 'axios';
-import configURL from '../config/config';
 
 const GroupAudioCall = ({navigation, route}) => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
-  const {meetingName, userName, fcmToken} = route.params;
+  const {meetingName, userName} = route.params;
+  const {userInfo} = useContext(AuthContext);
 
   useEffect(() => {
     const onMeetingStartSubscription = getSDKEventEmitter().addListener(
@@ -48,7 +48,7 @@ const GroupAudioCall = ({navigation, route}) => {
       },
     );
 
-    initializeMeetingSession(meetingName, userName);
+    initializeMeetingSession(meetingName, userInfo?.id);
 
     return () => {
       onMeetingStartSubscription.remove();
@@ -76,19 +76,9 @@ const GroupAudioCall = ({navigation, route}) => {
           `There was an issue finding that meeting. The meeting may have already ended, or your authorization may have expired.\n ${error}`,
         );
         setIsLoading(false);
+        navigation.goBack();
       });
   };
-
-  const endCall = async () => {
-    try {
-      await axios.post(configURL.endCallURL, {
-        token: fcmToken,
-        callId: meetingName,
-      });
-    } catch(err) {
-      console.log("Error ending the call ",err);
-    }
-  }
 
   return (
     <>
@@ -105,7 +95,6 @@ const GroupAudioCall = ({navigation, route}) => {
             meetingTitle={meetingTitle}
             userName={userName}
             selfAttendeeId={selfAttendeeId}
-            endCall={endCall}
             navigation={navigation}
           />
         )}
