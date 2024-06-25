@@ -293,8 +293,8 @@ const styles = StyleSheet.create({
     right: 15,
   },
   userImage: {
-    width: 100,
-    height: 100,
+    width: 70,
+    height: 70,
     borderRadius: 100,
     overflow: 'hidden',
   },
@@ -319,6 +319,7 @@ const styles = StyleSheet.create({
     gap: 15,
     paddingHorizontal: 10,
     marginVertical: 6,
+    marginBottom: 10,
   },
   mutualImg: {
     width: 20,
@@ -338,7 +339,7 @@ const styles = StyleSheet.create({
   mutualBox: {
     flexDirection: 'row',
     gap: 5,
-    marginTop: 5,
+    marginTop: 0,
   },
   buttonArea: {
     flexDirection: 'row',

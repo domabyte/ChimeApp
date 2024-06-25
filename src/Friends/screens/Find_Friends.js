@@ -147,7 +147,7 @@ const FindFriends = ({navigation}) => {
       <View style={styles.userImage}>
         <TouchableOpacity onPress={() => navigation.navigate('myProfile')}>
           <Image
-            style={{width: '100%', height: '100%'}}
+            style={{width: 70, height: 70}}
             source={
               item.Mem_photo && typeof item.Mem_photo === 'string'
                 ? {uri: item.Mem_photo}
@@ -167,7 +167,7 @@ const FindFriends = ({navigation}) => {
             fontWeight: '500',
           }}>
           {item.Mem_Designation.trim() === 'Not Added'
-            ? ''
+            ? 'N/A'
             : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
@@ -314,8 +314,8 @@ const styles = StyleSheet.create({
     right: 15,
   },
   userImage: {
-    width: 90,
-    height: 90,
+    width: 70,
+    height: 70,
     borderRadius: 100,
     overflow: 'hidden',
   },
@@ -340,6 +340,7 @@ const styles = StyleSheet.create({
   friendList: {
     flexDirection: 'row',
     gap: 15,
+    marginBottom: 10,
     paddingHorizontal: 10,
     marginVertical: 6,
   },
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
   mutualBox: {
     flexDirection: 'row',
     gap: 5,
-    marginTop: 5,
+    marginTop: 0,
   },
   buttonArea: {
     flexDirection: 'row',
