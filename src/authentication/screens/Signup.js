@@ -18,6 +18,7 @@ import axios from 'axios';
 import config from '../../config/config';
 import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 import LinearGradient from 'react-native-linear-gradient';
+import { replacePlaceholdersWithLinks } from '../../utils/helper';
 
 const Signup = ({ navigation }) => {
   const [firstName, setFirstName] = useState(null);
@@ -30,7 +31,7 @@ const Signup = ({ navigation }) => {
   const [captcha, setCaptcha] = useState(null);
   const [encryptedCaptcha, setEncryptedCaptcha] = useState(null);
   const [confirmCaptcha, setConfirmCaptcha] = useState(null);
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(true);
   const { isLoading, register, error, setError } = useContext(AuthContext);
 
   const toggleNewPasswordVisibility = () => {
@@ -129,6 +130,24 @@ const Signup = ({ navigation }) => {
       }
     }
   };
+  const renderError = () => {
+    if (error) {
+      if (error.includes('@@LoginLink')) {
+        const message = error.replace('@@LoginLink', '');
+        return (
+          <Text style={styles.errorText}>
+            {message}
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={{color: '#1866B4', textDecorationLine: 'underline'}}>Please login.</Text>
+            </TouchableOpacity>
+          </Text>
+        );
+      }
+      return <Text style={styles.errorText}>{error}</Text>;
+    }
+    return null;
+  };
+
   return (
     <>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
@@ -263,13 +282,13 @@ const Signup = ({ navigation }) => {
                 {isChecked && <Image source={require('../../assets/png/check.png')} style={styles.checkmark} />}
               </View>
               <Text style={styles.label}>
-                I accept ACTPAL
-                <Text style={{ color: '#1866B4' }}>Terms & Conditions</Text>
+                I accept {''}
+                <Text style={{ color: '#1866B4' }}>Actpal Terms & Conditions</Text>
               </Text>
             </TouchableOpacity>
           </View>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {error ? <Text style={styles.errorText}>{replacePlaceholdersWithLinks(error)}</Text> : null}
           <View style={{ marginHorizontal: 20 }}>
             <TouchableOpacity onPress={handleSignup}>
               <LinearGradient style={styles.blueBtn} colors={['#3B7DBF', '#1866B4']}>

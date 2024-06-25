@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 import configURL from '../config/config';
 import {requestUserPermission} from '../utils/NotificationService';
+import { loginReplace } from '../utils/helper';
 
 export const AuthContext = createContext();
 
@@ -51,7 +52,9 @@ export const AuthProvider = ({children}) => {
           return data.message;
         }
       } else {
-        setError(data.errorText || 'Registration failed.');
+        if (data.errorText) {
+          setError(data.errorText || "Registration failed.");
+        }
       }
     } catch (err) {
       setError(`Registration error: ${error}`);

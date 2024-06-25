@@ -46,10 +46,9 @@ const Myprofile = ({navigation}) => {
               gap: 5,
             }}>
             <Image
-              style={{width: 30, height: 16}}
+              style={{width: 60, height: 30}}
               source={require('../assets/png/Actpal_logo.png')}
             />
-            <Text style={{color: '#212E3D'}}>Actpal</Text>
           </View>
           <TouchableOpacity>
             <Image
@@ -75,7 +74,7 @@ const Myprofile = ({navigation}) => {
             />
           </View>
           <Text style={styles.userName}>Brooklyn Simmons</Text>
-          <Text style={styles.userTitle}>Developer</Text>
+          {/* <Text style={styles.userTitle}>Developer</Text> */}
           <Button title="Logout" color="red" onPress={logout} />
           <View
             style={{
