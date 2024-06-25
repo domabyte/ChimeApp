@@ -1,15 +1,22 @@
 import React from 'react';
-import { View, Text, FlatList, Alert, StyleSheet, BackHandler } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  BackHandler,
+} from 'react-native';
 import {
   NativeFunction,
   getSDKEventEmitter,
   MobileSDKEvent,
   MeetingError,
 } from '../utils/Bridge';
-import { MuteButton } from '../MeetingUtils/MuteButton';
-import { HangOffButton } from '../MeetingUtils/HangOffButton';
-import { AttendeeItem } from '../MeetingUtils/AttendeeItem';
-import { SwitchMicrophoneToSpeakerButton } from '../MeetingUtils/SwitchMicrophoneToSpeakerButton';
+import {MuteButton} from '../MeetingUtils/MuteButton';
+import {HangOffButton} from '../MeetingUtils/HangOffButton';
+import {AttendeeItem} from '../MeetingUtils/AttendeeItem';
+import {SwitchMicrophoneToSpeakerButton} from '../MeetingUtils/SwitchMicrophoneToSpeakerButton';
 import Sound from 'react-native-sound';
 const ringtone = require('../assets/audio/ringtone.mp3');
 
@@ -51,12 +58,15 @@ export class AudioMeeting extends React.Component {
         }
       });
     });
-    this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackPress,
+    );
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.attendees.length >= 2 && prevState.attendees.length < 2) {
-      this.setState({ isMeetingActive: true, startTime: Date.now() }, () => {
+      this.setState({isMeetingActive: true, startTime: Date.now()}, () => {
         this.startMeetingTimer();
       });
       try {
@@ -68,17 +78,23 @@ export class AudioMeeting extends React.Component {
         clearTimeout(this.timer);
         this.timer = null;
       }
-    } else if (this.state.attendees.length < 2 && prevState.attendees.length >= 2) {
-      this.setState({ isMeetingActive: false });
+    } else if (
+      this.state.attendees.length < 2 &&
+      prevState.attendees.length >= 2
+    ) {
+      this.setState({isMeetingActive: false});
       this.stopMeetingTimer();
       this.HangUp();
-    } else if (this.state.attendees.length === 1 && prevState.attendees.length === 0) {
+    } else if (
+      this.state.attendees.length === 1 &&
+      prevState.attendees.length === 0
+    ) {
       this.startOneMinuteTimer();
     } else if (
       this.state.attendees.length === 1 &&
       prevState.attendees.length > 1
     ) {
-      this.setState({ isMeetingActive: false });
+      this.setState({isMeetingActive: false});
       this.HangUp();
     }
   }
@@ -154,7 +170,7 @@ export class AudioMeeting extends React.Component {
     }
   };
 
-  handleAttendeeJoin = ({ attendeeId, externalUserId }) => {
+  handleAttendeeJoin = ({attendeeId, externalUserId}) => {
     console.log(`Attendee joined: ${attendeeId}, ${externalUserId}`);
     if (!(attendeeId in attendeeNameMap)) {
       attendeeNameMap[attendeeId] = externalUserId.split('#')[1];
@@ -166,7 +182,7 @@ export class AudioMeeting extends React.Component {
     }
   };
 
-  handleAttendeeLeave = ({ attendeeId }) => {
+  handleAttendeeLeave = ({attendeeId}) => {
     console.log(`Attendee left: ${attendeeId}`);
     this.setState(prevState => ({
       attendees: prevState.attendees.filter(
@@ -222,14 +238,14 @@ export class AudioMeeting extends React.Component {
     await NativeFunction.stopMeeting();
     this.props.endCall();
     this.props.navigation.goBack();
-  }
+  };
 
   switchMicrophoneToSpeaker = () => {
     NativeFunction.switchMicrophoneToSpeaker()
       .then(response => {
         console.log(response);
         this.setState(prevState => ({
-          isSpeakerActive: !prevState.isSpeakerActive
+          isSpeakerActive: !prevState.isSpeakerActive,
         }));
       })
       .catch(error => {
@@ -246,18 +262,16 @@ export class AudioMeeting extends React.Component {
   };
 
   handleBackPress = () => {
-    console.log("Back button pressed");
-    Alert.alert(
-      'Hang up to go back',
-      'Please hang up the call to go back.',
-      [{ text: 'OK' }]
-    );
+    console.log('Back button pressed');
+    Alert.alert('Hang up to go back', 'Please hang up the call to go back.', [
+      {text: 'OK'},
+    ]);
     return true;
   };
 
   startMeetingTimer = () => {
     this.meetingTimer = setInterval(() => {
-      this.setState({ meetingDuration: Date.now() - this.state.startTime });
+      this.setState({meetingDuration: Date.now() - this.state.startTime});
     }, 1000);
   };
 
@@ -268,7 +282,7 @@ export class AudioMeeting extends React.Component {
     }
   };
 
-  formatDuration = (milliseconds) => {
+  formatDuration = milliseconds => {
     if (!milliseconds || milliseconds < 0) return '00:00:00';
 
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -284,16 +298,16 @@ export class AudioMeeting extends React.Component {
   };
 
   render() {
-    const { selfAttendeeId } = this.props;
+    const {selfAttendeeId} = this.props;
     const currentMuted = this.state.mutedAttendee.includes(selfAttendeeId);
     const meetingDuration = this.formatDuration(this.state.meetingDuration);
 
     return (
-      <View style={[styles.container, { justifyContent: 'flex-start' }]}>
+      <View style={[styles.container, {justifyContent: 'flex-start'}]}>
         <FlatList
           style={styles.attendeeList}
           data={this.state.attendees}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <AttendeeItem
               attendeeName={attendeeNameMap[item] || item}
               muted={this.state.mutedAttendee.includes(item)}
@@ -302,7 +316,7 @@ export class AudioMeeting extends React.Component {
           )}
           keyExtractor={item => item}
         />
-         <View style={styles.buttonContainer}>
+        <View style={styles.buttonContainer}>
           <MuteButton
             muted={currentMuted}
             onPress={() => NativeFunction.setMute(!currentMuted)}

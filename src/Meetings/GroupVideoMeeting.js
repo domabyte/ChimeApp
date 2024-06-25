@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, FlatList, Alert, StyleSheet, BackHandler } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  BackHandler,
+} from 'react-native';
 import {
   NativeFunction,
   getSDKEventEmitter,
@@ -9,16 +16,14 @@ import {
 import {RNVideoRenderView} from '../MeetingUtils/RNVideoRenderView';
 import {MuteButton} from '../MeetingUtils/MuteButton';
 import {HangOffButton} from '../MeetingUtils/HangOffButton';
-import {AttendeeItem} from '../MeetingUtils/AttendeeItem';
 import {CameraButton} from '../MeetingUtils/CameraButton';
 import {SwitchCameraButton} from '../MeetingUtils/SwitchCameraButton';
 import {SwitchMicrophoneToSpeakerButton} from '../MeetingUtils/SwitchMicrophoneToSpeakerButton';
 import {ShareScreenBtn} from '../MeetingUtils/ShareScreenBtn';
-import Sound from 'react-native-sound';
+import {GroupAttendeeItem} from '../MeetingUtils/GroupAttendeeItem';
 const ringtone = require('../assets/audio/ringtone.mp3');
 
 const attendeeNameMap = {};
-Sound.setCategory('Playback', true);
 
 export class GroupVideoMeeting extends React.Component {
   constructor(props) {
@@ -30,8 +35,8 @@ export class GroupVideoMeeting extends React.Component {
       selfVideoEnabled: false,
       screenShareTile: null,
       isMeetingActive: false,
+      isSpeakerActive: false,
     };
-    this.sound = null;
     this.timer = null;
     this.meetingTimer = null;
     this.startTime = null;
@@ -43,39 +48,23 @@ export class GroupVideoMeeting extends React.Component {
     setTimeout(() => {
       NativeFunction.setCameraOn(true);
     }, 1000);
-
-    this.sound = new Sound(ringtone, error => {
-      if (error) {
-        console.log('Failed to load the sound', error);
-        return;
-      }
-      this.sound.setVolume(1.0);
-      this.sound.setNumberOfLoops(-1);
-      this.sound.play(success => {
-        if (success) {
-          console.log('Sound played successfully');
-          this.sound.release();
-        } else {
-          console.log('Sound playback failed');
-        }
-      });
-    });
-    this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackPress,
+    );
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.attendees.length >= 2 && prevState.attendees.length < 2) {
       this.setState({isMeetingActive: true});
-      try {
-        this.sound.release();
-      } catch (err) {
-        console.log('Cannot stop the sound file', err);
-      }
       if (this.timer) {
         clearTimeout(this.timer);
         this.timer = null;
       }
-    } else if (this.state.attendees.length === 1 && prevState.attendees.length === 0) {
+    } else if (
+      this.state.attendees.length === 1 &&
+      prevState.attendees.length === 0
+    ) {
       this.startOneMinuteTimer();
     } else if (
       this.state.attendees.length === 1 &&
@@ -88,11 +77,6 @@ export class GroupVideoMeeting extends React.Component {
 
   componentWillUnmount() {
     this.removeEventListeners();
-    try {
-      this.sound.release();
-    } catch (e) {
-      console.log(`Cannot stop the sound file`, e);
-    }
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
@@ -245,15 +229,13 @@ export class GroupVideoMeeting extends React.Component {
 
   HangUp = async () => {
     await NativeFunction.stopMeeting();
-    this.props.endCall();
     this.props.navigation.goBack();
   };
 
   endHangUp = async () => {
     await NativeFunction.stopMeeting();
-    this.props.endCall();
     this.props.navigation.goBack();
-  }
+  };
 
   switchMicrophoneToSpeaker = () => {
     NativeFunction.switchMicrophoneToSpeaker()
@@ -292,12 +274,10 @@ export class GroupVideoMeeting extends React.Component {
   };
 
   handleBackPress = () => {
-    console.log("Back button pressed");
-    Alert.alert(
-      'Hang up to go back',
-      'Please hang up the call to go back.',
-      [{ text: 'OK' }]
-    );
+    console.log('Back button pressed');
+    Alert.alert('Hang up to go back', 'Please hang up the call to go back.', [
+      {text: 'OK'},
+    ]);
     return true;
   };
 
@@ -309,7 +289,7 @@ export class GroupVideoMeeting extends React.Component {
     return (
       <View style={[styles.container, {justifyContent: 'flex-start'}]}>
         {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
-        <Text style={styles.title}>{this.props.userName}</Text>
+        {/* <Text style={styles.title}>{this.props.userName}</Text> */}
         <View style={styles.buttonContainer}>
           <MuteButton
             muted={currentMuted}
@@ -317,6 +297,7 @@ export class GroupVideoMeeting extends React.Component {
           />
           <SwitchMicrophoneToSpeakerButton
             onPress={this.switchMicrophoneToSpeaker}
+            isSpeakerActive={this.state.isSpeakerActive}
           />
           <CameraButton
             disabled={this.state.selfVideoEnabled}
@@ -363,7 +344,7 @@ export class GroupVideoMeeting extends React.Component {
           style={styles.attendeeList}
           data={this.state.attendees}
           renderItem={({item}) => (
-            <AttendeeItem
+            <GroupAttendeeItem
               attendeeName={
                 attendeeNameMap[item] ? attendeeNameMap[item] : item
               }
@@ -420,5 +401,3 @@ const styles = StyleSheet.create({
     width: '90%',
   },
 });
-
-export default VideoMeeting;

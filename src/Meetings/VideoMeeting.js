@@ -1,5 +1,14 @@
 import React from 'react';
-import {View, Text, FlatList, Alert, StyleSheet, BackHandler, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  BackHandler,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 import {
   NativeFunction,
   getSDKEventEmitter,
@@ -62,7 +71,10 @@ export class VideoMeeting extends React.Component {
         }
       });
     });
-    this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackPress,
+    );
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -77,7 +89,10 @@ export class VideoMeeting extends React.Component {
         clearTimeout(this.timer);
         this.timer = null;
       }
-    } else if (this.state.attendees.length === 1 && prevState.attendees.length === 0) {
+    } else if (
+      this.state.attendees.length === 1 &&
+      prevState.attendees.length === 0
+    ) {
       this.startOneMinuteTimer();
     } else if (
       this.state.attendees.length === 1 &&
@@ -255,14 +270,14 @@ export class VideoMeeting extends React.Component {
     await NativeFunction.stopMeeting();
     this.props.endCall();
     this.props.navigation.goBack();
-  }
+  };
 
   switchMicrophoneToSpeaker = () => {
     NativeFunction.switchMicrophoneToSpeaker()
       .then(response => {
         console.log(response);
         this.setState(prevState => ({
-          isSpeakerActive: !prevState.isSpeakerActive
+          isSpeakerActive: !prevState.isSpeakerActive,
         }));
       })
       .catch(error => {
@@ -297,17 +312,15 @@ export class VideoMeeting extends React.Component {
   };
 
   handleBackPress = () => {
-    console.log("Back button pressed");
-    Alert.alert(
-      'Hang up to go back',
-      'Please hang up the call to go back.',
-      [{ text: 'OK' }]
-    );
+    console.log('Back button pressed');
+    Alert.alert('Hang up to go back', 'Please hang up the call to go back.', [
+      {text: 'OK'},
+    ]);
     return true;
   };
 
-  handleTilePress = (tileId) => {
-    console.log("Tile id : ",tileId);
+  handleTilePress = tileId => {
+    console.log('Tile id : ', tileId);
     this.setState({tileVideoId: tileId});
   };
 
@@ -318,45 +331,56 @@ export class VideoMeeting extends React.Component {
 
     return (
       <SafeAreaView>
-      <View style={[styles.container]}>
-        {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
-        {/* <Text style={styles.title}>{this.props.userName}</Text> */}
-        
-        {/* <Text style={styles.title}>Video</Text> */}
-        <View style={[styles.videoContainer, this.state.videoTiles.length==1 && this.state.tileVideoId === null ? styles.oneVideo:
-                this.state.videoTiles.length==2 && this.state.tileVideoId === null? styles.twoVideo: styles.NoVideo
-              , this.state.tileVideoId !== null?styles.fullScreenVideo:'']}>
-          {this.state.videoTiles.length > 0 ? (
-            this.state.videoTiles.map(tileId => (
-              <TouchableOpacity key={tileId} onPress={() => this.handleTilePress(tileId)} 
-              style={[
-                this.state.tileVideoId === null
-                  ? styles.videoWrapper
-                  : 
-                      this.state.tileVideoId === tileId ? styles.fullWrapper : styles.smallWrapper
-                    ]
-              }
-              >
-              <RNVideoRenderView
-                style={
+        <View style={[styles.container]}>
+          {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
+          {/* <Text style={styles.title}>{this.props.userName}</Text> */}
+
+          {/* <Text style={styles.title}>Video</Text> */}
+          <View
+            style={[
+              styles.videoContainer,
+              this.state.videoTiles.length == 1 &&
+              this.state.tileVideoId === null
+                ? styles.oneVideo
+                : this.state.videoTiles.length == 2 &&
                   this.state.tileVideoId === null
-                    ? styles.video
-                    : [
-                        this.state.tileVideoId === tileId ? styles.selectedVideo : styles.smallVideo
-                      ]
-                }
-                tileId={tileId}
-                />
-                      
-               </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.subtitle}>
-              No one is sharing video at this moment
-            </Text>
-          )}
-        </View>
-        {/* {!!this.state.screenShareTile && (
+                ? styles.twoVideo
+                : styles.NoVideo,
+              this.state.tileVideoId !== null ? styles.fullScreenVideo : '',
+            ]}>
+            {this.state.videoTiles.length > 0 ? (
+              this.state.videoTiles.map(tileId => (
+                <TouchableOpacity
+                  key={tileId}
+                  onPress={() => this.handleTilePress(tileId)}
+                  style={[
+                    this.state.tileVideoId === null
+                      ? styles.videoWrapper
+                      : this.state.tileVideoId === tileId
+                      ? styles.fullWrapper
+                      : styles.smallWrapper,
+                  ]}>
+                  <RNVideoRenderView
+                    style={
+                      this.state.tileVideoId === null
+                        ? styles.video
+                        : [
+                            this.state.tileVideoId === tileId
+                              ? styles.selectedVideo
+                              : styles.smallVideo,
+                          ]
+                    }
+                    tileId={tileId}
+                  />
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.subtitle}>
+                No one is sharing video at this moment
+              </Text>
+            )}
+          </View>
+          {/* {!!this.state.screenShareTile && (
           <React.Fragment>
             <Text style={styles.title}>Screen Share</Text>
             <View style={styles.videoContainer}>
@@ -368,7 +392,7 @@ export class VideoMeeting extends React.Component {
             </View>
           </React.Fragment>
         )} */}
-        {/* <Text style={styles.title}>Attendee</Text>
+          {/* <Text style={styles.title}>Attendee</Text>
         <FlatList
           style={styles.attendeeList}
           data={this.state.attendees}
@@ -382,28 +406,28 @@ export class VideoMeeting extends React.Component {
           )}
           keyExtractor={item => item}
         /> */}
-        <View style={styles.buttonContainer}>
-          <MuteButton
-            muted={currentMuted}
-            onPress={() => NativeFunction.setMute(!currentMuted)}
-          />
-          <SwitchMicrophoneToSpeakerButton
-            onPress={this.switchMicrophoneToSpeaker}
-            isSpeakerActive={this.state.isSpeakerActive}
-          />
-          <CameraButton
-            disabled={this.state.selfVideoEnabled}
-            onPress={() =>
-              NativeFunction.setCameraOn(!this.state.selfVideoEnabled)
-            }
-          />
-          <SwitchCameraButton onPress={this.switchCamera} />
-          <ShareScreenBtn onPress={() => this.startScreenShare(true)} />
-          {/* <SwitchCameraButton onPress={()=> this.startScreenShare(true)} /> */}
-          {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
-          <HangOffButton onPress={this.HangUp} />
+          <View style={styles.buttonContainer}>
+            <MuteButton
+              muted={currentMuted}
+              onPress={() => NativeFunction.setMute(!currentMuted)}
+            />
+            <SwitchMicrophoneToSpeakerButton
+              onPress={this.switchMicrophoneToSpeaker}
+              isSpeakerActive={this.state.isSpeakerActive}
+            />
+            <CameraButton
+              disabled={this.state.selfVideoEnabled}
+              onPress={() =>
+                NativeFunction.setCameraOn(!this.state.selfVideoEnabled)
+              }
+            />
+            <SwitchCameraButton onPress={this.switchCamera} />
+            <ShareScreenBtn onPress={() => this.startScreenShare(true)} />
+            {/* <SwitchCameraButton onPress={()=> this.startScreenShare(true)} /> */}
+            {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
+            <HangOffButton onPress={this.HangUp} />
+          </View>
         </View>
-      </View>
       </SafeAreaView>
     );
   }
@@ -411,7 +435,7 @@ export class VideoMeeting extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    width:'100%',
+    width: '100%',
     alignItems: 'center',
     height: '100%',
     backgroundColor: 'gray',
@@ -420,54 +444,54 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  twoVideo:{
-    flex:1,
+  twoVideo: {
+    flex: 1,
     flexDirection: 'column',
-    borderColor:'#333',
-    borderTopColor:"#f00",
-    borderWidth:2,
-    width:'100%',
-    height:'100%',
+    borderColor: '#333',
+    borderTopColor: '#f00',
+    borderWidth: 2,
+    width: '100%',
+    height: '100%',
   },
   NoVideo: {
     width: '100%',
     height: '100%',
   },
-  videoWrapper:{
+  videoWrapper: {
     width: '100%',
     height: '50%',
   },
- 
+
   video: {
-    flex:1,
+    flex: 1,
     width: '100%',
     height: '50%',
-    objectFit:'cover',
+    objectFit: 'cover',
   },
   selectedVideo: {
     width: '100%',
     height: '100%',
-    position:'relative',
-    zIndex:1,
+    position: 'relative',
+    zIndex: 1,
   },
-  fullScreenVideo:{
+  fullScreenVideo: {
     width: '100%',
     height: '100%',
     flex: 1,
     position: 'relative',
-    zIndex:0,
+    zIndex: 0,
   },
-  fullWrapper:{
-    width:'100%',
+  fullWrapper: {
+    width: '100%',
     height: '100%',
     flex: 1,
   },
   buttonContainer: {
     position: 'absolute',
     flexDirection: 'row',
-    bottom:10,
-    gap:10,
-    zIndex:99,
+    bottom: 10,
+    gap: 10,
+    zIndex: 99,
     justifyContent: 'space-between',
   },
   title: {
@@ -497,30 +521,29 @@ const styles = StyleSheet.create({
   attendeeList: {
     width: '90%',
   },
-  smallWrapper:{
+  smallWrapper: {
     width: 100,
-    height:100,
-    position:'absolute',
-    bottom:100,
-    right:20,
-    zIndex:999,
-    borderRadius:10,
-    borderColor:'#333',
-    borderWidth:2,
+    height: 100,
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    zIndex: 999,
+    borderRadius: 10,
+    borderColor: '#333',
+    borderWidth: 2,
   },
-  smallVideo:{
+  smallVideo: {
     flex: 1,
-    left:0,
-    top:0,
+    left: 0,
+    top: 0,
     width: '100%',
     height: '100%',
-    objectFit:'cover',
-    zIndex:9999,
-    position:'relative',
+    objectFit: 'cover',
+    zIndex: 9999,
+    position: 'relative',
     width: '100%',
     height: '100%',
   },
-  
 });
 
 export default VideoMeeting;

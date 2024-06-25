@@ -1,21 +1,26 @@
 import React from 'react';
-import { View, Text, FlatList, Alert, StyleSheet, BackHandler } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  BackHandler,
+} from 'react-native';
 import {
   NativeFunction,
   getSDKEventEmitter,
   MobileSDKEvent,
   MeetingError,
 } from '../utils/Bridge';
-import { MuteButton } from '../MeetingUtils/MuteButton';
-import { HangOffButton } from '../MeetingUtils/HangOffButton';
+import {MuteButton} from '../MeetingUtils/MuteButton';
+import {HangOffButton} from '../MeetingUtils/HangOffButton';
+import {GroupAttendeeItem} from '../MeetingUtils/GroupAttendeeItem';
+import {SwitchMicrophoneToSpeakerButton} from '../MeetingUtils/SwitchMicrophoneToSpeakerButton';
 import { AttendeeItem } from '../MeetingUtils/AttendeeItem';
-import { SwitchMicrophoneToSpeakerButton } from '../MeetingUtils/SwitchMicrophoneToSpeakerButton';
-import Sound from 'react-native-sound';
 const ringtone = require('../assets/audio/ringtone.mp3');
 
 const attendeeNameMap = {};
-Sound.setCategory('Playback', true);
-
 export class GroupAudioMeeting extends React.Component {
   constructor(props) {
     super(props);
@@ -25,8 +30,8 @@ export class GroupAudioMeeting extends React.Component {
       meetingTitle: props.meetingTitle || '',
       isMeetingActive: false,
       meetingDuration: 0,
+      isSpeakerActive: false,
     };
-    this.sound = null;
     this.timer = null;
     this.meetingTimer = null;
     this.startTime = null;
@@ -34,55 +39,35 @@ export class GroupAudioMeeting extends React.Component {
 
   componentDidMount() {
     this.setupEventListeners();
-    this.sound = new Sound(ringtone, error => {
-      if (error) {
-        console.log('Failed to load the sound', error);
-        return;
-      }
-      this.sound.setVolume(1.0);
-      this.sound.setNumberOfLoops(-1);
-      this.sound.play(success => {
-        if (success) {
-          console.log('Sound played successfully');
-          this.sound.release();
-        } else {
-          console.log('Sound playback failed');
-        }
-      });
-    });
-    this.backHandler = BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackPress,
+    );
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.attendees.length >= 2 && prevState.attendees.length < 2) {
-      this.setState({ isMeetingActive: true });
-      try {
-        this.sound.release();
-      } catch (err) {
-        console.log('Cannot stop the sound file ', err);
-      }
+      this.setState({isMeetingActive: true});
       if (this.timer) {
         clearTimeout(this.timer);
         this.timer = null;
       }
-    } else if (this.state.attendees.length === 1 && prevState.attendees.length === 0) {
+    } else if (
+      this.state.attendees.length === 1 &&
+      prevState.attendees.length === 0
+    ) {
       this.startOneMinuteTimer();
     } else if (
       this.state.attendees.length === 1 &&
       prevState.attendees.length > 1
     ) {
-      this.setState({ isMeetingActive: false });
+      this.setState({isMeetingActive: false});
       this.HangUp();
     }
   }
 
   componentWillUnmount() {
     this.removeEventListeners();
-    try {
-      this.sound.release();
-    } catch (e) {
-      console.log(`Cannot stop the sound file`, e);
-    }
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
@@ -143,7 +128,7 @@ export class GroupAudioMeeting extends React.Component {
     }
   };
 
-  handleAttendeeJoin = ({ attendeeId, externalUserId }) => {
+  handleAttendeeJoin = ({attendeeId, externalUserId}) => {
     console.log(`Attendee joined: ${attendeeId}, ${externalUserId}`);
     if (!(attendeeId in attendeeNameMap)) {
       attendeeNameMap[attendeeId] = externalUserId.split('#')[1];
@@ -155,7 +140,7 @@ export class GroupAudioMeeting extends React.Component {
     }
   };
 
-  handleAttendeeLeave = ({ attendeeId }) => {
+  handleAttendeeLeave = ({attendeeId}) => {
     console.log(`Attendee left: ${attendeeId}`);
     this.setState(prevState => ({
       attendees: prevState.attendees.filter(
@@ -203,15 +188,13 @@ export class GroupAudioMeeting extends React.Component {
 
   HangUp = async () => {
     await NativeFunction.stopMeeting();
-    this.props.endCall();
     this.props.navigation.goBack();
   };
 
   endHangUp = async () => {
     await NativeFunction.stopMeeting();
-    this.props.endCall();
     this.props.navigation.goBack();
-  }
+  };
 
   switchMicrophoneToSpeaker = () => {
     NativeFunction.switchMicrophoneToSpeaker()
@@ -232,38 +215,23 @@ export class GroupAudioMeeting extends React.Component {
   };
 
   handleBackPress = () => {
-    console.log("Back button pressed");
-    Alert.alert(
-      'Hang up to go back',
-      'Please hang up the call to go back.',
-      [{ text: 'OK' }]
-    );
+    console.log('Back button pressed');
+    Alert.alert('Hang up to go back', 'Please hang up the call to go back.', [
+      {text: 'OK'},
+    ]);
     return true;
   };
 
   render() {
-    const { selfAttendeeId, userName } = this.props;
+    const {selfAttendeeId, userName} = this.props;
     const currentMuted = this.state.mutedAttendee.includes(selfAttendeeId);
 
     return (
-      <View style={[styles.container, { justifyContent: 'flex-start' }]}>
-        <Text style={styles.title}>{userName}</Text>
-        <View style={styles.buttonContainer}>
-          <MuteButton
-            muted={currentMuted}
-            onPress={() => NativeFunction.setMute(!currentMuted)}
-          />
-          <SwitchMicrophoneToSpeakerButton
-            onPress={this.switchMicrophoneToSpeaker}
-          />
-          <HangOffButton onPress={this.HangUp} />
-        </View>
-        <Text style={styles.title}>Audio</Text>
-        <Text style={styles.title}>Attendee</Text>
+      <View style={[styles.container, {justifyContent: 'flex-start'}]}>
         <FlatList
           style={styles.attendeeList}
           data={this.state.attendees}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <AttendeeItem
               attendeeName={attendeeNameMap[item] || item}
               muted={this.state.mutedAttendee.includes(item)}
@@ -271,6 +239,17 @@ export class GroupAudioMeeting extends React.Component {
           )}
           keyExtractor={item => item}
         />
+         <View style={styles.buttonContainer}>
+          <MuteButton
+            muted={currentMuted}
+            onPress={() => NativeFunction.setMute(!currentMuted)}
+          />
+          <SwitchMicrophoneToSpeakerButton
+            onPress={this.switchMicrophoneToSpeaker}
+            isSpeakerActive={this.state.isSpeakerActive}
+          />
+          <HangOffButton onPress={this.HangUp} />
+        </View>
       </View>
     );
   }
