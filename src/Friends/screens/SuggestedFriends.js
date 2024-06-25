@@ -115,10 +115,10 @@ const SuggestedFriends = ({navigation, route}) => {
   const handleCred = async () => {
     AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
     navigation.navigate('myFriend');
-  }
+  };
 
   return (
-    <SafeAreaView style={{height:'100%'}}>
+    <SafeAreaView style={{height: '100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <View style={styles.container}>
         <Spinner visible={isLoading} />

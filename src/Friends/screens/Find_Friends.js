@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
+import Footer from '../../components/Footer';
 import {AuthContext} from '../../context/AuthContext';
+import FriendHeader from '../../components/FriendsHeader';
 import {useIsFocused} from '@react-navigation/core';
 const default_photo = require('../../assets/png/default-profile.png');
 
@@ -213,8 +215,15 @@ const FindFriends = ({navigation}) => {
           style={{
             marginHorizontal: 16,
             marginVertical: 10,
-            flexDirection: 'row',
           }}>
+          <FriendHeader
+            navigation={navigation}
+            index={0}
+            selectedTab="Find Friends"
+            searchResult={
+              searchButtonClicked ? searchResults : suggestedFriendsData
+            }
+          />
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
@@ -223,7 +232,6 @@ const FindFriends = ({navigation}) => {
               />
             </TouchableOpacity>
           )}
-          <Text style={styles.FriendTex}>Find Friend</Text>
         </View>
         <View style={styles.searchSection}>
           <TextInput
@@ -278,6 +286,7 @@ const FindFriends = ({navigation}) => {
           }
         />
       </View>
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -290,6 +299,7 @@ const styles = StyleSheet.create({
   searchSection: {
     marginHorizontal: 10,
     marginBottom: 10,
+    marginTop: -5,
     position: 'relative',
   },
   searchBox: {

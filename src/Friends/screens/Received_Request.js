@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {
   View,
   Text,
@@ -13,19 +13,33 @@ import {
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Header from '../../components/Header';
-import { AuthContext } from '../../context/AuthContext';
+import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
-import { useIsFocused } from '@react-navigation/core';
-import { responsiveWidth, responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
+import {useIsFocused} from '@react-navigation/core';
+import Footer from '../../components/Footer';
+import {
+  responsiveWidth,
+  responsiveFontSize,
+  responsiveHeight,
+} from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const ReceivedRequest = ({ navigation }) => {
+const ReceivedRequest = ({navigation}) => {
   const [receiveRequest, setReceiveRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { isLoading, userInfo, receiveFriendRequest, getReceiveFriendRequest, acceptFriendRequest, cancelFriendRequest, error, setError } = useContext(AuthContext);
+  const {
+    isLoading,
+    userInfo,
+    receiveFriendRequest,
+    getReceiveFriendRequest,
+    acceptFriendRequest,
+    cancelFriendRequest,
+    error,
+    setError,
+  } = useContext(AuthContext);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -57,7 +71,12 @@ const ReceivedRequest = ({ navigation }) => {
   const handleFriendRequest = async () => {
     try {
       if (searchKeyword) {
-        const response = await getReceiveFriendRequest(userInfo.memberToken, userInfo.id, userInfo.LoginToken, (keywords = searchKeyword));
+        const response = await getReceiveFriendRequest(
+          userInfo.memberToken,
+          userInfo.id,
+          userInfo.LoginToken,
+          (keywords = searchKeyword),
+        );
         setSearchResults(response || []);
         setSearchButtonClicked(true);
       }
@@ -73,7 +92,11 @@ const ReceivedRequest = ({ navigation }) => {
 
   const handleAcceptFriendRequest = async (FriendList_Id, index) => {
     try {
-      const response = await acceptFriendRequest(userInfo.memberToken, FriendList_Id, userInfo.LoginToken);
+      const response = await acceptFriendRequest(
+        userInfo.memberToken,
+        FriendList_Id,
+        userInfo.LoginToken,
+      );
       if (response) {
         handleIgnore(index);
       }
@@ -84,7 +107,11 @@ const ReceivedRequest = ({ navigation }) => {
 
   const handleCancelFriendRequest = async (FriendList_Id, index) => {
     try {
-      const response = await cancelFriendRequest(FriendList_Id, userInfo.memberToken, userInfo.LoginToken);
+      const response = await cancelFriendRequest(
+        FriendList_Id,
+        userInfo.memberToken,
+        userInfo.LoginToken,
+      );
       if (response) {
         handleIgnore(index);
       }
@@ -96,18 +123,20 @@ const ReceivedRequest = ({ navigation }) => {
   const handleIgnore = index => {
     const newSearchResults = searchResults.filter((_, i) => i !== index);
     setSearchResults(newSearchResults);
-    const newSuggestedFriendsData = receiveRequest.filter((_, i) => i !== index);
+    const newSuggestedFriendsData = receiveRequest.filter(
+      (_, i) => i !== index,
+    );
     setReceiveRequest(newSuggestedFriendsData);
   };
 
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({item, index}) => (
     <View style={styles.friendList}>
       <View style={styles.userImage}>
         <Image
-          style={{ width: '100%', height: '100%' }}
+          style={{width: '100%', height: '100%'}}
           source={
             item.Mem_Photo && typeof item.Mem_Photo === 'string'
-              ? { uri: item.Mem_Photo }
+              ? {uri: item.Mem_Photo}
               : default_photo
           }
         />
@@ -115,17 +144,16 @@ const ReceivedRequest = ({ navigation }) => {
       <View>
         <Text
           ellipsizeMode="tail"
-          style={{ fontSize: 18, color: 'black', fontWeight: '500' }}>
+          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
           {item.Mem_Name}
         </Text>
-        <Text
-          style={{ fontSize: 12, color: '#1866B4', fontWeight: '500' }}>
+        <Text style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
           {item.Mem_Designation.trim() === 'Not Added'
             ? ''
             : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{flexDirection: 'row'}}>
             <Image
               style={styles.mutualImg}
               source={require('../../assets/png/user1.png')}
@@ -139,27 +167,29 @@ const ReceivedRequest = ({ navigation }) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{ color: 'black' }}>
+          <Text style={{color: 'black'}}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
         <View style={styles.buttonArea}>
           <TouchableOpacity
-            style={[styles.blueBtn, { backgroundColor: '#192334' }]}
+            style={[styles.blueBtn, {backgroundColor: '#192334'}]}
             onPress={() =>
               handleAcceptFriendRequest(item?.FriendList_Id, index)
             }>
-            <Text style={{ color: 'white' }}>Accept</Text>
+            <Text style={{color: 'white'}}>Accept</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]} onPress={() => handleCancelFriendRequest(item?.FriendList_Id, index)}>
-            <Text style={{ color: 'black' }}>Reject</Text>
+            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
+            onPress={() =>
+              handleCancelFriendRequest(item?.FriendList_Id, index)
+            }>
+            <Text style={{color: 'black'}}>Reject</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-
 
   const keyExtractor = (item, index) => index.toString();
 
@@ -168,12 +198,20 @@ const ReceivedRequest = ({ navigation }) => {
       <View style={styles.noResults}>
         <View>
           <Image
-            style={{ width: responsiveWidth(34), height: responsiveWidth(25) }}
+            style={{width: responsiveWidth(34), height: responsiveWidth(25)}}
             source={require('../../assets/png/no-post.png')}
           />
         </View>
         <View>
-          <Text style={{ fontSize: responsiveFontSize(2), width: responsiveWidth(70), textAlign: 'center', marginTop: responsiveWidth(4) }}>Here is no more member! Please wait for some days.</Text>
+          <Text
+            style={{
+              fontSize: responsiveFontSize(2),
+              width: responsiveWidth(70),
+              textAlign: 'center',
+              marginTop: responsiveWidth(4),
+            }}>
+            Here is no more member! Please wait for some days.
+          </Text>
           <TouchableOpacity>
             <Text style={styles.goBackText} onPress={handleGoBack}>
               Go Back
@@ -186,17 +224,22 @@ const ReceivedRequest = ({ navigation }) => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchReceiveFriendRequest();
+    fetchAllReceiveFriendRequests();
   };
 
   return (
-    <SafeAreaView style={{ height: '100%' }}>
+    <SafeAreaView style={{height: '100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <Header navigation={navigation} />
       <View style={styles.container}>
         <Spinner visible={isLoading} />
-        <View style={{ marginHorizontal: 16, marginVertical: 10 }}>
-          <FriendHeader navigation={navigation} index={1} />
+        <View style={{marginHorizontal: 16, marginVertical: 10}}>
+          <FriendHeader
+            navigation={navigation}
+            index={2}
+            selectedTab="Received"
+            searchResult={searchButtonClicked ? searchResults : receiveRequest}
+          />
         </View>
         <View
           style={{
@@ -207,20 +250,11 @@ const ReceivedRequest = ({ navigation }) => {
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
-                style={{ width: 30, height: 30 }}
+                style={{width: 30, height: 30}}
                 source={require('../../assets/png/leftArrow.png')}
               />
             </TouchableOpacity>
           )}
-          <Text style={styles.FriendTex}>
-            {' '}
-            Received Request{' '}
-            <Text style={{ color: '#1866B4' }}>
-              {searchButtonClicked
-                ? searchResults.length
-                : receiveRequest.length}
-            </Text>
-          </Text>
         </View>
         <View style={styles.searchSection}>
           <TextInput
@@ -233,7 +267,7 @@ const ReceivedRequest = ({ navigation }) => {
             style={styles.searchbtn}
             onPress={handleFriendRequest}>
             <Image
-              style={{ width: 24, height: 24 }}
+              style={{width: 24, height: 24}}
               source={require('../../assets/png/search.png')}
             />
           </TouchableOpacity>
@@ -248,6 +282,7 @@ const ReceivedRequest = ({ navigation }) => {
           ListEmptyComponent={renderNoResults}
         />
       </View>
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -259,6 +294,7 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     marginHorizontal: 10,
+    marginTop: -25,
     marginBottom: 10,
     position: 'relative',
   },
@@ -351,8 +387,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: responsiveHeight(48),
     alignItems: 'center',
-    justifyContent: 'center'
-  }
+    justifyContent: 'center',
+  },
 });
 
 export default ReceivedRequest;

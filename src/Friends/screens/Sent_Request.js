@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -13,13 +13,18 @@ import {
 } from 'react-native';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
-import { AuthContext } from '../../context/AuthContext';
+import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
-import { useIsFocused } from '@react-navigation/core';
-import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
+import {useIsFocused} from '@react-navigation/core';
+import Footer from '../../components/Footer';
+import {
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveWidth,
+} from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const SentRequest = ({ navigation }) => {
+const SentRequest = ({navigation}) => {
   const [sentRequest, setSentRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -41,7 +46,7 @@ const SentRequest = ({ navigation }) => {
         userInfo.memberToken,
         userInfo.id,
         userInfo.LoginToken,
-        (keywords = null)
+        (keywords = null),
       );
       if (response) {
         setSentRequest(response);
@@ -70,7 +75,7 @@ const SentRequest = ({ navigation }) => {
       const response = await cancelFriendRequest(
         FriendList_Id,
         userInfo.memberToken,
-        userInfo.LoginToken
+        userInfo.LoginToken,
       );
       if (response) {
         handleIgnore(index);
@@ -80,7 +85,7 @@ const SentRequest = ({ navigation }) => {
     }
   };
 
-  const handleIgnore = (index) => {
+  const handleIgnore = index => {
     const newSearchResults = searchResults.filter((_, i) => i !== index);
     setSearchResults(newSearchResults);
     const newSuggestedFriendsData = sentRequest.filter((_, i) => i !== index);
@@ -99,7 +104,7 @@ const SentRequest = ({ navigation }) => {
           userInfo.memberToken,
           userInfo.id,
           userInfo.LoginToken,
-          (keywords = searchKeyword)
+          (keywords = searchKeyword),
         );
         setSearchResults(response || []);
         setSearchButtonClicked(true);
@@ -109,14 +114,14 @@ const SentRequest = ({ navigation }) => {
     }
   };
 
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({item, index}) => (
     <View style={styles.friendList}>
       <View style={styles.userImage}>
         <Image
-          style={{ width: '100%', height: '100%' }}
+          style={{width: '100%', height: '100%'}}
           source={
             item.Mem_Photo && typeof item.Mem_Photo === 'string'
-              ? { uri: item.Mem_Photo }
+              ? {uri: item.Mem_Photo}
               : default_photo
           }
         />
@@ -124,8 +129,7 @@ const SentRequest = ({ navigation }) => {
       <View>
         <Text
           ellipsizeMode="tail"
-          style={{ fontSize: 18, color: 'black', fontWeight: '500' }}
-        >
+          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
           {item.Mem_Name}
         </Text>
         <Text
@@ -133,12 +137,13 @@ const SentRequest = ({ navigation }) => {
             fontSize: 12,
             color: '#1866B4',
             fontWeight: '500',
-          }}
-        >
-          {item.Mem_Designation.trim() === 'Not Added' ? '' : item.Mem_Designation.trim()}
+          }}>
+          {item.Mem_Designation.trim() === 'Not Added'
+            ? ''
+            : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{flexDirection: 'row'}}>
             <Image
               style={styles.mutualImg}
               source={require('../../assets/png/user1.png')}
@@ -152,23 +157,21 @@ const SentRequest = ({ navigation }) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{ color: 'black' }}>
+          <Text style={{color: 'black'}}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
         <View style={styles.buttonArea}>
           <TouchableOpacity
-            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
+            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
             onPress={() =>
               handleCancelFriendRequest(item?.FriendList_Id, index)
-            }
-          >
-            <Text style={{ color: 'black' }}>Cancel</Text>
+            }>
+            <Text style={{color: 'black'}}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.blueBtn, { backgroundColor: '#1e293c' }]}
-          >
-            <Text style={{ color: 'white' }}>View Profile</Text>
+            style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}>
+            <Text style={{color: 'white'}}>View Profile</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -181,7 +184,7 @@ const SentRequest = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={{ height: '100%' }}>
+    <SafeAreaView style={{height: '100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <Header navigation={navigation} />
       <View style={styles.container}>
@@ -190,38 +193,34 @@ const SentRequest = ({ navigation }) => {
           style={{
             marginHorizontal: 16,
             marginVertical: 10,
-          }}
-        >
-          <FriendHeader navigation={navigation} index={2} />
+          }}>
+          <FriendHeader
+            navigation={navigation}
+            index={3}
+            selectedTab="Sent"
+            searchResult={searchButtonClicked ? searchResults : sentRequest}
+          />
           {searchButtonClicked && (
             <TouchableOpacity onPress={handleGoBack}>
               <Image
-                style={{ width: 30, height: 30 }}
+                style={{width: 30, height: 30}}
                 source={require('../../assets/png/leftArrow.png')}
               />
             </TouchableOpacity>
           )}
-          <Text style={styles.FriendTex}>
-            {' '}
-            Sent Request{' '}
-            <Text style={{ color: '#1866B4' }}>
-              {searchButtonClicked ? searchResults.length : sentRequest.length}
-            </Text>
-          </Text>
         </View>
         <View style={styles.searchSection}>
           <TextInput
             placeholder="Search Friends"
             style={styles.searchBox}
             value={searchKeyword}
-            onChangeText={(text) => setSearchKeyword(text)}
+            onChangeText={text => setSearchKeyword(text)}
           />
           <TouchableOpacity
             style={styles.searchbtn}
-            onPress={handleFriendRequest}
-          >
+            onPress={handleFriendRequest}>
             <Image
-              style={{ width: 24, height: 24 }}
+              style={{width: 24, height: 24}}
               source={require('../../assets/png/search.png')}
             />
           </TouchableOpacity>
@@ -238,12 +237,23 @@ const SentRequest = ({ navigation }) => {
               <View style={styles.noResults}>
                 <View>
                   <Image
-                    style={{ width: responsiveWidth(34), height: responsiveWidth(25) }}
+                    style={{
+                      width: responsiveWidth(34),
+                      height: responsiveWidth(25),
+                    }}
                     source={require('../../assets/png/no-post.png')}
                   />
                 </View>
                 <View>
-                  <Text style={{ fontSize: responsiveFontSize(2), width: responsiveWidth(70), textAlign: 'center', marginTop: responsiveWidth(4) }}>Here is no more member! Please wait for some days.</Text>
+                  <Text
+                    style={{
+                      fontSize: responsiveFontSize(2),
+                      width: responsiveWidth(70),
+                      textAlign: 'center',
+                      marginTop: responsiveWidth(4),
+                    }}>
+                    Here is no more member! Please wait for some days.
+                  </Text>
                   <TouchableOpacity>
                     <Text style={styles.goBackText} onPress={handleGoBack}>
                       Go Back
@@ -255,6 +265,7 @@ const SentRequest = ({ navigation }) => {
           }
         />
       </View>
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -267,6 +278,7 @@ const styles = StyleSheet.create({
   searchSection: {
     marginHorizontal: 10,
     marginBottom: 10,
+    marginTop: -5,
     position: 'relative',
   },
   searchBox: {
@@ -358,8 +370,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: responsiveHeight(48),
     alignItems: 'center',
-    justifyContent: 'center'
-  }
+    justifyContent: 'center',
+  },
 });
 
 export default SentRequest;
