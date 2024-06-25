@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
 import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 import { BlurView } from '@react-native-community/blur';
 
-const AttachmentPopup = ({ visible, onClose }) => {
+const AttachmentPopup = ({ visible, onClose, onCameraPress, onPhotoVideoPress ,onDocumentPress}) => {
     return (
         <Modal
             transparent={true}
@@ -19,19 +19,15 @@ const AttachmentPopup = ({ visible, onClose }) => {
                     reducedTransparencyFallbackColor="black"
                 />
                 <View style={styles.popup}>
-                    <TouchableOpacity style={styles.option}>
+                    <TouchableOpacity style={styles.option} onPress={onCameraPress}>
                         <Image style={styles.icon} source={require('../assets/png/blue-camera.png')} />
                         <Text style={styles.optionText}>Camera</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.option}>
+                    <TouchableOpacity style={styles.option} onPress={onPhotoVideoPress}>
                         <Image style={styles.icon} source={require('../assets/png/blue-image.png')} />
                         <Text style={styles.optionText}>Photo & Video Library</Text>
                     </TouchableOpacity>
-                    {/* <TouchableOpacity style={styles.option}>
-                        <Image style={styles.icon} source={require('../assets/png/blue-location.png')} />
-                        <Text style={styles.optionText}>Location</Text>
-                    </TouchableOpacity> */}
-                    <TouchableOpacity style={[styles.option, { marginBottom: 0 }]}>
+                    <TouchableOpacity style={[styles.option, { marginBottom: 0 }]} onPress={onDocumentPress}>
                         <Image style={styles.icon} source={require('../assets/png/blue-file-add.png')} />
                         <Text style={styles.optionText}>Document</Text>
                     </TouchableOpacity>

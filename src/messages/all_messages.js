@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
   StatusBar,
@@ -12,19 +12,18 @@ import {
   SafeAreaView,
   Pressable,
 } from 'react-native';
-import Header from '../components/Header';
-import { AuthContext } from '../context/AuthContext';
-import { formatDateString } from '../utils/helper';
-import { useIsFocused } from '@react-navigation/core';
+import {AuthContext} from '../context/AuthContext';
+import {useIsFocused} from '@react-navigation/core';
 import Footer from '../components/Footer';
-import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
-import { Swipeable } from 'react-native-gesture-handler';
-
-
+import {
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveWidth,
+} from 'react-native-responsive-dimensions';
+import {Swipeable} from 'react-native-gesture-handler';
 const default_photo = require('../assets/png/default-profile.png');
 
-
-const AllMessages = ({ navigation }) => {
+const AllMessages = ({navigation}) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [friendList, setFriendList] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -33,8 +32,7 @@ const AllMessages = ({ navigation }) => {
   const [groupSearchKeyword, setGroupSearchKeyword] = useState('');
   const [groupSearchResults, setGroupSearchResults] = useState([]);
   const [groupSearchBtnClicked, setGroupSearchBtnClicked] = useState(false);
-  const { isLoading, userInfo, messageFriends, error, setError } =
-    useContext(AuthContext);
+  const {userInfo, messageFriends, setError} = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const isFocused = useIsFocused();
 
@@ -92,33 +90,48 @@ const AllMessages = ({ navigation }) => {
     fetchFriendList();
   };
 
- 
-const leftSwip = () => {
-  return (
-    <Pressable style={{backgroundColor: '#ddd', width: responsiveWidth(20)}}>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image source={require('../assets/png/delete.png')} style={{width: responsiveWidth(8), height: responsiveWidth(8)}}/>
-        <Text style={{fontSize: responsiveFontSize(1.8), fontWeight: '500'}}>Delete</Text>
-      </View>
-    </Pressable>
-  )
-}
-const rightSwip = () => {
-  return (
-    <Pressable style={{backgroundColor: '#1866B4', width: responsiveWidth(20)}}>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image source={require('../assets/png/archive-fill.png')} style={{width: responsiveWidth(8), height: responsiveWidth(8)}}/>
-        <Text style={{fontSize: responsiveFontSize(1.8), fontWeight: '500', color: 'white'}}>Archive</Text>
-      </View>
-    </Pressable>
-  )
-}
+  const leftSwip = () => {
+    return (
+      <Pressable style={{backgroundColor: '#ddd', width: responsiveWidth(20)}}>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Image
+            source={require('../assets/png/delete.png')}
+            style={{width: responsiveWidth(8), height: responsiveWidth(8)}}
+          />
+          <Text style={{fontSize: responsiveFontSize(1.8), fontWeight: '500'}}>
+            Delete
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
+  const rightSwip = () => {
+    return (
+      <Pressable
+        style={{backgroundColor: '#1866B4', width: responsiveWidth(20)}}>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Image
+            source={require('../assets/png/archive-fill.png')}
+            style={{width: responsiveWidth(8), height: responsiveWidth(8)}}
+          />
+          <Text
+            style={{
+              fontSize: responsiveFontSize(1.8),
+              fontWeight: '500',
+              color: 'white',
+            }}>
+            Archive
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
 
   const renderList = data => (
     <FlatList
-      style={{ height: '84%' }}
+      style={{height: '84%'}}
       data={data}
-      renderItem={({ item }) => (
+      renderItem={({item}) => (
         <Swipeable renderLeftActions={leftSwip} renderRightActions={rightSwip}>
           <TouchableOpacity
             style={styles.listBox}
@@ -131,47 +144,50 @@ const rightSwip = () => {
               })
             }>
             <View style={styles.userImg}>
-              <TouchableOpacity onPress={() => {
-                navigation.navigate('myProfile');
-              }}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('myProfile');
+                }}>
                 <Image
-                  style={{ width: '100%', height: '100%' }}
+                  style={{width: '100%', height: '100%'}}
                   source={
                     item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                      ? { uri: item.Mem_Photo }
+                      ? {uri: item.Mem_Photo}
                       : default_photo
                   }
                 />
               </TouchableOpacity>
             </View>
             <View>
-              <View style={{ flexDirection: 'row' }}>
+              <View style={{flexDirection: 'row'}}>
                 <Text numberOfLines={3} style={styles.userName}>
                   {item.Mem_Name}
                 </Text>
                 {item?.CountUnreadMsg > 0 && (
                   <View style={styles.selectCount}>
                     <Text
-                      style={{ fontSize: 14, fontWeight: '500', color: '#1866B4' }}>
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '500',
+                        color: '#1866B4',
+                      }}>
                       {item?.CountUnreadMsg}
                     </Text>
                   </View>
                 )}
               </View>
               <View style={styles.magtextarea}>
-                <Text numberOfLines={1} style={[styles.msgText, { width: '90%' }]}>
-                  {item?.LastMessage !== null && item?.LastMessage !== ''
-                    ? item?.LastMessage
-                    : item?.MediaPath !== null && item?.MediaPath !== ''
-                      ? 'Media'
-                      : 'No message available'}
+                <Text
+                  numberOfLines={1}
+                  style={[styles.msgText, {width: '90%'}]}>
+                 {item?.LastMessage && item?.LastMessage.includes('@@GroupMeeting')
+                  ? 'Meeting 💼'
+                  : item?.LastMessage !== null && item?.LastMessage !== ''
+                  ? item?.LastMessage
+                  : item?.MediaPath !== null && item?.MediaPath !== ''
+                  ? 'Media'
+                  : 'No message available'}
                 </Text>
-                {/* <View style={styles.dot}></View> */}
-                {/* <Text style={styles.msgText}>
-                {item?.LastMessageDateTime !== '0001-01-01T00:00:00'
-                  ? formatDateString(item?.LastMessageDateTime)
-                  : 'No date available'}
-              </Text> */}
               </View>
             </View>
           </TouchableOpacity>
@@ -191,19 +207,25 @@ const rightSwip = () => {
     setTextboxVisible(!isTextboxVisible);
   };
 
-
-
   const renderNoResults = () => (
     <View style={styles.emptyBox}>
       <View style={styles.noResults}>
         <View>
           <Image
-            style={{ width: responsiveWidth(15), height: responsiveWidth(15) }}
+            style={{width: responsiveWidth(15), height: responsiveWidth(15)}}
             source={require('../assets/png/emptyMsg.png')}
           />
         </View>
         <View>
-          <Text style={{ fontSize: responsiveFontSize(2), width: responsiveWidth(70), textAlign: 'center', marginTop: responsiveWidth(4) }}>Here is no more member! Please wait for some days.</Text>
+          <Text
+            style={{
+              fontSize: responsiveFontSize(2),
+              width: responsiveWidth(70),
+              textAlign: 'center',
+              marginTop: responsiveWidth(4),
+            }}>
+            Here is no more member! Please wait for some days.
+          </Text>
           <TouchableOpacity>
             <Text style={styles.goBackText} onPress={handleGoBack}>
               Go Back
@@ -215,7 +237,7 @@ const rightSwip = () => {
   );
 
   return (
-    <SafeAreaView style={{ height: '100%' }}>
+    <SafeAreaView style={{height: '100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <View style={styles.container}>
         <View
@@ -224,7 +246,7 @@ const rightSwip = () => {
             backgroundColor: '#1E293C',
             paddingHorizontal: responsiveWidth(3),
             paddingVertical: responsiveWidth(2.5),
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
           }}>
           {/* {(searchButtonClicked || groupSearchBtnClicked) && (
             <TouchableOpacity onPress={handleGoBack}>
@@ -235,8 +257,23 @@ const rightSwip = () => {
             </TouchableOpacity>
           )} */}
           <Text style={styles.messageText}>All Messages</Text>
-          <TouchableOpacity onPress={toggleTextbox} style={{ width: responsiveWidth(10), height: responsiveWidth(10), backgroundColor: '#293446', borderRadius: responsiveWidth(10), alignItems: 'center', justifyContent: 'center' }}>
-            <Image style={{ width: responsiveHeight(3.5), height: responsiveHeight(3.5) }} source={require('../assets/png/search2.png')} />
+          <TouchableOpacity
+            onPress={toggleTextbox}
+            style={{
+              width: responsiveWidth(10),
+              height: responsiveWidth(10),
+              backgroundColor: '#293446',
+              borderRadius: responsiveWidth(10),
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Image
+              style={{
+                width: responsiveHeight(3.5),
+                height: responsiveHeight(3.5),
+              }}
+              source={require('../assets/png/search2.png')}
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.navbtnbox}>
@@ -244,40 +281,76 @@ const rightSwip = () => {
             onPress={() => setTabIndex(0)}
             style={[
               styles.navbtn,
-              { borderColor: tabIndex === 0 ? '#1866B4' : '#E1E4EA' },
+              {borderColor: tabIndex === 0 ? '#1866B4' : '#E1E4EA'},
             ]}>
-            <Text style={[styles.tabtext, { color: tabIndex === 0 ? '#1866B4' : '#717784' }]}>All</Text>
+            <Text
+              style={[
+                styles.tabtext,
+                {color: tabIndex === 0 ? '#1866B4' : '#717784'},
+              ]}>
+              All
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setTabIndex(1)}
             style={[
               styles.navbtn,
-              { borderColor: tabIndex === 1 ? '#1866B4' : '#E1E4EA' },
+              {borderColor: tabIndex === 1 ? '#1866B4' : '#E1E4EA'},
             ]}>
-            <View style={[styles.unreadDot, { backgroundColor: tabIndex === 1 ? '#1866B4' : '#717784' }]} />
-            <Text style={[styles.tabtext, { color: tabIndex === 1 ? '#1866B4' : '#717784' }]}>Unread</Text>
+            <View
+              style={[
+                styles.unreadDot,
+                {backgroundColor: tabIndex === 1 ? '#1866B4' : '#717784'},
+              ]}
+            />
+            <Text
+              style={[
+                styles.tabtext,
+                {color: tabIndex === 1 ? '#1866B4' : '#717784'},
+              ]}>
+              Unread
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setTabIndex(2)}
             style={[
               styles.navbtn,
-              { borderColor: tabIndex === 2 ? '#1866B4' : '#E1E4EA' },
+              {borderColor: tabIndex === 2 ? '#1866B4' : '#E1E4EA'},
             ]}>
-            <Text style={[styles.tabtext, { color: tabIndex === 2 ? '#1866B4' : '#717784' }]}>Friends</Text>
+            <Text
+              style={[
+                styles.tabtext,
+                {color: tabIndex === 2 ? '#1866B4' : '#717784'},
+              ]}>
+              Friends
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setTabIndex(3)}
             style={[
               styles.navbtn,
-              { borderColor: tabIndex === 3 ? '#1866B4' : '#E1E4EA' },
+              {borderColor: tabIndex === 3 ? '#1866B4' : '#E1E4EA'},
             ]}>
-            <Image source={require('../assets/png/group-line.png')} style={{ width: responsiveWidth(5), height: responsiveWidth(5), tintColor: tabIndex === 3 ? '#1866B4' : '#717784' }} />
-            <Text style={[styles.tabtext, { color: tabIndex === 3 ? '#1866B4' : '#717784' }]}>Group</Text>
+            <Image
+              source={require('../assets/png/group-line.png')}
+              style={{
+                width: responsiveWidth(5),
+                height: responsiveWidth(5),
+                tintColor: tabIndex === 3 ? '#1866B4' : '#717784',
+              }}
+            />
+            <Text
+              style={[
+                styles.tabtext,
+                {color: tabIndex === 3 ? '#1866B4' : '#717784'},
+              ]}>
+              Group
+            </Text>
           </TouchableOpacity>
         </View>
         {tabIndex === 0 ? (
           <View>
-            {isTextboxVisible &&
+            {isTextboxVisible && (
               <View style={styles.searchSection}>
                 <TextInput
                   placeholder="Search friends and groups"
@@ -295,18 +368,18 @@ const rightSwip = () => {
                     )
                   }>
                   <Image
-                    style={{ width: 24, height: 24 }}
+                    style={{width: 24, height: 24}}
                     source={require('../assets/png/search.png')}
                   />
                 </TouchableOpacity>
               </View>
-            }
+            )}
 
             {renderList(searchButtonClicked ? searchResults : friendList)}
           </View>
         ) : (
           <View>
-            {isTextboxVisible &&
+            {isTextboxVisible && (
               <View style={styles.searchSection}>
                 <TextInput
                   placeholder="Search groups"
@@ -324,12 +397,12 @@ const rightSwip = () => {
                     )
                   }>
                   <Image
-                    style={{ width: 24, height: 24 }}
+                    style={{width: 24, height: 24}}
                     source={require('../assets/png/search.png')}
                   />
                 </TouchableOpacity>
               </View>
-            }
+            )}
 
             {renderList(
               groupSearchBtnClicked
@@ -345,33 +418,36 @@ const rightSwip = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'white', },
-  searchSection: { marginHorizontal: responsiveWidth(3), marginBottom: 10, position: 'relative' },
+  container: {flex: 1, backgroundColor: 'white'},
+  searchSection: {
+    marginHorizontal: responsiveWidth(3),
+    marginBottom: 10,
+    position: 'relative',
+  },
   searchBox: {
     backgroundColor: '#fff',
     borderRadius: responsiveWidth(2.5),
     paddingLeft: responsiveWidth(12),
     borderColor: '#E1E4EA',
     borderWidth: 1.5,
-    fontSize: responsiveFontSize(2)
-
+    fontSize: responsiveFontSize(2),
   },
   searchbtn: {
     position: 'absolute',
     top: responsiveWidth(3),
-    left: responsiveWidth(4)
+    left: responsiveWidth(4),
   },
   messageText: {
     color: 'white',
     fontSize: responsiveFontSize(3),
-    fontWeight: '600'
+    fontWeight: '600',
   },
   noResults: {
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
   },
-  goBackText: { fontSize: 18, color: 'blue', textAlign: 'center', marginTop: 10 },
+  goBackText: {fontSize: 18, color: 'blue', textAlign: 'center', marginTop: 10},
   userName: {
     fontSize: 18,
     fontWeight: '500',
@@ -379,7 +455,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     width: '70%',
   },
-  msgText: { fontSize: 14, color: '#696969' },
+  msgText: {fontSize: 14, color: '#696969'},
   dot: {
     width: 6,
     height: 6,
@@ -387,8 +463,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 8,
   },
-  magtextarea: { flexDirection: 'row', alignItems: 'center' },
-  userImg: { width: 55, height: 55, borderRadius: 50, overflow: 'hidden' },
+  magtextarea: {flexDirection: 'row', alignItems: 'center'},
+  userImg: {width: 55, height: 55, borderRadius: 50, overflow: 'hidden'},
   listBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -397,7 +473,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingHorizontal: responsiveWidth(4),
     paddingVertical: responsiveWidth(2),
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   navbtnbox: {
     flexDirection: 'row',
@@ -413,7 +489,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: responsiveWidth(1)
+    gap: responsiveWidth(1),
   },
   selectCount: {
     backgroundColor: '#CEE7FF',
@@ -428,16 +504,16 @@ const styles = StyleSheet.create({
     flex: 1,
     height: responsiveHeight(60),
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   tabtext: {
-    fontSize: responsiveFontSize(1.8)
+    fontSize: responsiveFontSize(1.8),
   },
   unreadDot: {
     width: responsiveWidth(3.5),
     height: responsiveWidth(3.5),
-    borderRadius: responsiveWidth(2)
-  }
+    borderRadius: responsiveWidth(2),
+  },
 });
 
 export default AllMessages;
