@@ -25,6 +25,8 @@ import ChatSection from '../messages/ChatSection.js';
 import LongPressPopup from '../messages/ForwordMsg.js';
 import AudioCall from '../Call/AudioCall.js';
 import VideoCall from '../Call/VideoCall.js';
+import GroupAudioCall from '../Call/GroupAudioCall.js';
+import GroupVideoCall from '../Call/GroupVideoCall.js';
 
 const Stack = createStackNavigator();
 
@@ -34,6 +36,8 @@ const linking = {
     screens: {
       audioCall: 'audioCall',
       videoCall: 'videoCall',
+      groupAudioCall: 'groupAudioCall',
+      groupVideoCall: 'groupVideoCall',
     },
   },
 };
@@ -153,6 +157,16 @@ const AppStack = () => (
     <Stack.Screen
       name="videoCall"
       component={VideoCall}
+      options={{headerShown: false, gestureEnabled: false}}
+    />
+    <Stack.Screen
+      name="groupAudioCall"
+      component={GroupAudioCall}
+      options={{headerShown: false, gestureEnabled: false}}
+    />
+    <Stack.Screen
+      name="groupVideoCall"
+      component={GroupVideoCall}
       options={{headerShown: false, gestureEnabled: false}}
     />
   </Stack.Navigator>

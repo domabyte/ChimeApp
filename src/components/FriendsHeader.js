@@ -11,7 +11,7 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
             fontWeight: '700',
           }}>
           {selectedTab}{' '}
-          <Text style={{color: '#1866B4'}}>{searchResult.length}</Text>
+          <Text style={{color: '#1866B4'}}>({searchResult.length})</Text>
         </Text>
       )}
       <ScrollView
