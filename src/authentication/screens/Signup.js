@@ -31,7 +31,7 @@ const Signup = ({ navigation }) => {
   const [captcha, setCaptcha] = useState(null);
   const [encryptedCaptcha, setEncryptedCaptcha] = useState(null);
   const [confirmCaptcha, setConfirmCaptcha] = useState(null);
-  const [isChecked, setIsChecked] = useState(true);
+  const [isChecked, setIsChecked] = useState(false);
   const { isLoading, register, error, setError } = useContext(AuthContext);
 
   const toggleNewPasswordVisibility = () => {

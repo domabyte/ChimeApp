@@ -5,7 +5,7 @@ import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 import configURL from '../config/config';
 import {requestUserPermission} from '../utils/NotificationService';
-import { loginReplace } from '../utils/helper';
+import {loginReplace} from '../utils/helper';
 
 export const AuthContext = createContext();
 
@@ -53,7 +53,7 @@ export const AuthProvider = ({children}) => {
         }
       } else {
         if (data.errorText) {
-          setError(data.errorText || "Registration failed.");
+          setError(data.errorText || 'Registration failed.');
         }
       }
     } catch (err) {
@@ -874,15 +874,16 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const groupCall = async (groupId, memberToken, loginToken, calltype) => {
+  const groupCall = async (groupId, memberToken, loginToken, calltype, isPublic) => {
     setIsLoading(true);
     try {
-      const {data} = await axios.get(
+      const {data} = await axios.post(
         configURL.groupCallURL,
         {
           GroupId: groupId,
           MemberToken: memberToken,
           CallType: calltype,
+          IsShared: isPublic,
         },
         {
           headers: {
@@ -892,7 +893,6 @@ export const AuthProvider = ({children}) => {
         },
       );
       if (data) {
-        console.log('data is : ', data);
         setIsLoading(false);
         return data;
       }

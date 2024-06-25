@@ -1,11 +1,14 @@
 import RNFS from 'react-native-fs';
 import {DateTime} from 'luxon';
 import * as ImagePicker from 'react-native-image-picker';
+import {useNavigation} from '@react-navigation/native';
 import {
   PermissionsAndroid,
   Platform,
   ToastAndroid,
   Linking,
+  TouchableOpacity,
+  Text,
 } from 'react-native';
 import axios from 'axios';
 import configURL from '../config/config';
@@ -192,7 +195,6 @@ export async function downloadFile(documentPath, result) {
     try {
       if (result.length === 2) {
         const downloadDest = `${dirToSave}/${result[0]}.${result[1]}`;
-
 
         console.log('DOwnload is : ', downloadDest);
         const options = {
@@ -526,4 +528,71 @@ export const pickDocument = async (
       console.log(err);
     }
   }
+};
+
+export const launchCamera = async (
+  memberToken,
+  loginToken,
+  ReceiverID,
+  setIsMediaUploading,
+  tabIndex,
+  groupMemberId,
+) => {
+  const options = {
+    mediaType: 'photo',
+    includeBase64: false,
+    maxHeight: 2000,
+    maxWidth: 2000,
+  };
+  try {
+    await ImagePicker.launchCamera(options, response => {
+      handleImageResponse(
+        response,
+        memberToken,
+        loginToken,
+        ReceiverID,
+        setIsMediaUploading,
+        tabIndex,
+        groupMemberId,
+      );
+    });
+  } catch (err) {
+    console.log('Error : ', err);
+    setIsMediaUploading(false);
+  }
+};
+
+export const replacePlaceholdersWithLinks = message => {
+  const navigation = useNavigation();
+  const handlePress = placeholder => {
+    switch (placeholder) {
+      case 'LoginLink':
+        navigation.navigate('Login');
+        break;
+      case 'ShopNow':
+        // navigation.navigate('');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const parts = message.split(/(@@[A-Za-z]+)/);
+  return parts.map((part, index) => {
+    if (part.startsWith('@@')) {
+      const placeholder = part.substring(2);
+      return (
+        <TouchableOpacity key={index} onPress={() => handlePress(placeholder)}>
+          <Text style={{color: 'blue', textDecorationLine: 'underline'}}>
+            {placeholder === 'LoginLink'
+              ? 'Please login'
+              : placeholder === 'ShopNow'
+              ? 'Shop Now'
+              : ''}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+    return <Text key={index}>{part}</Text>;
+  });
 };
