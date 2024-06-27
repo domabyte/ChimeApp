@@ -30,7 +30,7 @@ const Myprofile = ({navigation}) => {
     <View style={styles.container}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <ScrollView>
-        <Spinner visible={isLoading} />
+        {/* <Spinner visible={isLoading} /> */}
         <View style={styles.profileHead}>
           <TouchableOpacity onPress={()=> navigation.goBack()}>
             <Image
