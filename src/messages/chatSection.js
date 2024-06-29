@@ -295,15 +295,34 @@ const ChatSection = ({navigation, route}) => {
   const handleCallOptionSelection = async isPrivate => {
     setShowCallOptions(false);
     try {
-      await groupCall(
+      const response = await groupCall(
         friendId,
         userInfo?.memberToken,
         userInfo?.LoginToken,
         callType === 'audio' ? 'voice' : 'video',
         isPrivate,
       );
+      const parsedResult = parseGroupMeetingMessage(response);
+      if (parsedResult) {
+        const {meetingId, callType: responseCallType} = parsedResult;
+
+        // Automatically join the call
+        Linking.openURL(
+          `actpal://group${
+            responseCallType === 'voice' ? 'Audio' : 'Video'
+          }Call?meetingName=${meetingId}&userName=${userInfo.name}`,
+        );
+        // Automatically join the
+      } else {
+        console.error('Failed to parse group call response');
+        Alert.alert(
+          'Error',
+          'Failed to initiate group call. Please try again.',
+        );
+      }
     } catch (error) {
       console.error('Error initiating group call:', error);
+      Alert.alert('Error', 'Failed to initiate group call. Please try again.');
     }
   };
 
@@ -351,16 +370,17 @@ const ChatSection = ({navigation, route}) => {
 
   const handleMsgDelete = async () => {
     try {
-      const response = await deleteMsg(userInfo.memberToken, userInfo.LoginToken, msgId);
+      const response = await deleteMsg(
+        userInfo.memberToken,
+        userInfo.LoginToken,
+        msgId,
+      );
       if (response) {
         setMessages(prevMessages =>
           prevMessages.filter(message => message.Id !== msgId),
         );
       } else {
-        Alert.alert(
-          'Error',
-          'You are not allowed to delete this message.',
-        );
+        Alert.alert('Error', 'You are not allowed to delete this message.');
       }
       handleClosePopup();
       setMsgID(null);
@@ -609,28 +629,29 @@ const ChatSection = ({navigation, route}) => {
                                       }&userName=${userInfo.name}`,
                                     );
                                   } else {
-                                  const response = await groupBelong(
-                                    friendId,
-                                    userInfo?.memberToken,
-                                    userInfo?.LoginToken,
-                                  );
-                                  if (response) {
-                                    Linking.openURL(
-                                      `actpal://group${
-                                        result?.callType === 'voice'
-                                          ? 'Audio'
-                                          : 'Video'
-                                      }Call?meetingName=${
-                                        result?.meetingId
-                                      }&userName=${userInfo.name}`,
+                                    const response = await groupBelong(
+                                      friendId,
+                                      userInfo?.memberToken,
+                                      userInfo?.LoginToken,
                                     );
-                                  } else {
-                                    Alert.alert(
-                                      'Error',
-                                      'You are not a member of this group.',
-                                    );
+                                    if (response) {
+                                      Linking.openURL(
+                                        `actpal://group${
+                                          result?.callType === 'voice'
+                                            ? 'Audio'
+                                            : 'Video'
+                                        }Call?meetingName=${
+                                          result?.meetingId
+                                        }&userName=${userInfo.name}`,
+                                      );
+                                    } else {
+                                      Alert.alert(
+                                        'Error',
+                                        'You are not a member of this group.',
+                                      );
+                                    }
                                   }
-                                }}}>
+                                }}>
                                 <Text
                                   style={{
                                     backgroundColor: 'green',

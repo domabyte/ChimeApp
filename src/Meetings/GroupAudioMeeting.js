@@ -17,7 +17,6 @@ import {MuteButton} from '../MeetingUtils/MuteButton';
 import {HangOffButton} from '../MeetingUtils/HangOffButton';
 import {GroupAttendeeItem} from '../MeetingUtils/GroupAttendeeItem';
 import {SwitchMicrophoneToSpeakerButton} from '../MeetingUtils/SwitchMicrophoneToSpeakerButton';
-import { AttendeeItem } from '../MeetingUtils/AttendeeItem';
 const ringtone = require('../assets/audio/ringtone.mp3');
 
 const attendeeNameMap = {};
@@ -232,7 +231,7 @@ export class GroupAudioMeeting extends React.Component {
           style={styles.attendeeList}
           data={this.state.attendees}
           renderItem={({item}) => (
-            <AttendeeItem
+            <GroupAttendeeItem
               attendeeName={attendeeNameMap[item] || item}
               muted={this.state.mutedAttendee.includes(item)}
             />

@@ -6,6 +6,7 @@ import {
   Alert,
   StyleSheet,
   BackHandler,
+  SafeAreaView,
 } from 'react-native';
 import {
   NativeFunction,
@@ -287,38 +288,51 @@ export class GroupVideoMeeting extends React.Component {
     );
 
     return (
+      <SafeAreaView style={styles.container}>
       <View style={[styles.container, {justifyContent: 'flex-start'}]}>
         {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
         {/* <Text style={styles.title}>{this.props.userName}</Text> */}
-        <View style={styles.buttonContainer}>
-          <MuteButton
-            muted={currentMuted}
-            onPress={() => NativeFunction.setMute(!currentMuted)}
-          />
-          <SwitchMicrophoneToSpeakerButton
-            onPress={this.switchMicrophoneToSpeaker}
-            isSpeakerActive={this.state.isSpeakerActive}
-          />
-          <CameraButton
-            disabled={this.state.selfVideoEnabled}
-            onPress={() =>
-              NativeFunction.setCameraOn(!this.state.selfVideoEnabled)
-            }
-          />
-          <SwitchCameraButton onPress={this.switchCamera} />
-          <ShareScreenBtn onPress={() => this.startScreenShare(true)} />
-          {/* <SwitchCameraButton onPress={()=> this.startScreenShare(true)} /> */}
-          {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
-          <HangOffButton onPress={this.HangUp} />
-        </View>
-        <Text style={styles.title}>Video</Text>
-        <View style={styles.videoContainer}>
+        {/* <Text style={styles.title}>Video</Text> */}
+        <View style={[styles.videoContainer,
+        this.state.videoTiles.length>2? styles.flexDirectionRow:''
+        ]}>
+
+            {/* <View
+                style={
+                  styles.threeVideo}>
+                <Text>sdasdfs</Text>
+              </View>
+              <View
+                style={
+                  styles.threeVideo}>
+                <Text>sdasdfs</Text>
+              </View>
+              <View
+                style={
+                  styles.threeVideo}>
+                <Text>sdasdfs</Text>
+              </View>
+              <View
+                style={
+                  styles.threeVideo}>
+                <Text>sdasdfs</Text>
+              </View> */}
+              
+
+
           {this.state.videoTiles.length > 0 ? (
             this.state.videoTiles.map(tileId => (
               <RNVideoRenderView
-                style={styles.video}
+                style={
+                  this.state.videoTiles.length==1? styles.oneVideo:
+                  this.state.videoTiles.length==2? styles.twoVideo:
+                  this.state.videoTiles.length==3? styles.threeVideo:
+                  this.state.videoTiles.length==4? styles.threeVideo:
+                  this.state.videoTiles.length==5? styles.manyVideoVideo:
+                  styles.manyVideo}
                 key={tileId}
                 tileId={tileId}
+                mirror={true}
               />
             ))
           ) : (
@@ -339,7 +353,30 @@ export class GroupVideoMeeting extends React.Component {
             </View>
           </React.Fragment>
         )}
-        <Text style={styles.title}>Attendee</Text>
+
+<View style={styles.buttonContainer}>
+          <MuteButton
+            muted={currentMuted}
+            onPress={() => NativeFunction.setMute(!currentMuted)}
+          />
+          <SwitchMicrophoneToSpeakerButton
+            onPress={this.switchMicrophoneToSpeaker}
+            isSpeakerActive={this.state.isSpeakerActive}
+          />
+          <CameraButton
+            disabled={this.state.selfVideoEnabled}
+            onPress={() =>
+              NativeFunction.setCameraOn(!this.state.selfVideoEnabled)
+            }
+          />
+          <SwitchCameraButton onPress={this.switchCamera} />
+          <ShareScreenBtn onPress={() => this.startScreenShare(true)} />
+          {/* <SwitchCameraButton onPress={()=> this.startScreenShare(true)} /> */}
+          {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
+          <HangOffButton onPress={this.HangUp} />
+        </View>
+
+        {/* <Text style={styles.title}>Attendee</Text>
         <FlatList
           style={styles.attendeeList}
           data={this.state.attendees}
@@ -352,8 +389,9 @@ export class GroupVideoMeeting extends React.Component {
             />
           )}
           keyExtractor={item => item}
-        />
+        /> */}
       </View>
+      </SafeAreaView>
     );
   }
 }
@@ -362,10 +400,14 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: '95%',
+    height: '100%',
+    width:'100%',
     backgroundColor: 'white',
   },
   buttonContainer: {
+    position: 'absolute',
+    bottom:15,
+    gap:10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -374,7 +416,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   viewContainer: {
-    width: '90%',
+    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-evenly',
   },
@@ -384,18 +427,41 @@ const styles = StyleSheet.create({
     color: 'grey',
   },
   videoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flex: 1,
     width: '100%',
-    height: 400,
+    flexDirection: 'column',
+    flexWrap:'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'top',
+    width: '100%',
+    height: '100%',
+    minHeight:'100%',
+    gap:5,
+  },
+  flexDirectionRow:{
+flexDirection: 'column'
   },
   screenShare: {
     width: '90%',
     height: 400,
   },
-  video: {
-    width: '45%',
-    height: 300,
+  oneVideo: {
+    width: '100%',
+    height: '100%',
+  },
+  twoVideo: {
+    flex:1,
+    flexDirection:'row',
+    width: '100%',
+    height: '50%',
+  },
+  threeVideo: {
+    width: '50%',
+    height: '45%',
+  },
+  fourVideo: {
+    width: '100%',
+    height: '50%',
   },
   attendeeList: {
     width: '90%',
