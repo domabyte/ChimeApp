@@ -5,7 +5,6 @@ import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 import configURL from '../config/config';
 import {requestUserPermission} from '../utils/NotificationService';
-import {loginReplace} from '../utils/helper';
 
 export const AuthContext = createContext();
 
@@ -85,16 +84,15 @@ export const AuthProvider = ({children}) => {
           encryptToken: data.EncryptMemId,
         };
         let userInfo = value;
-        setIsLoading(false);
         return userInfo;
       } else {
         setError(data.errorText);
-        setIsLoading(false);
         return false;
       }
     } catch (err) {
-      setIsLoading(false);
       console.log(err.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,14 +117,13 @@ export const AuthProvider = ({children}) => {
         },
       );
       if (data) {
-        setIsLoading(false);
         return data;
       } else {
-        setIsLoading(false);
         return false;
       }
     } catch (error) {
       console.log(error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -153,17 +150,16 @@ export const AuthProvider = ({children}) => {
       });
       if (data) {
         if (data.code === 1) {
-          setIsLoading(false);
           return data;
         }
       } else {
-        setIsLoading(false);
         setError(data.errorText);
         return false;
       }
     } catch (err) {
-      setIsLoading(false);
       console.log(err.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -186,24 +182,22 @@ export const AuthProvider = ({children}) => {
       });
       if (data) {
         if (data.code === 1) {
-          setIsLoading(false);
           return data;
         }
       } else {
-        setIsLoading(false);
         setError(data.errorText);
         return false;
       }
     } catch (err) {
-      setIsLoading(false);
       console.log(err.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const login = async (email, password, rememberMe) => {
     setIsLoading(true);
     const token = await requestUserPermission();
-    console.log('token : ', token);
     const url =
       config.loginURL +
       email +
@@ -231,14 +225,13 @@ export const AuthProvider = ({children}) => {
         if (rememberMe) {
           await Keychain.setGenericPassword(email, password);
         }
-        setIsLoading(false);
       } else {
         setError(data.errorText);
-        setIsLoading(false);
       }
     } catch (error) {
-      setIsLoading(false);
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -257,12 +250,12 @@ export const AuthProvider = ({children}) => {
         return value;
       } else {
         setError(data.errorText);
-        setIsLoading(false);
         return null;
       }
     } catch (err) {
-      setIsLoading(false);
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -283,11 +276,11 @@ export const AuthProvider = ({children}) => {
         return true;
       } else {
         setError(data.errorText);
-        setIsLoading(false);
       }
     } catch (err) {
-      setIsLoading(false);
       console.log(err.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -299,16 +292,15 @@ export const AuthProvider = ({children}) => {
         New_password: password,
         Confirm_password: confirmPassword,
       });
-      setIsLoading(false);
       return data.code === 1 ? true : setError(data.errorText);
     } catch (err) {
-      setIsLoading(false);
       console.log(err.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
-    console.log('User info is : ', userInfo);
     setIsLoading(true);
     const token = await requestUserPermission();
     const queryString = `${configURL.logoutURL}${userInfo.memberToken}&DeviceId=${token?.deviceToken}`;
@@ -322,11 +314,11 @@ export const AuthProvider = ({children}) => {
       if (data?.message) {
         AsyncStorage.removeItem('userInfo');
         setUserInfo({});
-        setIsLoading(false);
         setError(null);
       }
     } catch (err) {
       console.log(`logout error ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -356,7 +348,6 @@ export const AuthProvider = ({children}) => {
       const {data} = await axios.get(configURL.suggestedUserURL, {
         Mem_ID: id,
       });
-      setIsLoading(false);
       if (data.length > 0) {
         return data;
       } else {
@@ -365,6 +356,7 @@ export const AuthProvider = ({children}) => {
       }
     } catch (err) {
       console.log(`Error getting suggestedUsers : ${err.error}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -388,7 +380,6 @@ export const AuthProvider = ({children}) => {
         pageSize;
     try {
       const {data} = await axios.post(url);
-      setIsLoading(false);
       if (data.length > 0) {
         return data;
       } else {
@@ -397,6 +388,7 @@ export const AuthProvider = ({children}) => {
       }
     } catch (err) {
       console.log(`Error finding Friends : ${err.error}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -418,15 +410,14 @@ export const AuthProvider = ({children}) => {
         },
       );
       if (data.sendre === 1) {
-        setIsLoading(false);
         return true;
       } else {
         setError(data.errorText);
-        setIsLoading(false);
         return false;
       }
     } catch (err) {
       console.log(`Error sending friend request : ${err.error}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -458,14 +449,13 @@ export const AuthProvider = ({children}) => {
         },
       });
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No any friend request sent.');
-        setIsLoading(false);
       }
     } catch (err) {
       console.log(`Error getting sent friend request : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -488,14 +478,13 @@ export const AuthProvider = ({children}) => {
       );
       if (data.errorText) {
         setError(data.errorText);
-        setIsLoading(false);
         return false;
       } else {
-        setIsLoading(false);
         return true;
       }
     } catch (err) {
       console.log(`Error canceling friend request : ${err.error}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -505,14 +494,13 @@ export const AuthProvider = ({children}) => {
     try {
       const {data} = await axios.post(configURL.receiveFriendRequestURL + id);
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No any friend request sent.');
-        setIsLoading(false);
       }
     } catch (err) {
       console.log(`Error getting sent friend request : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -540,14 +528,13 @@ export const AuthProvider = ({children}) => {
         },
       );
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No any friend request received.');
-        setIsLoading(false);
       }
     } catch (err) {
       console.log(`Error getting sent friend request : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -570,14 +557,13 @@ export const AuthProvider = ({children}) => {
       );
       if (data.errorText) {
         setError(data.errorText);
-        setIsLoading(false);
         return false;
       } else {
-        setIsLoading(false);
         return true;
       }
     } catch (err) {
       console.log(`Error accepting friend request : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -604,14 +590,13 @@ export const AuthProvider = ({children}) => {
         },
       });
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No friend found.');
-        setIsLoading(false);
       }
     } catch (err) {
       console.log(`Error getting all friends : ${err.error}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -634,14 +619,13 @@ export const AuthProvider = ({children}) => {
       );
       if (data.errorText) {
         setError(data.errorText);
-        setIsLoading(false);
         return false;
       } else {
-        setIsLoading(false);
         return true;
       }
     } catch (err) {
       console.log(`Error unfriend request : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -657,14 +641,13 @@ export const AuthProvider = ({children}) => {
     try {
       const {data} = await axios.get(url);
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No friend found.');
-        setIsLoading(false);
       }
     } catch (err) {
       console.log(`Error getting friend list : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -681,14 +664,13 @@ export const AuthProvider = ({children}) => {
 
       const {data} = await axios.get(url);
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No group found.');
-        setIsLoading(false);
       }
     } catch (err) {
       console.log(`Error getting groups : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -701,15 +683,14 @@ export const AuthProvider = ({children}) => {
           `${memberToken}&MemId=${memID}&pageSize=30&page=${page}`,
       );
       if (data.length > 0) {
-        setIsLoading(false);
         return data;
       } else {
         setError('No chat history found.');
-        setIsLoading(false);
         return null;
       }
     } catch (err) {
       console.log(`Error fetching chat history : ${err}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -797,10 +778,7 @@ export const AuthProvider = ({children}) => {
           MessageId: msgId,
         },
       });
-      if (data.message) {
-        console.log('Data is : ', data.message);
-        return data;
-      }
+      return (data?.message) ? true : false;
     } catch (error) {
       console.log(error);
     }
@@ -862,14 +840,13 @@ export const AuthProvider = ({children}) => {
         },
       });
       if (data) {
-        setIsLoading(false);
         return data;
       } else {
-        setIsLoading(false);
         return false;
       }
     } catch (error) {
       console.log(error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -893,11 +870,31 @@ export const AuthProvider = ({children}) => {
         },
       );
       if (data) {
-        setIsLoading(false);
         return data;
       }
     } catch (err) {
       console.log('Error in groupCall : ', {err});
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const groupBelong = async (groupId, memberToken, loginToken) => {
+    setIsLoading(true);
+    try {
+      const {data} = await axios.get(
+        configURL.belongToGroupURL + memberToken + '&Group_Id=' + groupId,
+        {
+          headers: {
+            MemberToken: memberToken,
+            LoginToken: loginToken,
+          },
+        },
+      );
+      return (data.RecordCount) ? true : false;
+    } catch (err) {
+      console.log('Error in groupBelong : ', {err});
+    } finally {
       setIsLoading(false);
     }
   };
@@ -942,6 +939,7 @@ export const AuthProvider = ({children}) => {
         doCall,
         getUserInfo,
         groupCall,
+        groupBelong,
       }}>
       {children}
     </AuthContext.Provider>

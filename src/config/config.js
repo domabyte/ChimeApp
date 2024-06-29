@@ -34,6 +34,7 @@ const configURL = {
   deleteMsgURL: baseURL + 'message/deleteMessageById',
   getFCMTokenURL: baseURL + 'user/GetMemberDeviceDetailById',
   groupCallURL: baseURL + 'message/GroupCallIdGenerating',
+  belongToGroupURL: baseURL + 'post/IsGroupMember?MemberToken=',
   callURL: 'https://3q9cbtsj-3002.inc1.devtunnels.ms/api/call',
   endCallURL: 'https://3q9cbtsj-3002.inc1.devtunnels.ms/api/endCall',
 };
