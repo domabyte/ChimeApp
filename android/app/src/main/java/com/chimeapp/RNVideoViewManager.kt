@@ -32,4 +32,9 @@ class RNVideoViewManager : SimpleViewManager<DefaultVideoRenderView>() {
             it.audioVideo.bindVideoView(renderView, tileId)
         }
     }
+
+    @ReactProp(name = "mirror")
+    fun setMirror(renderView: DefaultVideoRenderView, mirror: Boolean) {
+        renderView.mirror = mirror
+    }
 }
