@@ -13,6 +13,7 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Linking,
+  Alert,
 } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import HTMLView from 'react-native-htmlview';
@@ -68,6 +69,7 @@ const ChatSection = ({navigation, route}) => {
     getFCMToken,
     doCall,
     groupCall,
+    groupBelong,
   } = useContext(AuthContext);
   const {socket, joinRoom, leaveRoom} = useContext(SocketContext);
   const [messages, setMessages] = useState([]);
@@ -349,10 +351,17 @@ const ChatSection = ({navigation, route}) => {
 
   const handleMsgDelete = async () => {
     try {
-      await deleteMsg(userInfo.memberToken, userInfo.LoginToken, msgId);
-      setMessages(prevMessages =>
-        prevMessages.filter(message => message.Id !== msgId),
-      );
+      const response = await deleteMsg(userInfo.memberToken, userInfo.LoginToken, msgId);
+      if (response) {
+        setMessages(prevMessages =>
+          prevMessages.filter(message => message.Id !== msgId),
+        );
+      } else {
+        Alert.alert(
+          'Error',
+          'You are not allowed to delete this message.',
+        );
+      }
       handleClosePopup();
       setMsgID(null);
     } catch (error) {
@@ -392,12 +401,15 @@ const ChatSection = ({navigation, route}) => {
   };
 
   const parseGroupMeetingMessage = message => {
-    const regex = /@@GroupMeeting\?meetingid=([0-9a-f-]+)&calltype=(\w+)/i;
+    const regex =
+      /@@GroupMeeting\?meetingid=([0-9a-f-]+)&calltype=(\w+)&IsShared=(\d)&GroupId=([^&]+)/i;
     const match = message.match(regex);
     if (match) {
       const meetingId = match[1];
       const callType = match[2];
-      return {message, meetingId, callType};
+      const isShared = match[3];
+      const groupId = match[4];
+      return {message, meetingId, callType, isShared, groupId};
     }
     return null;
   };
@@ -573,6 +585,7 @@ const ChatSection = ({navigation, route}) => {
                         }
                         if (parseGroupMeetingMessage(messagePart)) {
                           const result = parseGroupMeetingMessage(messagePart);
+                          const isShared = result.isShared === '1';
                           return (
                             <View
                               style={{
@@ -584,17 +597,40 @@ const ChatSection = ({navigation, route}) => {
                               }}
                               key={index}>
                               <TouchableOpacity
-                                onPress={() =>
-                                  Linking.openURL(
-                                    `actpal://group${
-                                      result?.callType === 'voice'
-                                        ? 'Audio'
-                                        : 'Video'
-                                    }Call?meetingName=${
-                                      result?.meetingId
-                                    }&userName=${userInfo.name}`,
-                                  )
-                                }>
+                                onPress={async () => {
+                                  if (isShared) {
+                                    Linking.openURL(
+                                      `actpal://group${
+                                        result?.callType === 'voice'
+                                          ? 'Audio'
+                                          : 'Video'
+                                      }Call?meetingName=${
+                                        result?.meetingId
+                                      }&userName=${userInfo.name}`,
+                                    );
+                                  } else {
+                                  const response = await groupBelong(
+                                    friendId,
+                                    userInfo?.memberToken,
+                                    userInfo?.LoginToken,
+                                  );
+                                  if (response) {
+                                    Linking.openURL(
+                                      `actpal://group${
+                                        result?.callType === 'voice'
+                                          ? 'Audio'
+                                          : 'Video'
+                                      }Call?meetingName=${
+                                        result?.meetingId
+                                      }&userName=${userInfo.name}`,
+                                    );
+                                  } else {
+                                    Alert.alert(
+                                      'Error',
+                                      'You are not a member of this group.',
+                                    );
+                                  }
+                                }}}>
                                 <Text
                                   style={{
                                     backgroundColor: 'green',
