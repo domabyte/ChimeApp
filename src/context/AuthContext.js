@@ -766,6 +766,45 @@ export const AuthProvider = ({children}) => {
     }
   };
 
+  const forwardSendMessage = async (
+    memberToken,
+    loginToken,
+    messageText,
+    friendId,
+    isFriendCircle,
+  ) => {
+    const formData = new FormData();
+    formData.append('MemberToken', memberToken);
+    formData.append('messageText', messageText);
+    formData.append('ReceiverID', friendId);
+    formData.append('MessageId', '');
+    formData.append('IsFriendCircle', isFriendCircle);
+    if (isFriendCircle == 1) {
+      formData.append('FriendsId', userInfo?.id);
+    }
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        MemberToken: memberToken,
+        LoginToken: loginToken,
+      },
+    };
+    try {
+      const {data} = await axios.post(
+        configURL.sendPrivateMsgURL,
+        formData,
+        config,
+      );
+      if (data?.MessageId) {
+        return data?.message;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      console.log('Error sending the message ', err);
+    }
+  };
+
   const deleteMsg = async (memberToken, loginToken, msgId) => {
     try {
       const {data} = await axios.delete(configURL.deleteMsgURL, {
@@ -778,7 +817,7 @@ export const AuthProvider = ({children}) => {
           MessageId: msgId,
         },
       });
-      return (data?.message) ? true : false;
+      return data?.message ? true : false;
     } catch (error) {
       console.log(error);
     }
@@ -851,7 +890,13 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const groupCall = async (groupId, memberToken, loginToken, calltype, isPublic) => {
+  const groupCall = async (
+    groupId,
+    memberToken,
+    loginToken,
+    calltype,
+    isPublic,
+  ) => {
     setIsLoading(true);
     try {
       const {data} = await axios.post(
@@ -891,7 +936,7 @@ export const AuthProvider = ({children}) => {
           },
         },
       );
-      return (data.RecordCount) ? true : false;
+      return data.RecordCount ? true : false;
     } catch (err) {
       console.log('Error in groupBelong : ', {err});
     } finally {
@@ -934,6 +979,7 @@ export const AuthProvider = ({children}) => {
         fetchChatHistory,
         getGroupMembers,
         sendMessage,
+        forwardSendMessage,
         deleteMsg,
         getFCMToken,
         doCall,

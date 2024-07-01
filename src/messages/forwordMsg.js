@@ -21,7 +21,7 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const [selectedReceivers, setSelectedReceivers] = useState([]);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const {isLoading, userInfo, messageFriends, error, setError, sendMessage} =
+  const {isLoading, userInfo, messageFriends, error, setError, forwardSendMessage} =
     useContext(AuthContext);
   const isFocused = useIsFocused();
 
@@ -86,15 +86,16 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
     const item = updatedList[index];
     item.sendBtn = !item.sendBtn;
     setFriendList(updatedList);
-
+  
     const receivers = isSearchResult ? searchResults : friendList;
     const selectedReceiverID = receivers[index]?.Mem_ID;
-
+    const isGroup = receivers[index]?.IsFriendCircle === 1;
+  
     if (!item.sendBtn) {
-      setSelectedReceivers(prevState => [...prevState, selectedReceiverID]);
+      setSelectedReceivers(prevState => [...prevState, { id: selectedReceiverID, isGroup }]);
     } else {
       setSelectedReceivers(prevState =>
-        prevState.filter(id => id !== selectedReceiverID),
+        prevState.filter(receiver => receiver.id !== selectedReceiverID)
       );
     }
   };
@@ -120,13 +121,12 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
     if (pressMsg.trim() !== '') {
       try {
         for (const receiver of receivers) {
-          await sendMessage(
+          await forwardSendMessage(
             userInfo?.memberToken,
             userInfo?.LoginToken,
             pressMsg,
-            receiver,
-            '',
-            true,
+            receiver.id,
+            receiver.isGroup ? '1' : ''
           );
         }
         return true;
