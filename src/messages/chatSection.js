@@ -928,7 +928,7 @@ const ChatSection = ({navigation, route}) => {
             contentContainerStyle={{flexGrow: 1}}
           />
         ) : (
-          <View style={{height: responsiveHeight(85.5)}}>
+          <View style={{flexBasis: 'auto', flexShrink: 0, flexGrow: 1}}>
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
               <View style={styles.emptymsg}>
                 <Image
@@ -937,11 +937,15 @@ const ChatSection = ({navigation, route}) => {
                     height: responsiveWidth(23),
                     borderRadius: responsiveWidth(15),
                   }}
-                  source={require('../assets/png/user3.png')}
+                  source={
+                    friendPhoto && typeof friendPhoto === 'string'
+                      ? {uri: friendPhoto}
+                      : default_photo
+                  }
                 />
                 <Text
                   style={{fontSize: responsiveFontSize(2.5), color: 'black'}}>
-                  Sophia Williams
+                  {friendName}
                 </Text>
                 <Text
                   style={{fontSize: responsiveFontSize(1.8), color: '#1866B4'}}>
@@ -1269,7 +1273,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
   },
   leftAreaBtn: {
     flexDirection: 'row',

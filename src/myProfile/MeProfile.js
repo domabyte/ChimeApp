@@ -14,9 +14,10 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../context/AuthContext';
 import Footer from '../components/Footer';
 import { responsiveWidth } from 'react-native-responsive-dimensions';
+const default_photo = require('../assets/png/user9.png');
 
 const Myprofile = ({navigation}) => {
-  const {isLoading, logout} = useContext(AuthContext);
+  const {isLoading, logout, userInfo} = useContext(AuthContext);
   const longText =
     'Your long paragraph goes here. Lorem ipsum dolLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate ';
   const [expanded, setExpanded] = useState(false);
@@ -38,7 +39,7 @@ const Myprofile = ({navigation}) => {
               source={require('../assets/png/leftArrow2.png')}
             />
           </TouchableOpacity>
-          <View
+          {/* <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -49,7 +50,7 @@ const Myprofile = ({navigation}) => {
               style={{width: 60, height: 30}}
               source={require('../assets/png/Actpal_logo.png')}
             />
-          </View>
+          </View> */}
           <TouchableOpacity>
             <Image
               style={styles.topIcon}
@@ -61,8 +62,8 @@ const Myprofile = ({navigation}) => {
           <Text
             style={{
               color: 'black',
-              marginVertical: 10,
               fontSize: 18,
+              marginBottom: 20,
               fontWeight: '500',
             }}>
             My Profile
@@ -70,10 +71,15 @@ const Myprofile = ({navigation}) => {
           <View style={styles.imgBox}>
             <Image
               style={styles.userProfile}
-              source={require('../assets/png/user9.png')}
+              // source={require('../assets/png/user9.png')}
+              source={
+                userInfo?.memberPhoto && typeof userInfo?.memberPhoto === 'string'
+                  ? {uri: userInfo?.memberPhoto}
+                  : default_photo
+              }
             />
           </View>
-          <Text style={styles.userName}>Brooklyn Simmons</Text>
+          <Text style={styles.userName}>{userInfo?.name}</Text>
           {/* <Text style={styles.userTitle}>Developer</Text> */}
           <Button title="Logout" color="red" onPress={logout} />
           <View
