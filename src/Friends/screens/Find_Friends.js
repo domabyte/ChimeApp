@@ -16,6 +16,7 @@ import Footer from '../../components/Footer';
 import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 import {useIsFocused} from '@react-navigation/core';
+import FriendShimmer from '../../Shimmer/FriendShimmer';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const FindFriends = ({navigation}) => {
@@ -25,6 +26,7 @@ const FindFriends = ({navigation}) => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
 
   const {
@@ -67,9 +69,16 @@ const FindFriends = ({navigation}) => {
   useEffect(() => {
     setError('');
     const fetchSuggestedUsers = async () => {
-      const result = await searchFriends(userInfo.id, 1, 20, null);
-      if (result) {
-        setSuggestedFriendsData(result);
+      setIsInitialLoading(true);
+      try {
+        const result = await searchFriends(userInfo.id, 1, 20, null);
+        if (result) {
+          setSuggestedFriendsData(result);
+        }
+      } catch (err) {
+        console.log('Error is : ', err);
+      } finally {
+        setIsInitialLoading(false);
       }
     };
     fetchSuggestedUsers();
@@ -249,42 +258,46 @@ const FindFriends = ({navigation}) => {
             />
           </TouchableOpacity>
         </View>
-        <FlatList
-          data={searchButtonClicked ? searchResults : suggestedFriendsData}
-          renderItem={renderFriendItem}
-          keyExtractor={(item, index) => index.toString()}
-          ListEmptyComponent={() => (
-            <View style={styles.noResults}>
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                }}>
-                <Image
-                  style={{width: 200, height: 200}}
-                  source={require('../../assets/png/no-post.png')}
-                />
-              </View>
-              <View>
-                <Text>Here is no more member!</Text>
-                <Text>Please wait for some days.</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSearchButtonClicked(false);
-                    setSearchKeywords('');
+        {isInitialLoading ? (
+          <FriendShimmer />
+        ) : (
+          <FlatList
+            data={searchButtonClicked ? searchResults : suggestedFriendsData}
+            renderItem={renderFriendItem}
+            keyExtractor={(item, index) => index.toString()}
+            ListEmptyComponent={() => (
+              <View style={styles.noResults}>
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignContent: 'center',
                   }}>
-                  <Text style={styles.goBackText}>Go Back</Text>
-                </TouchableOpacity>
+                  <Image
+                    style={{width: 200, height: 200}}
+                    source={require('../../assets/png/no-post.png')}
+                  />
+                </View>
+                <View>
+                  <Text>Here is no more member!</Text>
+                  <Text>Please wait for some days.</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchButtonClicked(false);
+                      setSearchKeywords('');
+                    }}>
+                    <Text style={styles.goBackText}>Go Back</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          )}
-          onEndReached={fetchMoreData}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={() =>
-            isLoadingMore && <Spinner visible={true} />
-          }
-        />
+            )}
+            onEndReached={fetchMoreData}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={() =>
+              isLoadingMore && <Spinner visible={true} />
+            }
+          />
+        )}
       </View>
       <Footer />
     </SafeAreaView>

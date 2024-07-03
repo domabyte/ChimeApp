@@ -16,6 +16,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 import {useIsFocused} from '@react-navigation/core';
+import FriendShimmer from '../../Shimmer/FriendShimmer';
 import Footer from '../../components/Footer';
 import {
   responsiveFontSize,
@@ -29,6 +30,7 @@ const SentRequest = ({navigation}) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const {
     isLoading,
     userInfo,
@@ -41,6 +43,7 @@ const SentRequest = ({navigation}) => {
   const isFocused = useIsFocused();
 
   const fetchSentFriendRequest = async () => {
+    setIsInitialLoading(true);
     try {
       const response = await getSentFriendRequest(
         userInfo.memberToken,
@@ -54,6 +57,8 @@ const SentRequest = ({navigation}) => {
       }
     } catch (err) {
       console.log('Problem fetching sent friend', err);
+    } finally {
+      setIsInitialLoading(false);
     }
   };
   useEffect(() => {
@@ -225,45 +230,52 @@ const SentRequest = ({navigation}) => {
             />
           </TouchableOpacity>
         </View>
-        <FlatList
-          data={searchButtonClicked ? searchResults : sentRequest}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyBox}>
-              <View style={styles.noResults}>
-                <View>
-                  <Image
-                    style={{
-                      width: responsiveWidth(34),
-                      height: responsiveWidth(25),
-                    }}
-                    source={require('../../assets/png/no-post.png')}
-                  />
-                </View>
-                <View>
-                  <Text
-                    style={{
-                      fontSize: responsiveFontSize(2),
-                      width: responsiveWidth(70),
-                      textAlign: 'center',
-                      marginTop: responsiveWidth(4),
-                    }}>
-                    Here is no more member! Please wait for some days.
-                  </Text>
-                  <TouchableOpacity>
-                    <Text style={styles.goBackText} onPress={handleGoBack}>
-                      Go Back
+        {isInitialLoading ? (
+          <FriendShimmer />
+        ) : (
+          <FlatList
+            data={searchButtonClicked ? searchResults : sentRequest}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyBox}>
+                <View style={styles.noResults}>
+                  <View>
+                    <Image
+                      style={{
+                        width: responsiveWidth(34),
+                        height: responsiveWidth(25),
+                      }}
+                      source={require('../../assets/png/no-post.png')}
+                    />
+                  </View>
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: responsiveFontSize(2),
+                        width: responsiveWidth(70),
+                        textAlign: 'center',
+                        marginTop: responsiveWidth(4),
+                      }}>
+                      Here is no more member! Please wait for some days.
                     </Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity>
+                      <Text style={styles.goBackText} onPress={handleGoBack}>
+                        Go Back
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
-          }
-        />
+            }
+          />
+        )}
       </View>
       <Footer />
     </SafeAreaView>

@@ -19,6 +19,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {useIsFocused} from '@react-navigation/core';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Footer from '../../components/Footer';
+import FriendShimmer from '../../Shimmer/FriendShimmer';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -27,6 +28,7 @@ import {
 
 const MyFriends = ({navigation}) => {
   const [myFriends, setMyFriends] = useState([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
@@ -50,6 +52,7 @@ const MyFriends = ({navigation}) => {
   }, [searchKeyword]);
 
   const fetchMyFriend = async () => {
+    setIsInitialLoading(true);
     try {
       const response = await getAllFriends(
         userInfo.memberToken,
@@ -60,6 +63,8 @@ const MyFriends = ({navigation}) => {
       setRefreshing(false);
     } catch (err) {
       console.log('Problem fetching MyFriend');
+    } finally {
+      setIsInitialLoading(false);
     }
   };
 
@@ -253,18 +258,22 @@ const MyFriends = ({navigation}) => {
               />
             </TouchableOpacity>
           </View>
-          <FlatList
-            data={searchButtonClicked ? searchResults : myFriends}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => index.toString()}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-            ListEmptyComponent={renderNoResults}
-          />
+          {isInitialLoading ? (
+            <FriendShimmer />
+          ) : (
+            <FlatList
+              data={searchButtonClicked ? searchResults : myFriends}
+              renderItem={renderItem}
+              keyExtractor={(item, index) => index.toString()}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+              ListEmptyComponent={renderNoResults}
+            />
+          )}
         </View>
         <Footer />
       </SafeAreaView>
