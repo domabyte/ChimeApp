@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import {AuthContext} from '../context/AuthContext';
 import {useIsFocused} from '@react-navigation/core';
+import ForwardShimmer from '../Shimmer/ForwardShimmer';
 const default_photo = require('../assets/png/default-profile.png');
 
 const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
@@ -21,13 +22,21 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const [selectedReceivers, setSelectedReceivers] = useState([]);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const {isLoading, userInfo, messageFriends, error, setError, forwardSendMessage} =
-    useContext(AuthContext);
+  const {
+    isLoading,
+    setIsLoading,
+    userInfo,
+    messageFriends,
+    error,
+    setError,
+    forwardSendMessage,
+  } = useContext(AuthContext);
   const isFocused = useIsFocused();
 
   useEffect(() => {
     setError('');
     const fetchFriendList = async () => {
+      setIsLoading(true);
       try {
         const response = await messageFriends(
           userInfo.memberToken,
@@ -43,6 +52,8 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
         }
       } catch (err) {
         console.log('Problem fetching friend list ', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchFriendList();
@@ -52,6 +63,7 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
   }, [isFocused]);
 
   const handleSearchResult = async () => {
+    setIsLoading(true);
     try {
       if (searchKeyword) {
         const response = await messageFriends(
@@ -68,6 +80,8 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
       }
     } catch (err) {
       console.log('Error is : ', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,16 +100,19 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
     const item = updatedList[index];
     item.sendBtn = !item.sendBtn;
     setFriendList(updatedList);
-  
+
     const receivers = isSearchResult ? searchResults : friendList;
     const selectedReceiverID = receivers[index]?.Mem_ID;
     const isGroup = receivers[index]?.IsFriendCircle === 1;
-  
+
     if (!item.sendBtn) {
-      setSelectedReceivers(prevState => [...prevState, { id: selectedReceiverID, isGroup }]);
+      setSelectedReceivers(prevState => [
+        ...prevState,
+        {id: selectedReceiverID, isGroup},
+      ]);
     } else {
       setSelectedReceivers(prevState =>
-        prevState.filter(receiver => receiver.id !== selectedReceiverID)
+        prevState.filter(receiver => receiver.id !== selectedReceiverID),
       );
     }
   };
@@ -126,7 +143,7 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
             userInfo?.LoginToken,
             pressMsg,
             receiver.id,
-            receiver.isGroup ? '1' : ''
+            receiver.isGroup ? '1' : '',
           );
         }
         return true;
@@ -229,54 +246,60 @@ const LongPressPopup = ({isVisible, onClose, pressMsg, handleClosePopup}) => {
               />
             </TouchableOpacity>
           </View>
-          <FlatList
-            data={searchButtonClicked ? searchResults : friendList}
-            renderItem={({item, index}) => (
-              <View style={styles.userList}>
-                <View style={styles.leftside}>
-                  <Image
-                    style={styles.userImg}
-                    source={
-                      item.Mem_Photo && typeof item.Mem_Photo === 'string'
-                        ? {uri: item.Mem_Photo}
-                        : default_photo
+          {isLoading ? (
+            <ForwardShimmer />
+          ) : (
+            <FlatList
+              data={searchButtonClicked ? searchResults : friendList}
+              renderItem={({item, index}) => (
+                <View style={styles.userList}>
+                  <View style={styles.leftside}>
+                    <Image
+                      style={styles.userImg}
+                      source={
+                        item.Mem_Photo && typeof item.Mem_Photo === 'string'
+                          ? {uri: item.Mem_Photo}
+                          : default_photo
+                      }
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 18,
+                        fontWeight: '500',
+                        color: 'black',
+                        width: '65%',
+                      }}>
+                      {item?.Mem_Name}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() =>
+                      toggleSendBtn(index, searchResults.length > 0)
                     }
-                  />
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '500',
-                      color: 'black',
-                      width: '65%',
-                    }}>
-                    {item?.Mem_Name}
-                  </Text>
+                    style={[
+                      styles.sendBtn,
+                      {backgroundColor: item.sendBtn ? '#CEE7FF' : '#1E293C'},
+                    ]}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '500',
+                        color: item.sendBtn ? '#1866B4' : 'white',
+                      }}>
+                      {item.sendBtn ? 'Send' : 'Undo'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => toggleSendBtn(index, searchResults.length > 0)}
-                  style={[
-                    styles.sendBtn,
-                    {backgroundColor: item.sendBtn ? '#CEE7FF' : '#1E293C'},
-                  ]}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '500',
-                      color: item.sendBtn ? '#1866B4' : 'white',
-                    }}>
-                    {item.sendBtn ? 'Send' : 'Undo'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={
-              searchButtonClicked
-                ? renderEmptySearchResults
-                : renderEmptyFriendList
-            }
-          />
+              )}
+              keyExtractor={(item, index) => index.toString()}
+              ListEmptyComponent={
+                searchButtonClicked
+                  ? renderEmptySearchResults
+                  : renderEmptyFriendList
+              }
+            />
+          )}
         </View>
       </View>
     </Modal>

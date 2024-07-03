@@ -24,6 +24,7 @@ import SocketContext from '../context/SocketContext';
 import {IOScrollView, InView} from 'react-native-intersection-observer';
 import {requestUserPermission} from '../utils/NotificationService';
 import Clipboard from '@react-native-clipboard/clipboard';
+import ChatShimmer from '../Shimmer/ChatShimmer';
 import {
   allowMedia,
   downloadFile,
@@ -60,6 +61,7 @@ const ChatSection = ({navigation, route}) => {
   const [isOnline, setIsOnline] = useState('Offline');
   const {
     userInfo,
+    isLoading,
     fetchChatHistory,
     deleteMsg,
     setIsLoading,
@@ -97,6 +99,7 @@ const ChatSection = ({navigation, route}) => {
   const [callType, setCallType] = useState(null);
 
   const fetchMessages = async () => {
+    setIsLoading(true);
     try {
       const result = await fetchChatHistory(
         userInfo.memberToken,
@@ -917,9 +920,10 @@ const ChatSection = ({navigation, route}) => {
           </View>
         </Modal>
 
-        {messages.length > 0 ? (
+        {isLoading ? (
+          <ChatShimmer />
+        ) : messages.length > 0 ? (
           <FlatList
-            // ref={flatListRef}
             inverted
             data={messages}
             renderItem={renderItem}
@@ -927,7 +931,7 @@ const ChatSection = ({navigation, route}) => {
             refreshing={refreshing}
             contentContainerStyle={{flexGrow: 1}}
           />
-        ) : (
+        ): (
           <View style={{flexBasis: 'auto', flexShrink: 0, flexGrow: 1}}>
             <View style={{justifyContent: 'center', alignItems: 'center'}}>
               <View style={styles.emptymsg}>

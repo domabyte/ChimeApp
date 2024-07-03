@@ -21,6 +21,7 @@ import {
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
 import {Swipeable} from 'react-native-gesture-handler';
+import MessageShimmer from '../Shimmer/MessageShimmer';
 const default_photo = require('../assets/png/default-profile.png');
 
 const AllMessages = ({navigation}) => {
@@ -32,6 +33,7 @@ const AllMessages = ({navigation}) => {
   const [groupSearchKeyword, setGroupSearchKeyword] = useState('');
   const [groupSearchResults, setGroupSearchResults] = useState([]);
   const [groupSearchBtnClicked, setGroupSearchBtnClicked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const {userInfo, messageFriends, setError} = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const isFocused = useIsFocused();
@@ -54,6 +56,7 @@ const AllMessages = ({navigation}) => {
   }, [groupSearchKeyword]);
 
   const fetchFriendList = async () => {
+    setIsLoading(true);
     try {
       const response = await messageFriends(
         userInfo.memberToken,
@@ -63,6 +66,8 @@ const AllMessages = ({navigation}) => {
       setRefreshing(false);
     } catch (err) {
       console.log('Problem fetching friend list ', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -180,13 +185,14 @@ const AllMessages = ({navigation}) => {
                 <Text
                   numberOfLines={1}
                   style={[styles.msgText, {width: '90%'}]}>
-                 {item?.LastMessage && item?.LastMessage.includes('@@GroupMeeting')
-                  ? 'Meeting 💼'
-                  : item?.LastMessage !== null && item?.LastMessage !== ''
-                  ? item?.LastMessage
-                  : item?.MediaPath !== null && item?.MediaPath !== ''
-                  ? 'Media'
-                  : 'No message available'}
+                  {item?.LastMessage &&
+                  item?.LastMessage.includes('@@GroupMeeting')
+                    ? 'Meeting 💼'
+                    : item?.LastMessage !== null && item?.LastMessage !== ''
+                    ? item?.LastMessage
+                    : item?.MediaPath !== null && item?.MediaPath !== ''
+                    ? 'Media'
+                    : 'No message available'}
                 </Text>
               </View>
             </View>
@@ -374,8 +380,11 @@ const AllMessages = ({navigation}) => {
                 </TouchableOpacity>
               </View>
             )}
-
-            {renderList(searchButtonClicked ? searchResults : friendList)}
+            {isLoading ? (
+              <MessageShimmer />
+            ) : (
+              renderList(searchButtonClicked ? searchResults : friendList)
+            )}
           </View>
         ) : (
           <View>
@@ -404,10 +413,16 @@ const AllMessages = ({navigation}) => {
               </View>
             )}
 
-            {renderList(
-              groupSearchBtnClicked
-                ? groupSearchResults.filter(item => item?.IsFriendCircle === 1)
-                : friendList.filter(item => item?.IsFriendCircle === 1),
+            {isLoading ? (
+              <MessageShimmer />
+            ) : (
+              renderList(
+                groupSearchBtnClicked
+                  ? groupSearchResults.filter(
+                      item => item?.IsFriendCircle === 1,
+                    )
+                  : friendList.filter(item => item?.IsFriendCircle === 1),
+              )
             )}
           </View>
         )}
