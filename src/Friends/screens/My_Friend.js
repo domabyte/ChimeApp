@@ -10,6 +10,7 @@ import {
   FlatList,
   RefreshControl,
   KeyboardAvoidingView,
+  Keyboard
 } from 'react-native';
 import Header from '../../components/Header';
 import {AuthContext} from '../../context/AuthContext';
@@ -36,6 +37,9 @@ const MyFriends = ({navigation}) => {
     useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const isFocused = useIsFocused();
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+
 
   useEffect(() => {
     setError('');
@@ -112,6 +116,26 @@ const MyFriends = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // Keyboard is visible
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // Keyboard is hidden
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   const renderItem = ({item, index}) => (
     <View style={styles.friendList}>
       <View style={styles.userImage}>
@@ -126,8 +150,8 @@ const MyFriends = ({navigation}) => {
       </View>
       <View>
         <Text
-          ellipsizeMode="tail"
-          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
+          numberOfLines={1}
+          style={{ fontSize: responsiveFontSize(2), color: 'black', fontWeight: '500', width: responsiveWidth(70) }}>
           {item.Mem_Name}
         </Text>
         <Text style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
@@ -275,7 +299,9 @@ const MyFriends = ({navigation}) => {
             />
           )}
         </View>
-        <Footer />
+        {!isKeyboardVisible && 
+          <Footer />
+        }
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -294,8 +320,8 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     backgroundColor: '#f4f4f4',
-    borderRadius: 50,
-    height: 45,
+    borderRadius: responsiveWidth(5.5),
+    height: responsiveWidth(11),
     paddingLeft: 20,
   },
   searchbtn: {
@@ -320,8 +346,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   userImage: {
-    width: 70,
-    height: 70,
+    width: responsiveWidth(18),
+    height: responsiveWidth(18),
     borderRadius: 100,
     overflow: 'hidden',
   },
@@ -360,7 +386,7 @@ const styles = StyleSheet.create({
   blueBtn: {
     backgroundColor: '#1866B4',
     height: 34,
-    width: '40%',
+    width: '42%',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 6,

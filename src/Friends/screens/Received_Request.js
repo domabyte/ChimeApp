@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
   TextInput,
   RefreshControl,
   SafeAreaView,
+  Keyboard,
+  KeyboardAvoidingView
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Header from '../../components/Header';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
-import {useIsFocused} from '@react-navigation/core';
+import { useIsFocused } from '@react-navigation/core';
 import FriendShimmer from '../../Shimmer/FriendShimmer';
 import Footer from '../../components/Footer';
 import {
@@ -25,13 +27,15 @@ import {
 } from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const ReceivedRequest = ({navigation}) => {
+const ReceivedRequest = ({ navigation }) => {
   const [receiveRequest, setReceiveRequest] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
   const {
     isLoading,
     userInfo,
@@ -134,31 +138,53 @@ const ReceivedRequest = ({navigation}) => {
     setReceiveRequest(newSuggestedFriendsData);
   };
 
-  const renderItem = ({item, index}) => (
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // Keyboard is visible
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // Keyboard is hidden
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+
+  const renderItem = ({ item, index }) => (
     <View style={styles.friendList}>
       <View style={styles.userImage}>
         <Image
-          style={{width: '100%', height: '100%'}}
+          style={{ width: '100%', height: '100%' }}
           source={
             item.Mem_Photo && typeof item.Mem_Photo === 'string'
-              ? {uri: item.Mem_Photo}
+              ? { uri: item.Mem_Photo }
               : default_photo
           }
         />
       </View>
       <View>
         <Text
-          ellipsizeMode="tail"
-          style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
+          numberOfLines={1}
+          style={{ fontSize: responsiveFontSize(2), color: 'black', fontWeight: '500', width: responsiveWidth(70) }}>
           {item.Mem_Name}
         </Text>
-        <Text style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
+        <Text style={{ fontSize: 12, color: '#1866B4', fontWeight: '500' }}>
           {item.Mem_Designation.trim() === 'Not Added'
             ? ''
             : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Image
               style={styles.mutualImg}
               source={require('../../assets/png/user1.png')}
@@ -172,24 +198,24 @@ const ReceivedRequest = ({navigation}) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{color: 'black'}}>
+          <Text style={{ color: 'black' }}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
         <View style={styles.buttonArea}>
           <TouchableOpacity
-            style={[styles.blueBtn, {backgroundColor: '#192334'}]}
+            style={[styles.blueBtn, { backgroundColor: '#192334' }]}
             onPress={() =>
               handleAcceptFriendRequest(item?.FriendList_Id, index)
             }>
-            <Text style={{color: 'white'}}>Accept</Text>
+            <Text style={{ color: 'white' }}>Accept</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
+            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
             onPress={() =>
               handleCancelFriendRequest(item?.FriendList_Id, index)
             }>
-            <Text style={{color: 'black'}}>Reject</Text>
+            <Text style={{ color: 'black' }}>Reject</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -203,7 +229,7 @@ const ReceivedRequest = ({navigation}) => {
       <View style={styles.noResults}>
         <View>
           <Image
-            style={{width: responsiveWidth(34), height: responsiveWidth(25)}}
+            style={{ width: responsiveWidth(34), height: responsiveWidth(25) }}
             source={require('../../assets/png/no-post.png')}
           />
         </View>
@@ -233,66 +259,70 @@ const ReceivedRequest = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={{height: '100%'}}>
-      <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header navigation={navigation} />
-      <View style={styles.container}>
-        <Spinner visible={isLoading} />
-        <View style={{marginHorizontal: 16, marginVertical: 10}}>
-          <FriendHeader
-            navigation={navigation}
-            index={2}
-            selectedTab="Received"
-            searchResult={searchButtonClicked ? searchResults : receiveRequest}
-          />
-        </View>
-        <View
-          style={{
-            marginHorizontal: 16,
-            marginVertical: 10,
-            flexDirection: 'row',
-          }}>
-          {searchButtonClicked && (
-            <TouchableOpacity onPress={handleGoBack}>
+    <KeyboardAvoidingView>
+      <SafeAreaView style={{ height: '100%' }}>
+        <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
+        <Header navigation={navigation} />
+        <View style={styles.container}>
+          <Spinner visible={isLoading} />
+          <View style={{ marginHorizontal: 16, marginVertical: 10 }}>
+            <FriendHeader
+              navigation={navigation}
+              index={2}
+              selectedTab="Received"
+              searchResult={searchButtonClicked ? searchResults : receiveRequest}
+            />
+          </View>
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginVertical: 10,
+              flexDirection: 'row',
+            }}>
+            {searchButtonClicked && (
+              <TouchableOpacity onPress={handleGoBack}>
+                <Image
+                  style={{ width: 30, height: 30 }}
+                  source={require('../../assets/png/leftArrow.png')}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.searchSection}>
+            <TextInput
+              placeholder="Search Friends"
+              style={styles.searchBox}
+              value={searchKeyword}
+              onChangeText={text => setSearchKeyword(text)}
+            />
+            <TouchableOpacity
+              style={styles.searchbtn}
+              onPress={handleFriendRequest}>
               <Image
-                style={{width: 30, height: 30}}
-                source={require('../../assets/png/leftArrow.png')}
+                style={{ width: 24, height: 24 }}
+                source={require('../../assets/png/search.png')}
               />
             </TouchableOpacity>
+          </View>
+          {isInitialLoading ? (
+            <FriendShimmer />
+          ) : (
+            <FlatList
+              data={searchButtonClicked ? searchResults : receiveRequest}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              ListEmptyComponent={renderNoResults}
+            />
           )}
         </View>
-        <View style={styles.searchSection}>
-          <TextInput
-            placeholder="Search Friends"
-            style={styles.searchBox}
-            value={searchKeyword}
-            onChangeText={text => setSearchKeyword(text)}
-          />
-          <TouchableOpacity
-            style={styles.searchbtn}
-            onPress={handleFriendRequest}>
-            <Image
-              style={{width: 24, height: 24}}
-              source={require('../../assets/png/search.png')}
-            />
-          </TouchableOpacity>
-        </View>
-        {isInitialLoading ? (
-          <FriendShimmer />
-        ) : (
-          <FlatList
-            data={searchButtonClicked ? searchResults : receiveRequest}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            ListEmptyComponent={renderNoResults}
-          />
-        )}
-      </View>
-      <Footer />
-    </SafeAreaView>
+        {!isKeyboardVisible && 
+          <Footer />
+        }
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -319,8 +349,8 @@ const styles = StyleSheet.create({
     right: 15,
   },
   userImage: {
-    width: 70,
-    height: 70,
+    width: responsiveWidth(18),
+    height: responsiveWidth(18),
     borderRadius: 100,
     overflow: 'hidden',
   },
@@ -375,7 +405,7 @@ const styles = StyleSheet.create({
   blueBtn: {
     backgroundColor: '#1866B4',
     height: 34,
-    width: '40%',
+    width: '42%',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 6,

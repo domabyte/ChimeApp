@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,17 +9,20 @@ import {
   TextInput,
   FlatList,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Keyboard
 } from 'react-native';
 import Header from '../../components/Header';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Footer from '../../components/Footer';
-import {AuthContext} from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
-import {useIsFocused} from '@react-navigation/core';
+import { useIsFocused } from '@react-navigation/core';
 import FriendShimmer from '../../Shimmer/FriendShimmer';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
 
-const FindFriends = ({navigation}) => {
+const FindFriends = ({ navigation }) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState([]);
   const [suggestedFriendsData, setSuggestedFriendsData] = useState([]);
   const [searchKeywords, setSearchKeywords] = useState('');
@@ -28,6 +31,7 @@ const FindFriends = ({navigation}) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   const {
     isLoading,
@@ -151,27 +155,48 @@ const FindFriends = ({navigation}) => {
     }
   };
 
-  const renderFriendItem = ({item, index}) => (
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // Keyboard is visible
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // Keyboard is hidden
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  const renderFriendItem = ({ item, index }) => (
     <View key={index} style={styles.friendList}>
       <View style={styles.userImage}>
         <TouchableOpacity onPress={() => navigation.navigate('myProfile')}>
           <Image
-            style={{width: 70, height: 70}}
+            style={{ width: '100%', height: '100%' }}
             source={
               item.Mem_photo && typeof item.Mem_photo === 'string'
-                ? {uri: item.Mem_photo}
+                ? { uri: item.Mem_photo }
                 : default_photo
             }
           />
         </TouchableOpacity>
       </View>
       <View>
-        <Text style={{fontSize: 18, color: 'black', fontWeight: '500'}}>
+        <Text numberOfLines={1}
+          style={{ fontSize: responsiveFontSize(2), color: 'black', fontWeight: '500', width: responsiveWidth(70) }}>
           {item.Mem_name}
         </Text>
         <Text
           style={{
-            fontSize: 12,
+            fontSize: responsiveFontSize(1.5),
             color: '#1866B4',
             fontWeight: '500',
           }}>
@@ -180,7 +205,7 @@ const FindFriends = ({navigation}) => {
             : item.Mem_Designation.trim()}
         </Text>
         <View style={styles.mutualBox}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Image
               style={styles.mutualImg}
               source={require('../../assets/png/user1.png')}
@@ -194,7 +219,7 @@ const FindFriends = ({navigation}) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{color: 'black'}}>
+          <Text style={{ color: 'black', fontSize: responsiveFontSize(1.6) }}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
@@ -202,12 +227,12 @@ const FindFriends = ({navigation}) => {
           <TouchableOpacity
             style={styles.blueBtn}
             onPress={() => handleAddFriend(index, item.Mem_ID)}>
-            <Text style={{color: 'white'}}>Add Friend</Text>
+            <Text style={{ color: 'white', fontSize: responsiveFontSize(1.6) }}>Add Friend</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
+            style={[styles.blueBtn, { backgroundColor: '#CED4DA' }]}
             onPress={() => handleIgnore(index)}>
-            <Text style={{color: 'black'}}>Ignore</Text>
+            <Text style={{ color: 'black', fontSize: responsiveFontSize(1.6) }}>Ignore</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -215,92 +240,96 @@ const FindFriends = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView style={{height: '100%'}}>
-      <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
-      <Header navigation={navigation} />
-      <View style={styles.container}>
-        <Spinner visible={isLoading} />
-        <View
-          style={{
-            marginHorizontal: 16,
-            marginVertical: 10,
-          }}>
-          <FriendHeader
-            navigation={navigation}
-            index={0}
-            selectedTab="Find Friends"
-            searchResult={
-              searchButtonClicked ? searchResults : suggestedFriendsData
-            }
-          />
-          {searchButtonClicked && (
-            <TouchableOpacity onPress={handleGoBack}>
+    <KeyboardAvoidingView>
+      <SafeAreaView style={{ height: '100%' }}>
+        <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
+        <Header navigation={navigation} />
+        <View style={styles.container}>
+          <Spinner visible={isLoading} />
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginVertical: 10,
+            }}>
+            <FriendHeader
+              navigation={navigation}
+              index={0}
+              selectedTab="Find Friends"
+              searchResult={
+                searchButtonClicked ? searchResults : suggestedFriendsData
+              }
+            />
+            {searchButtonClicked && (
+              <TouchableOpacity onPress={handleGoBack}>
+                <Image
+                  style={{ width: 30, height: 30 }}
+                  source={require('../../assets/png/leftArrow.png')}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.searchSection}>
+            <TextInput
+              placeholder="Search Friends"
+              value={searchKeywords}
+              style={styles.searchBox}
+              onChangeText={text => setSearchKeywords(text)}
+            />
+            <TouchableOpacity
+              style={styles.searchbtn}
+              onPress={handleSearchKeyword}>
               <Image
-                style={{width: 30, height: 30}}
-                source={require('../../assets/png/leftArrow.png')}
+                style={{ width: responsiveWidth(6), height: responsiveWidth(6) }}
+                source={require('../../assets/png/search.png')}
               />
             </TouchableOpacity>
+          </View>
+          {isInitialLoading ? (
+            <FriendShimmer />
+          ) : (
+            <FlatList
+              data={searchButtonClicked ? searchResults : suggestedFriendsData}
+              renderItem={renderFriendItem}
+              keyExtractor={(item, index) => index.toString()}
+              ListEmptyComponent={() => (
+                <View style={styles.noResults}>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignContent: 'center',
+                    }}>
+                    <Image
+                      style={{ width: 200, height: 200 }}
+                      source={require('../../assets/png/no-post.png')}
+                    />
+                  </View>
+                  <View>
+                    <Text>Here is no more member!</Text>
+                    <Text>Please wait for some days.</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSearchButtonClicked(false);
+                        setSearchKeywords('');
+                      }}>
+                      <Text style={styles.goBackText}>Go Back</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+              onEndReached={fetchMoreData}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={() =>
+                isLoadingMore && <Spinner visible={true} />
+              }
+            />
           )}
         </View>
-        <View style={styles.searchSection}>
-          <TextInput
-            placeholder="Search Friends"
-            value={searchKeywords}
-            style={styles.searchBox}
-            onChangeText={text => setSearchKeywords(text)}
-          />
-          <TouchableOpacity
-            style={styles.searchbtn}
-            onPress={handleSearchKeyword}>
-            <Image
-              style={{width: 24, height: 24}}
-              source={require('../../assets/png/search.png')}
-            />
-          </TouchableOpacity>
-        </View>
-        {isInitialLoading ? (
-          <FriendShimmer />
-        ) : (
-          <FlatList
-            data={searchButtonClicked ? searchResults : suggestedFriendsData}
-            renderItem={renderFriendItem}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={() => (
-              <View style={styles.noResults}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                  }}>
-                  <Image
-                    style={{width: 200, height: 200}}
-                    source={require('../../assets/png/no-post.png')}
-                  />
-                </View>
-                <View>
-                  <Text>Here is no more member!</Text>
-                  <Text>Please wait for some days.</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchButtonClicked(false);
-                      setSearchKeywords('');
-                    }}>
-                    <Text style={styles.goBackText}>Go Back</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-            onEndReached={fetchMoreData}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={() =>
-              isLoadingMore && <Spinner visible={true} />
-            }
-          />
-        )}
-      </View>
-      <Footer />
-    </SafeAreaView>
+        {!isKeyboardVisible &&
+          <Footer />
+        }
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -317,19 +346,20 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     backgroundColor: '#f4f4f4',
-    borderRadius: 50,
-    height: 45,
-    paddingLeft: 20,
+    borderRadius: responsiveWidth(5.5),
+    height: responsiveWidth(11),
+    paddingLeft: responsiveWidth(5),
+    fontSize: responsiveFontSize(1.8)
   },
   searchbtn: {
     position: 'absolute',
-    top: 10,
+    top: responsiveWidth(2.6),
     right: 15,
   },
   userImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 100,
+    width: responsiveWidth(18),
+    height: responsiveWidth(18),
+    borderRadius: responsiveWidth(10),
     overflow: 'hidden',
   },
   noResults: {
@@ -358,15 +388,15 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   mutualImg: {
-    width: 20,
-    height: 20,
+    width: responsiveWidth(5),
+    height: responsiveWidth(5),
     borderRadius: 20,
     borderWidth: 2,
     borderColor: 'white',
   },
   mutualImg2nd: {
-    width: 20,
-    height: 20,
+    width: responsiveWidth(5),
+    height: responsiveWidth(5),
     borderRadius: 20,
     borderWidth: 2,
     borderColor: 'white',
@@ -384,11 +414,11 @@ const styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 34,
-    width: '40%',
+    height: responsiveWidth(8),
+    width: '42%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 6,
+    borderRadius: responsiveWidth(1.6),
   },
   FriendTex: {
     color: 'black',

@@ -13,6 +13,7 @@ import {
 import {AuthContext} from '../../context/AuthContext';
 import Spinner from 'react-native-loading-spinner-overlay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
 
 const SuggestedFriends = ({navigation, route}) => {
@@ -132,7 +133,7 @@ const SuggestedFriends = ({navigation, route}) => {
                 />
               </TouchableOpacity>
             )}
-            <Text style={{color: 'black', fontSize: 18}}>Find Friend</Text>
+            <Text style={{color: 'black', fontSize: responsiveFontSize(3)}}>Find Friend</Text>
           </View>
           <TouchableOpacity onPress={handleCred}>
             <Text style={{color: 'black', fontSize: 18}}>
