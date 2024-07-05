@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Linking,
   Alert,
+  ScrollView,
 } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import HTMLView from 'react-native-htmlview';
@@ -740,7 +741,7 @@ const ChatSection = ({navigation, route}) => {
   };
 
   return (
-    <SafeAreaView style={{height: '100%'}}>
+    <SafeAreaView style={{flex: 1}}>
       <KeyboardAvoidingView behavior="padding" style={styles1.container}>
         <Modal
           visible={showCallOptions}
@@ -773,9 +774,8 @@ const ChatSection = ({navigation, route}) => {
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Image
                   style={{
-                    width: 25,
-                    height: 25,
-                    marginBottom: 5,
+                    width: responsiveWidth(6),
+                    height: responsiveWidth(6),
                     tintColor: 'white',
                   }}
                   source={require('../assets/png/leftArrow2.png')}
@@ -784,7 +784,11 @@ const ChatSection = ({navigation, route}) => {
             ) : (
               <TouchableOpacity onPress={handleClosePopup}>
                 <Image
-                  style={{width: 25, height: 25, tintColor: 'white'}}
+                  style={{
+                    width: responsiveWidth(6),
+                    height: responsiveWidth(6),
+                    tintColor: 'white',
+                  }}
                   source={require('../assets/png/optionClose.png')}
                 />
               </TouchableOpacity>
@@ -803,21 +807,32 @@ const ChatSection = ({navigation, route}) => {
               <Text
                 numberOfLines={1}
                 style={{
-                  fontSize: 16,
+                  fontSize: responsiveFontSize(2),
                   fontWeight: '600',
                   color: 'white',
                   width: responsiveWidth(50),
                 }}>
                 {friendName}
               </Text>
-              <View style={{display: 'flex', flexDirection: 'row'}}>
-                <Text style={{alignItems: 'center', color: 'white'}}>
-                  {isOnline}{' '}
-                </Text>
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
                 <View
                   style={
                     isOnline == 'Online' ? styles.liveBtn : styles.offlineBtn
                   }></View>
+                <Text
+                  style={{
+                    alignItems: 'center',
+                    fontSize: responsiveFontSize(1.5),
+                    color: '#fff',
+                    paddingLeft: responsiveWidth(1),
+                  }}>
+                  {isOnline}{' '}
+                </Text>
               </View>
             </View>
           </View>
@@ -825,19 +840,28 @@ const ChatSection = ({navigation, route}) => {
             <View style={styles.popupOption}>
               <TouchableOpacity onPress={handleMsgDelete}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{
+                    width: responsiveWidth(5),
+                    height: responsiveWidth(5),
+                  }}
                   source={require('../assets/png/deleteW.png')}
                 />
               </TouchableOpacity>
               <TouchableOpacity onPress={handleEdit}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{
+                    width: responsiveWidth(5),
+                    height: responsiveWidth(5),
+                  }}
                   source={require('../assets/png/editW.png')}
                 />
               </TouchableOpacity>
               <TouchableOpacity onPress={handlePopSend}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{
+                    width: responsiveWidth(5),
+                    height: responsiveWidth(5),
+                  }}
                   source={require('../assets/png/forwordW.png')}
                 />
               </TouchableOpacity>
@@ -846,42 +870,50 @@ const ChatSection = ({navigation, route}) => {
             <View style={styles.popupOption}>
               <TouchableOpacity onPress={handleMsgDelete}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{
+                    width: responsiveWidth(5),
+                    height: responsiveWidth(5),
+                  }}
                   source={require('../assets/png/deleteW.png')}
                 />
               </TouchableOpacity>
               <TouchableOpacity onPress={handlePopSend}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{
+                    width: responsiveWidth(5),
+                    height: responsiveWidth(5),
+                  }}
                   source={require('../assets/png/forwordW.png')}
                 />
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.callSection}>
-              <TouchableOpacity
-                onPress={() => fetchTokensForCalls('audio', !!tabIndex)}
-                style={styles.callbtn}>
-                <Image
-                  style={{
-                    width: responsiveWidth(4),
-                    height: responsiveWidth(4.5),
-                  }}
-                  source={require('../assets/png/whiteCall.png')}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => fetchTokensForCalls('video', !!tabIndex)}
-                style={styles.callbtn}>
-                <Image
-                  style={{
-                    width: responsiveWidth(4),
-                    height: responsiveWidth(3),
-                  }}
-                  source={require('../assets/png/whiteVideo.png')}
-                />
-              </TouchableOpacity>
-            </View>
+            <>
+              <View style={styles.callSection}>
+                <TouchableOpacity
+                  onPress={() => fetchTokensForCalls('audio', !!tabIndex)}
+                  style={styles.callbtn}>
+                  <Image
+                    style={{
+                      width: responsiveWidth(4),
+                      height: responsiveWidth(4.5),
+                    }}
+                    source={require('../assets/png/whiteCall.png')}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => fetchTokensForCalls('video', !!tabIndex)}
+                  style={styles.callbtn}>
+                  <Image
+                    style={{
+                      width: responsiveWidth(4),
+                      height: responsiveWidth(3),
+                    }}
+                    source={require('../assets/png/whiteVideo.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </>
           )}
         </View>
 
@@ -931,10 +963,16 @@ const ChatSection = ({navigation, route}) => {
             refreshing={refreshing}
             contentContainerStyle={{flexGrow: 1}}
           />
-        ): (
-          <View style={{flexBasis: 'auto', flexShrink: 0, flexGrow: 1}}>
-            <View style={{justifyContent: 'center', alignItems: 'center'}}>
-              <View style={styles.emptymsg}>
+        ) : (
+          <View
+            style={{
+              flexBasis: 'auto',
+              flexShrink: 0,
+              flexGrow: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            {/* <View style={styles.emptymsg}>
                 <Image
                   style={{
                     width: responsiveWidth(23),
@@ -990,31 +1028,27 @@ const ChatSection = ({navigation, route}) => {
                     </Text>
                   </View>
                 </View>
-              </View>
-              <View
-                style={{
-                  height: responsiveHeight(50),
-                  justifyContent: 'center',
-                }}>
-                <View style={styles.endToend}>
-                  <Image
-                    style={{
-                      width: responsiveWidth(25),
-                      height: responsiveWidth(25),
-                      marginBottom: responsiveWidth(3),
-                    }}
-                    source={require('../assets/png/CustomIcon.png')}
-                  />
-                  <Text
-                    style={{
-                      fontSize: responsiveFontSize(1.5),
-                      textAlign: 'center',
-                    }}>
-                    Messages and calls are end-to-end encrypted. No one outside
-                    of this chat, not even ACTPAL, can read or listen to them.
-                    Tap to learn more.
-                  </Text>
-                </View>
+              </View> */}
+            <View>
+              <View style={styles.endToend}>
+                <Image
+                  style={{
+                    width: responsiveWidth(20),
+                    height: responsiveWidth(20),
+                    marginBottom: responsiveWidth(3),
+                  }}
+                  source={require('../assets/png/CustomIcon.png')}
+                />
+                <Text
+                  style={{
+                    fontSize: responsiveFontSize(1.8),
+                    textAlign: 'center',
+                    color: '#0E121B',
+                  }}>
+                  Messages and calls are end-to-end encrypted. No one outside of
+                  this chat, not even ACTPAL, can read or listen to them. Tap to
+                  learn more.
+                </Text>
               </View>
             </View>
           </View>
@@ -1029,38 +1063,39 @@ const ChatSection = ({navigation, route}) => {
                 onPress={() => setattachmentPopupVisible(true)}>
                 <Text
                   style={{
-                    fontSize: responsiveFontSize(4),
+                    fontSize: responsiveFontSize(3.5),
                     color: 'white',
-                    fontWeight: '500',
-                    lineHeight: 42,
+                    fontWeight: '400',
+                    lineHeight: responsiveWidth(8),
                   }}>
                   +
                 </Text>
               </TouchableOpacity>
             </View>
           )}
-          <View
-            style={{
-              position: 'relative',
-              width: showButtons ? '72%' : '86.4%',
-            }}>
-            <TextInput
-              multiline
-              value={inputValue}
-              onChangeText={handleInputChange}
-              onContentSizeChange={handleContentSizeChange}
-              style={[styles.messageBox, {minHeight: 40, maxHeight: 100}]}
-              placeholder="Type message..."
-              placeholderTextColor="#888"
-            />
-          </View>
+          <TextInput
+            multiline
+            value={inputValue}
+            onChangeText={handleInputChange}
+            onContentSizeChange={handleContentSizeChange}
+            style={[
+              styles.messageBox,
+              {
+                minHeight: responsiveWidth(11),
+                maxHeight: responsiveWidth(33),
+                width: showButtons ? '72%' : '86.4%',
+              },
+            ]}
+            placeholder="Type message..."
+            placeholderTextColor="#888"
+          />
           {showButtons ? (
             <>
               <TouchableOpacity style={styles.sendBtn}>
                 <Image
                   style={{
-                    width: responsiveHeight(3.5),
-                    height: responsiveHeight(3.5),
+                    width: responsiveHeight(3),
+                    height: responsiveHeight(3),
                   }}
                   source={require('../assets/png/mic-white.png')}
                 />
@@ -1078,7 +1113,10 @@ const ChatSection = ({navigation, route}) => {
                   style={styles.sendBtn}
                   onPress={handleSendMessage}>
                   <Image
-                    style={{width: 24, height: 24}}
+                    style={{
+                      width: responsiveWidth(5),
+                      height: responsiveWidth(5),
+                    }}
                     source={require('../assets/png/SendBtn.png')}
                   />
                 </TouchableOpacity>
@@ -1221,9 +1259,9 @@ const styles = StyleSheet.create({
     height: 30,
   },
   userImag: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
+    width: responsiveWidth(9),
+    height: responsiveWidth(9),
+    borderRadius: responsiveWidth(5),
     overflow: 'hidden',
   },
   msgText: {
@@ -1238,26 +1276,30 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   liveBtn: {
-    height: 10,
-    width: 10,
+    height: responsiveWidth(2),
+    width: responsiveWidth(2),
     backgroundColor: '#80FF00',
     borderRadius: 50,
   },
   offlineBtn: {
-    height: 10,
-    width: 10,
+    height: responsiveWidth(2),
+    width: responsiveWidth(2),
     backgroundColor: 'red',
     borderRadius: 50,
+  },
+  liveText: {
+    color: '#80FF00',
+    fontSize: responsiveFontSize(1.5),
   },
   callSection: {
     flexDirection: 'row',
     gap: 12,
-    right: 20,
+    right: responsiveWidth(2),
   },
   popupOption: {
     flexDirection: 'row',
-    gap: 30,
-    right: 60,
+    gap: 25,
+    right: responsiveWidth(3),
   },
   chatHead: {
     flexDirection: 'row',
@@ -1275,9 +1317,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E293C',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    alignItems: 'flex-start',
+    paddingHorizontal: responsiveWidth(3.5),
+    paddingVertical: responsiveWidth(2.5),
+    alignItems: 'flex-end',
   },
   leftAreaBtn: {
     flexDirection: 'row',
@@ -1286,9 +1328,13 @@ const styles = StyleSheet.create({
   },
   messageBox: {
     backgroundColor: '#F6F6F6',
-    borderRadius: 20,
-    paddingLeft: 20,
-    paddingRight: 38,
+    borderRadius: responsiveWidth(5.5),
+    paddingLeft: responsiveWidth(4),
+    paddingRight: responsiveWidth(4),
+    fontSize: responsiveFontSize(1.8),
+    lineHeight: responsiveWidth(5),
+    color: '#000',
+    paddingVertical: responsiveWidth(1),
   },
   sendBtn: {
     backgroundColor: '#1866B4',
@@ -1420,11 +1466,11 @@ const styles = StyleSheet.create({
     marginTop: responsiveWidth(3),
   },
   endToend: {
-    width: responsiveWidth(70),
+    width: responsiveWidth(80),
     backgroundColor: '#F5F7FA',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: responsiveWidth(6),
+    padding: responsiveWidth(3),
     borderRadius: 14,
   },
   modalOverlay: {
