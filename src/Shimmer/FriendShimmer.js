@@ -9,10 +9,10 @@ const FriendShimmer = () => {
     const numPlaceholders = 12;
 
     const placeholders = Array(numPlaceholders).fill('').map((item, index) => (
-        <View style={styles.friendList}>
+        <View style={styles.friendList} key={index}>
             <View style={styles.userImage}>
                 <ShimmerPlaceHolder
-                    style={{ width: 70, height: 70 }}
+                    style={{ width: responsiveWidth(20), height: responsiveWidth(20) }}
                 />
             </View>
             <View>
@@ -59,8 +59,8 @@ const styles = StyleSheet.create({
         marginVertical: 6,
     },
     userImage: {
-        width: 70,
-        height: 70,
+        width: responsiveWidth(18),
+        height: responsiveWidth(18),
         borderRadius: 100,
         overflow: 'hidden',
     },
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
     },
     blueBtn: {
         backgroundColor: '#1866B4',
-        height: 34,
-        width: '40%',
+        height: responsiveWidth(8),
+        width: '42%',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 6,
