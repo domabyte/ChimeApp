@@ -134,8 +134,8 @@ const Login = ({ navigation }) => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-              marginHorizontal: 35,
-              marginTop: 10,
+              marginHorizontal: 20,
+              marginTop: 15,
             }}>
             <TouchableOpacity
               onPress={toggleCheckbox}
@@ -147,7 +147,7 @@ const Login = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => navigation.navigate('forgotPassword')}>
-              <Text style={{ color: '#525866', fontSize: 16, textDecorationLine: 'underline' }}>
+              <Text style={{ color: '#525866', fontSize: responsiveFontSize(1.8), textDecorationLine: 'underline' }}>
                 Forgot Password ?
               </Text>
             </TouchableOpacity>
@@ -182,7 +182,7 @@ const Login = ({ navigation }) => {
               <Text style={{ color: 'black', fontSize: responsiveFontSize(2) }}>Don’t have an account?</Text>
             </View>
             <TouchableOpacity
-              style={styles.whiteBtn}
+              style={[styles.whiteBtn, {marginBottom: responsiveWidth(10)}]}
               onPress={() => navigation.navigate('Register')}>
               <Text
                 style={{ color: '#525866', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     alignItems: 'center',
-    marginTop: 125,
+    marginTop: responsiveWidth(20),
   },
   center: {
     alignItems: 'center',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     height: responsiveWidth(4),
   },
   label: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.8),
     fontWeight: '400',
     color: 'black',
   },

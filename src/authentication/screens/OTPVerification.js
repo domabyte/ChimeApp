@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { AuthContext } from '../../context/AuthContext';
-import { responsiveWidth } from 'react-native-responsive-dimensions';
+import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import LinearGradient from 'react-native-linear-gradient';
 
 const OtpVerification = ({ navigation, route }) => {
@@ -105,16 +105,16 @@ const OtpVerification = ({ navigation, route }) => {
             />
           </View>
           <View style={[styles.center, { marginTop: 20 }]}>
-            <Text style={{ fontSize: 22, fontWeight: '600', color: 'black' }}>
+            <Text style={{ fontSize: responsiveFontSize(2.5), fontWeight: '600', color: 'black' }}>
               We sent a code to your email
             </Text>
             <Text style={styles.subtext}>The security code will be <Text style={{ fontWeight: '600' }}>sent to your account's email address</Text> within the next couple of minutes. Please check your email inbox. If you do not see it there, be sure to <Text style={{ fontWeight: '600' }}>check your spam folder</Text> as well.</Text>
             <Text
-              style={{ fontSize: 16, marginTop: 10, fontWeight: '600', color: 'black', textAlign: 'center' }}>
+              style={{ fontSize: responsiveFontSize(2), marginTop: 10, fontWeight: '600', color: 'black', textAlign: 'center' }}>
               Enter the 6-digit verification code sent to
             </Text>
             <Text onPress={() => navigation.goBack()}
-              style={{ fontSize: 16, color: 'black', lineHeight: 20 }}>
+              style={{ fontSize: responsiveFontSize(1.6), color: 'black', lineHeight: 20 }}>
               {formatEmail(email)}
               <Text style={{ color: '#1866B4', lineHeight: 20 }} onPress={() => navigation.goBack()}>
                 {' '}
@@ -151,8 +151,8 @@ const OtpVerification = ({ navigation, route }) => {
             style={{
               color: 'black',
               textAlign: 'center',
-              fontSize: 16,
-              marginTop: 18,
+              fontSize: responsiveFontSize(2),
+              marginTop: responsiveWidth(3),
             }}>
             Security Code will be valid for{' '}
             <Text style={{ fontWeight: '500' }}>
@@ -164,16 +164,16 @@ const OtpVerification = ({ navigation, route }) => {
               style={{
                 color: '#666',
                 textAlign: 'center',
-                fontSize: 16,
-                marginTop: 10,
+                fontSize: responsiveFontSize(2),
+                marginTop: responsiveWidth(3),
               }}>
               <Text style={{ color: '#1866B4' }}>Security code sent.</Text>{' '}
               Resend in <Text style={{ color: '#111' }}>{timer}</Text> seconds
             </Text>
           ) : (
-            <TouchableOpacity style={{ marginTop: 18 }}>
+            <TouchableOpacity style={{ marginTop: responsiveWidth(3) }}>
               <Text
-                style={{ color: '#1866B4', textAlign: 'center', fontSize: 16 }}
+                style={{ color: '#1866B4', textAlign: 'center', fontSize: responsiveFontSize(2) }}
                 onPress={handleResendOTP}>
                 Resend OTP
               </Text>
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   center: {
     alignItems: 'center',
@@ -207,17 +207,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     alignItems: 'center',
-    marginTop: 150,
+    marginTop: responsiveWidth(25)
   },
   message: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.6),
     textAlign: 'center',
     marginBottom: 20,
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: 20
+    marginHorizontal: responsiveWidth(4)
   },
   errorText: {
     color: 'red',
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(12),
     height: responsiveWidth(12),
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: responsiveFontSize(2.4),
     marginHorizontal: 5,
     marginTop: responsiveWidth(7),
   },
@@ -241,20 +241,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: responsiveWidth(4),
-    marginTop: responsiveWidth(5),
+    marginTop: responsiveWidth(4),
     padding: responsiveWidth(3),
     marginHorizontal: responsiveWidth(4)
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: responsiveFontSize(2),
     fontWeight: '500',
   },
   subtext: {
-    fontSize: 14,
+    fontSize: responsiveFontSize(1.6),
     textAlign: 'center',
-    marginHorizontal: 25,
-    marginTop: 10,
+    marginHorizontal: responsiveWidth(7.5),
+    marginTop: responsiveWidth(2),
     color: 'black'
   }
 });

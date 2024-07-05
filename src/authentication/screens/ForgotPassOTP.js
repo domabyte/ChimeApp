@@ -94,7 +94,7 @@ const ForgotPassOTP = ({ navigation, route }) => {
                 />
               </View>
               <View style={[Styles.center, { marginTop: 20 }]}>
-                <Text style={{ fontSize: 22, fontWeight: '600', color: 'black' }}>
+                <Text style={{ fontSize: responsiveFontSize(2.7), fontWeight: '600', color: 'black' }}>
                   Enter Verification Code
                 </Text>
                 <Text
@@ -109,7 +109,7 @@ const ForgotPassOTP = ({ navigation, route }) => {
                 </Text>
                 <Text
                   onPress={() => navigation.goBack()}
-                  style={{ fontSize: 16, color: '#1866B4', lineHeight: 20 }}>
+                  style={{ fontSize: responsiveFontSize(1.8), color: '#1866B4', lineHeight: 20 }}>
                   {' '}
                   change e-mail address
                 </Text>
@@ -153,8 +153,8 @@ const ForgotPassOTP = ({ navigation, route }) => {
                   style={{
                     color: 'black',
                     textAlign: 'center',
-                    fontSize: 16,
-                    marginTop: 18,
+                    fontSize: responsiveFontSize(1.8),
+                    marginTop: responsiveWidth(3),
                   }}>
                   Security Code will be valid for{' '}
                   <Text style={{ fontWeight: '500' }}>
@@ -167,16 +167,16 @@ const ForgotPassOTP = ({ navigation, route }) => {
                     style={{
                       color: '#666',
                       textAlign: 'center',
-                      fontSize: 16,
-                      marginTop: 10,
+                      fontSize: responsiveFontSize(2),
+                      marginTop: responsiveWidth(5),
                     }}>
                     <Text style={{ color: '#1866B4' }}>Security code sent.</Text>{' '}
                     Resend in <Text style={{ color: '#111' }}>{timer}</Text> seconds
                   </Text>
                 ) : (
-                  <TouchableOpacity style={{ marginTop: 18 }}>
+                  <TouchableOpacity style={{ marginTop: responsiveWidth(2.5) }}>
                     <Text
-                      style={{ color: '#1866B4', textAlign: 'center', fontSize: 16 }}
+                      style={{ color: '#1866B4', textAlign: 'center', fontSize: responsiveFontSize(2) }}
                       onPress={handleResendOTP}>
                       Resend OTP
                     </Text>
@@ -250,7 +250,7 @@ const Styles = StyleSheet.create({
     width: responsiveWidth(12),
     height: responsiveWidth(12),
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: responsiveFontSize(2.3),
     marginHorizontal: 5,
     marginTop: responsiveWidth(7),
   },
@@ -264,7 +264,7 @@ const Styles = StyleSheet.create({
   },
   buttonStyle: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: responsiveFontSize(2),
     fontWeight: '500',
   },
   blueBtn: {

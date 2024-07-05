@@ -166,7 +166,7 @@ const Signup = ({ navigation }) => {
               Sign up to your account to continue
             </Text>
           </View>
-          <View style={{ marginHorizontal: 20, marginTop: 20 }}>
+          <View style={{ marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(4) }}>
             <Text style={styles.Label}>First Name <Text style={{ color: '#1866B4' }}>*</Text></Text>
             <Image source={require('../../assets/png/user.png')} style={styles.icon} />
             <TextInput
@@ -176,7 +176,7 @@ const Signup = ({ navigation }) => {
               style={styles.inputBox}
             />
           </View>
-          <View style={{ marginHorizontal: 20, marginTop: 15 }}>
+          <View style={{ marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(3) }}>
             <Text style={styles.Label}>Last Name <Text style={{ color: '#1866B4' }}>*</Text></Text>
             <Image source={require('../../assets/png/user.png')} style={styles.icon} />
             <TextInput
@@ -186,7 +186,7 @@ const Signup = ({ navigation }) => {
               style={styles.inputBox}
             />
           </View>
-          <View style={{ marginHorizontal: 20, marginTop: 15 }}>
+          <View style={{ marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(3) }}>
             <Text style={styles.Label}>Email Address <Text style={{ color: '#1866B4' }}>*</Text></Text>
             <Image source={require('../../assets/png/mail-line.png')} style={styles.icon} />
             <TextInput
@@ -198,8 +198,7 @@ const Signup = ({ navigation }) => {
           </View>
           <View
             style={{
-              marginHorizontal: 20,
-              marginTop: 15,
+              marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(3),
               position: 'relative',
             }}>
             <Text style={styles.Label}>Password <Text style={{ color: '#1866B4' }}>*</Text></Text>
@@ -222,8 +221,7 @@ const Signup = ({ navigation }) => {
           </View>
           <View
             style={{
-              marginHorizontal: 20,
-              marginTop: 15,
+              marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(3),
               position: 'relative',
             }}>
             <Text style={styles.Label}>Confirm Password <Text style={{ color: '#1866B4' }}>*</Text></Text>
@@ -246,15 +244,14 @@ const Signup = ({ navigation }) => {
           </View>
           <View
             style={{
-              marginHorizontal: 20,
+              marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(3),
               flexDirection: 'row',
-              gap: 12,
-              marginTop: 15,
+              justifyContent: 'space-between'
             }}>
             <View style={styles.captcha}>
               <Text
                 style={{
-                  fontSize: 20,
+                  fontSize: responsiveFontSize(2),
                   color: '#ccc',
                   textAlign: 'center',
                   position: 'relative',
@@ -274,7 +271,7 @@ const Signup = ({ navigation }) => {
             </View>
           </View>
 
-          <View style={{ marginHorizontal: 30, marginTop: 15 }}>
+          <View style={{ marginHorizontal: responsiveWidth(4), marginTop: responsiveWidth(3), }}>
             <TouchableOpacity
               onPress={toggleCheckbox}
               style={styles.checkbtn}>
@@ -289,10 +286,10 @@ const Signup = ({ navigation }) => {
           </View>
 
           {error ? <Text style={styles.errorText}>{replacePlaceholdersWithLinks(error)}</Text> : null}
-          <View style={{ marginHorizontal: 20 }}>
+          <View style={{ marginHorizontal: responsiveWidth(4), }}>
             <TouchableOpacity onPress={handleSignup}>
               <LinearGradient style={styles.blueBtn} colors={['#3B7DBF', '#1866B4']}>
-                <Text style={{ color: '#fff', fontWeight: '500', fontSize: 18 }}>
+                <Text style={{ color: '#fff', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
                   Continue
                 </Text>
               </LinearGradient>
@@ -303,10 +300,10 @@ const Signup = ({ navigation }) => {
               </Text>
             </View>
             <TouchableOpacity
-              style={styles.whiteBtn}
+              style={[styles.whiteBtn, {marginBottom: responsiveWidth(5)}]}
               onPress={() => navigation.navigate('Login')}>
               <Text
-                style={{ color: '#1866B4', fontWeight: '500', fontSize: 18 }}>
+                style={{ color: '#1866B4', fontWeight: '500', fontSize: responsiveFontSize(2) }}>
                 Login
               </Text>
             </TouchableOpacity>
@@ -341,7 +338,7 @@ const styles = StyleSheet.create({
   inputBox: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 14,
+    borderRadius: responsiveWidth(3),
     paddingLeft: responsiveWidth(9.5),
     height: responsiveWidth(11),
     fontSize: responsiveFontSize(2),
@@ -349,7 +346,7 @@ const styles = StyleSheet.create({
   captcha: {
     borderWidth: 1,
     borderColor: '#CED4DA',
-    borderRadius: 14,
+    borderRadius: responsiveWidth(3),
     height: responsiveWidth(11),
     fontSize: responsiveFontSize(2),
     width: responsiveWidth(44),

@@ -1,4 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, ScrollView} from 'react-native';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 
 const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
   return (
@@ -7,7 +8,7 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
         <Text
           style={{
             color: 'black',
-            fontSize: 20,
+            fontSize: responsiveFontSize(2.3),
             fontWeight: '700',
           }}>
           {selectedTab}{' '}
@@ -31,7 +32,7 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
             navigation.navigate('findFriends');
           }}>
           <Text
-            style={{fontWeight: '500', color: index == 0 ? 'white' : 'black'}}>
+            style={{fontSize: responsiveFontSize(1.6), fontWeight: '500', color: index == 0 ? 'white' : 'black'}}>
             Find Friends
           </Text>
         </TouchableOpacity>
@@ -44,7 +45,7 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
             navigation.navigate('myFriends');
           }}>
           <Text
-            style={{fontWeight: '500', color: index == 1 ? 'white' : 'black'}}>
+            style={{fontSize: responsiveFontSize(1.6), fontWeight: '500', color: index == 1 ? 'white' : 'black'}}>
             My Friends
           </Text>
         </TouchableOpacity>
@@ -57,7 +58,7 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
             navigation.navigate('receivedRequest');
           }}>
           <Text
-            style={{fontWeight: '500', color: index == 2 ? 'white' : 'black'}}>
+            style={{fontSize: responsiveFontSize(1.6), fontWeight: '500', color: index == 2 ? 'white' : 'black'}}>
             Received 
           </Text>
         </TouchableOpacity>
@@ -70,7 +71,7 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
             navigation.navigate('sentRequest');
           }}>
           <Text
-            style={{fontWeight: '500', color: index == 3 ? 'white' : 'black'}}>
+            style={{fontSize: responsiveFontSize(1.6), fontWeight: '500', color: index == 3 ? 'white' : 'black'}}>
             Sent 
           </Text>
         </TouchableOpacity>
@@ -82,11 +83,11 @@ const FriendHeader = ({navigation, index, selectedTab, searchResult}) => {
 const styles = StyleSheet.create({
   buttons: {
     backgroundColor: '#EAEAEA',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginVertical: 10,
-    marginRight: 10,
+    paddingHorizontal: responsiveWidth(3),
+    paddingVertical: responsiveWidth(1),
+    borderRadius: responsiveWidth(5),
+    marginVertical: responsiveWidth(1.8),
+    marginRight: responsiveWidth(2),
   },
 });
 export default FriendHeader;

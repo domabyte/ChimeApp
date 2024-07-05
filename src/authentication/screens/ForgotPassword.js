@@ -100,12 +100,12 @@ const ForgotPassword = ({ navigation }) => {
               </LinearGradient>
             </TouchableOpacity>
 
-            <View style={{alignItems: 'center', marginTop: responsiveWidth(5)}}>
+            {/* <View style={{alignItems: 'center', marginTop: responsiveWidth(5)}}>
               <Text style={{fontSize: responsiveFontSize(1.9), fontWeight: '500'}}>Don’t have access anymore?</Text>
               <Pressable style={{marginTop: responsiveWidth(1)}}>
                 <Text style={{fontSize: responsiveFontSize(2), color: 'black', textDecorationLine: 'underline'}}>Try another method</Text>
               </Pressable>
-            </View>
+            </View> */}
 
              
           </View>
@@ -171,7 +171,7 @@ const Styles = StyleSheet.create({
   buttonStyle: {
     color: '#fff',
     fontWeight: '500',
-    fontSize: 18,
+    fontSize: responsiveFontSize(2),
   },
   hide: {
     display: 'none',
