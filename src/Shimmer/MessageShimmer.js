@@ -18,7 +18,7 @@ const MessageShimmer = () => {
                     </ShimmerPlaceHolder>
                 </View>
                 <View style={styles.magtextarea}>
-                        <ShimmerPlaceHolder style={[styles.msgText, { width: '40%', marginTop: 10, height: 10 }]}>
+                        <ShimmerPlaceHolder style={[styles.msgText, { width: '40%', marginTop: responsiveWidth(2), height: 10 }]}>
                         </ShimmerPlaceHolder>
                     </View>
             </View>
@@ -38,7 +38,7 @@ const MessageShimmer = () => {
 export default MessageShimmer
 
 const styles = StyleSheet.create({
-    userImg: { width: 55, height: 55, borderRadius: 50, overflow: 'hidden' },
+    userImg: { width: responsiveWidth(12), height: responsiveWidth(12), borderRadius: responsiveWidth(6), overflow: 'hidden' },
     listBox: {
         flexDirection: 'row',
         alignItems: 'center',

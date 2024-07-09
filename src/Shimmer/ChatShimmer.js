@@ -1,11 +1,11 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
-
+import { responsiveWidth } from 'react-native-responsive-dimensions';
 const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient)
 
 const ChatShimmer = () => {
-    
+
     return (
         <ScrollView>
             <View style={styles.date}>
@@ -187,12 +187,12 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     recvImg: {
-        width: 24,
-        height: 24,
+        width: responsiveWidth(6),
+        height: responsiveWidth(6),
         borderRadius: 20,
         overflow: 'hidden',
         backgroundColor: 'red',
-        alignSelf: 'center',
+        marginTop: responsiveWidth(2.2)
     },
 
     rcvMsg: {
@@ -206,10 +206,11 @@ const styles = StyleSheet.create({
     messageContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 8,
-        marginHorizontal: 16,
-        maxWidth: '80%',
-        borderRadius: 8,
+        marginVertical: responsiveWidth(1),
+        marginHorizontal: responsiveWidth(2.5),
+        maxWidth: responsiveWidth(60),
+        borderRadius: responsiveWidth(3.5),
+        backgroundColor: '#F2F2F2',
     },
     messageTime: {
         alignSelf: 'flex-end',
