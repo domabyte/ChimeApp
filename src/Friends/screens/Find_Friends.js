@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   searchbtn: {
     position: 'absolute',
     top: responsiveWidth(2.6),
-    right: 15,
+    right: responsiveWidth(4),
   },
   userImage: {
     width: responsiveWidth(18),
@@ -383,9 +383,8 @@ const styles = StyleSheet.create({
   friendList: {
     flexDirection: 'row',
     gap: 15,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    marginVertical: 6,
+    marginHorizontal: responsiveWidth(4),
+    marginVertical: responsiveWidth(1.2),
   },
   mutualImg: {
     width: responsiveWidth(5),

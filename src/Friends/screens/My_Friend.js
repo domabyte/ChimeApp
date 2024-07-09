@@ -154,7 +154,7 @@ const MyFriends = ({navigation}) => {
           style={{ fontSize: responsiveFontSize(2), color: 'black', fontWeight: '500', width: responsiveWidth(70) }}>
           {item.Mem_Name}
         </Text>
-        <Text style={{fontSize: 12, color: '#1866B4', fontWeight: '500'}}>
+        <Text style={{fontSize: responsiveFontSize(1.5), color: '#1866B4', fontWeight: '500'}}>
           {item.Mem_Designation.trim() === 'Not Added'
             ? 'N/A'
             : item.Mem_Designation.trim()}
@@ -174,7 +174,7 @@ const MyFriends = ({navigation}) => {
               source={require('../../assets/png/user2.png')}
             />
           </View>
-          <Text style={{color: 'black'}}>
+          <Text style={{color: 'black', fontSize: responsiveFontSize(1.6)}}>
             {item.MutualFriends} mutual connections
           </Text>
         </View>
@@ -182,7 +182,7 @@ const MyFriends = ({navigation}) => {
           <TouchableOpacity
             style={[styles.blueBtn, {backgroundColor: '#1e293c'}]}
             onPress={() => handleUnfriend(item?.FriendList_Id, index)}>
-            <Text style={{color: 'white'}}>UnFriend</Text>
+            <Text style={{color: 'white', fontSize: responsiveFontSize(1.6)}}>UnFriend</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.blueBtn, {backgroundColor: '#CED4DA'}]}
@@ -193,7 +193,7 @@ const MyFriends = ({navigation}) => {
                 friendPhoto: item?.Mem_Photo,
               })
             }>
-            <Text style={{color: 'black'}}>Message</Text>
+            <Text style={{color: 'black', fontSize: responsiveFontSize(1.6)}}>Message</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -277,7 +277,7 @@ const MyFriends = ({navigation}) => {
               style={styles.searchbtn}
               onPress={handleMyFriendRequest}>
               <Image
-                style={{width: 24, height: 24}}
+                style={{width: responsiveWidth(6), height: responsiveWidth(6)}}
                 source={require('../../assets/png/search.png')}
               />
             </TouchableOpacity>
@@ -326,8 +326,8 @@ const styles = StyleSheet.create({
   },
   searchbtn: {
     position: 'absolute',
-    top: 10,
-    right: 15,
+    top: responsiveWidth(2.6),
+    right: responsiveWidth(4),
   },
   noResults: {
     justifyContent: 'center',
@@ -340,10 +340,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   goBackText: {
-    fontSize: 18,
+    fontSize: responsiveFontSize(2),
     color: 'blue',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: responsiveWidth(5),
   },
   userImage: {
     width: responsiveWidth(18),
@@ -354,21 +354,20 @@ const styles = StyleSheet.create({
   friendList: {
     flexDirection: 'row',
     gap: 15,
-    paddingHorizontal: 10,
-    marginVertical: 6,
-    marginBottom: 10,
+    marginHorizontal: responsiveWidth(4),
+    marginVertical: responsiveWidth(1.2),
   },
   mutualImg: {
-    width: 20,
-    height: 20,
-    borderRadius: 20,
+    width: responsiveWidth(5),
+    height: responsiveWidth(5),
+    borderRadius: responsiveWidth(5),
     borderWidth: 2,
     borderColor: 'white',
   },
   mutualImg2nd: {
-    width: 20,
-    height: 20,
-    borderRadius: 20,
+    width: responsiveWidth(5),
+    height: responsiveWidth(5),
+    borderRadius: responsiveWidth(5),
     borderWidth: 2,
     borderColor: 'white',
     marginLeft: -5,
@@ -385,7 +384,7 @@ const styles = StyleSheet.create({
   },
   blueBtn: {
     backgroundColor: '#1866B4',
-    height: 34,
+    height: responsiveWidth(8),
     width: '42%',
     justifyContent: 'center',
     alignItems: 'center',
