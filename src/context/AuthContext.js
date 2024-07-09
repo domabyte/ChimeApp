@@ -849,7 +849,7 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const doCall = async (tokens, friendName, userId, id, token, type) => {
+  const doCall = async (tokens, friendName, userId, id, token, type, isGroup, meetingId) => {
     try {
       const {data} = await axios.post(configURL.callURL, {
         fcmTokens: tokens,
@@ -858,6 +858,8 @@ export const AuthProvider = ({children}) => {
         id,
         token,
         type,
+        isGroup,
+        meetingId,
       });
       if (data.code) {
         return data;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ImageBackground, TouchableOpacity, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 
 const VideoThumbnail = ({ thumbnailUri, onPress, onLongPress}) => {
   return (
@@ -19,28 +20,29 @@ const VideoThumbnail = ({ thumbnailUri, onPress, onLongPress}) => {
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-    borderRadius: 8,
+    borderRadius: responsiveWidth(2),
   },
   thumbnail: {
-    width: 100,
-    height: 100,
+    width: responsiveWidth(50),
+    height: responsiveWidth(30),
     justifyContent: 'center',
     alignItems: 'center',
   },
   playButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 25,
-    width: 50,
-    height: 50,
+    borderRadius: responsiveWidth(6),
+    width: responsiveWidth(12),
+    height: responsiveWidth(12),
     justifyContent: 'center',
     alignItems: 'center',
 
   },
   playButtonText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: responsiveFontSize(3),
+    textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: responsiveWidth(1),
   },
 });
 

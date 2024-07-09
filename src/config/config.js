@@ -35,7 +35,7 @@ const configURL = {
   getFCMTokenURL: baseURL + 'user/GetMemberDeviceDetailById',
   groupCallURL: baseURL + 'message/GroupCallIdGenerating',
   belongToGroupURL: baseURL + 'post/IsGroupMember?MemberToken=',
-  callURL: 'https://memberqa.actpal.com/api/call',
-  endCallURL: 'https://memberqa.actpal.com/api/endCall',
+  callURL: 'https://3q9cbtsj-3002.inc1.devtunnels.ms/api/call',
+  endCallURL: 'https://3q9cbtsj-3002.inc1.devtunnels.ms/api/endCall',
 };
 export default configURL;

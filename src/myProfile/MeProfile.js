@@ -99,6 +99,7 @@ const Myprofile = ({navigation}) => {
                   {expanded ? 'Read less' : 'Read more'}
                 </Text>
               )}
+              
             </Text>
           </View>
         </View>
