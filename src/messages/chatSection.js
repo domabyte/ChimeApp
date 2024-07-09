@@ -14,7 +14,7 @@ import {
   KeyboardAvoidingView,
   Linking,
   Alert,
-  ScrollView,
+  Pressable,
 } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import HTMLView from 'react-native-htmlview';
@@ -98,7 +98,8 @@ const ChatSection = ({navigation, route}) => {
   const [attachmentPopupVisible, setattachmentPopupVisible] = useState(false);
   const [showCallOptions, setShowCallOptions] = useState(false);
   const [callType, setCallType] = useState(null);
-
+  const [currMsgType, setCurrMsgType] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
@@ -233,6 +234,26 @@ const ChatSection = ({navigation, route}) => {
     }
   };
 
+  const extractDeviceTokens = (groupMembers, currentUserId) => {
+    const deviceTokens = [];
+    groupMembers.forEach(member => {
+      if (member.Mem_ID === currentUserId) {
+        return;
+      }
+      if (member.DeviceToken) {
+        const tokens = member.DeviceToken.split(',');
+        tokens.forEach(token => {
+          const trimmedToken = token.trim();
+          if (trimmedToken) {
+            deviceTokens.push(trimmedToken);
+          }
+        });
+      }
+    });
+
+    return deviceTokens;
+  };
+
   const handlePhotoVideoPress = async () => {
     await pickImage(
       userInfo.memberToken,
@@ -288,9 +309,11 @@ const ChatSection = ({navigation, route}) => {
           userInfo.id,
           token.fcmToken,
           type,
+          false,
+          '',
         );
         Linking.openURL(
-          `actpal://${type}Call?meetingName=${callId.callId}&userName=${userInfo.name}&fcmToken=${callId.fcmTokens}`,
+          `actpal://${type}Call?meetingName=${callId.callId}&fcmToken=${callId.fcmTokens}`,
         );
       }
     }
@@ -306,17 +329,28 @@ const ChatSection = ({navigation, route}) => {
         callType === 'audio' ? 'voice' : 'video',
         isPrivate,
       );
+      const allDeviceTokens = extractDeviceTokens(groupMembers, userInfo?.id);
+      const token = await requestUserPermission();
       const parsedResult = parseGroupMeetingMessage(response);
       if (parsedResult) {
-        const {meetingId, callType: responseCallType} = parsedResult;
-
-        // Automatically join the call
+        const {meetingId, callType: responseCallType, userId} = parsedResult;
+        const callId = await doCall(
+          allDeviceTokens,
+          userInfo?.name,
+          userInfo.userId,
+          userInfo.id,
+          token.fcmToken,
+          callType,
+          true,
+          meetingId,
+        );
         Linking.openURL(
           `actpal://group${
             responseCallType === 'voice' ? 'Audio' : 'Video'
-          }Call?meetingName=${meetingId}&userName=${userInfo.name}`,
+          }Call?meetingName=${
+            callId?.callId
+          }&fcmToken=${allDeviceTokens}&host=${userId}`,
         );
-        // Automatically join the
       } else {
         console.error('Failed to parse group call response');
         Alert.alert(
@@ -332,6 +366,8 @@ const ChatSection = ({navigation, route}) => {
 
   const handleEdit = () => {
     setInputValue(pressMsg);
+    setPopupVisible(false);
+    setimgPopupVisible(false);
   };
 
   const handleReceiveMessage = data => {
@@ -359,17 +395,16 @@ const ChatSection = ({navigation, route}) => {
 
   const handleLongPress = () => {
     setPopupVisible(true);
+    setCurrMsgType(true);
   };
 
   const handleClosePopup = () => {
     setPopupVisible(false);
     setimgPopupVisible(false);
+    setPopupSend(false);
     setLongPressedIndex(null);
     setInputValue('');
-  };
-
-  const handleClosePopup2 = () => {
-    setPopupSend(false);
+    setCurrMsgType(false);
   };
 
   const handleMsgDelete = async () => {
@@ -395,6 +430,7 @@ const ChatSection = ({navigation, route}) => {
 
   const handlePopSend = () => {
     setPopupSend(true);
+    setPopupVisible(false);
   };
 
   const handleInputChange = text => {
@@ -426,16 +462,26 @@ const ChatSection = ({navigation, route}) => {
 
   const parseGroupMeetingMessage = message => {
     const regex =
-      /@@GroupMeeting\?meetingid=([0-9a-f-]+)&calltype=(\w+)&IsShared=(\d)&GroupId=([^&]+)/i;
+      /@@GroupMeeting\?meetingid=([0-9a-f-]+)&calltype=(\w+)&IsShared=(\d)&UserId=(\d+)&GroupId=([^&]+)/i;
     const match = message.match(regex);
     if (match) {
       const meetingId = match[1];
       const callType = match[2];
       const isShared = match[3];
-      const groupId = match[4];
-      return {message, meetingId, callType, isShared, groupId};
+      const userId = match[4];
+      const groupId = match[5];
+      return {message, meetingId, callType, isShared, userId, groupId};
     }
     return null;
+  };
+
+  const toggleExpanded = () => {
+    setExpanded(!expanded);
+  };
+
+  const truncateHtml = html => {
+    const words = html.split(' ');
+    return words.length > 50 ? words.slice(0, 50).join(' ') + '...' : html;
   };
 
   const renderItem = ({item, index}) => {
@@ -452,12 +498,15 @@ const ChatSection = ({navigation, route}) => {
           )}
           <View
             style={{
-              display: 'flex',
               paddingLeft: isCurrentUser ? 0 : 10,
               paddingRight: isCurrentUser ? 10 : 0,
               flexDirection: 'row',
               alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
-              height: '100vh',
+              alignItems: 'flex-start',
+              backgroundColor:
+                longPressedIndex === index ? '#619EE355' : '#fff',
+              width: responsiveWidth(100),
+              justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
             }}>
             {!isCurrentUser && (
               <View style={styles.recvImg}>
@@ -488,11 +537,17 @@ const ChatSection = ({navigation, route}) => {
                   ? styles.sendMsg
                   : styles1.rcvMsg,
                 isYoutubeUrl(item?.Message) && {
-                  backgroundColor: 'white',
+                  marginVertical: responsiveWidth(1),
+                  marginHorizontal: responsiveWidth(2.5),
+                  borderRadius: responsiveWidth(3.5),
+                  backgroundColor: '#EAEAEA',
                 },
                 isMedia && {
                   backgroundColor:
-                    longPressedIndex == index ? 'lightgreen' : 'white',
+                    longPressedIndex == index ? 'transperent' : 'transperent',
+                  marginVertical: responsiveWidth(0),
+                  marginHorizontal: responsiveWidth(0),
+                  borderColor: longPressedIndex == index ? null : 'white',
                 },
               ]}>
               {isMedia ? (
@@ -521,7 +576,6 @@ const ChatSection = ({navigation, route}) => {
                           setPressMedia(item);
                         }}>
                         <Image
-                          o
                           style={styles1.media}
                           source={{uri: item.MediaPath}}
                         />
@@ -565,31 +619,36 @@ const ChatSection = ({navigation, route}) => {
                       <View style={{flexDirection: 'column'}}>
                         <View
                           style={{
-                            backgroundColor: 'white',
-                            height: 150,
-                            width: 250,
-                            padding: 5,
+                            width: responsiveWidth(60),
                           }}>
                           <View
                             style={{
-                              borderRadius: 10,
+                              borderRadius: responsiveWidth(2),
+                              overflow: 'hidden',
+                              width: responsiveWidth(54.5),
+                              marginTop: responsiveWidth(1),
                             }}>
                             <YoutubePlayer
                               key={index}
-                              height={150}
-                              width={250}
+                              height={responsiveWidth(30)}
+                              width={responsiveWidth(54.5)}
                               videoId={extractYouTubeID(item?.Message)}
                               play={false}
                               onChangeState={event => console.log(event)}
                             />
                           </View>
+                          <Text
+                            key={`${index}` + 1}
+                            style={{
+                              fontSize: responsiveFontSize(1.8),
+                              width: responsiveWidth(54.5),
+                              marginTop: responsiveWidth(1),
+                              color: '#000',
+                            }}
+                            onPress={() => openURL(item?.Message)}>
+                            {item?.Message}
+                          </Text>
                         </View>
-                        <Text
-                          key={`${index}` + 1}
-                          style={styles.sendMsg}
-                          onPress={() => openURL(item?.Message)}>
-                          {item?.Message}
-                        </Text>
                       </View>
                     ) : (
                       item?.Message.split(urlRegex).map((messagePart, idx) => {
@@ -630,7 +689,7 @@ const ChatSection = ({navigation, route}) => {
                                           : 'Video'
                                       }Call?meetingName=${
                                         result?.meetingId
-                                      }&userName=${userInfo.name}`,
+                                      }&fcmToken=${''}&host=${result?.userId}`,
                                     );
                                   } else {
                                     const response = await groupBelong(
@@ -646,7 +705,9 @@ const ChatSection = ({navigation, route}) => {
                                             : 'Video'
                                         }Call?meetingName=${
                                           result?.meetingId
-                                        }&userName=${userInfo.name}`,
+                                        }&fcmToken=${''}&host=${
+                                          result?.userId
+                                        }`,
                                       );
                                     } else {
                                       Alert.alert(
@@ -682,13 +743,26 @@ const ChatSection = ({navigation, route}) => {
                             </View>
                           );
                         } else {
-                          const htmlContent = `<p><a>${messagePart}</a></p>`;
+                          const longHtmlContent = `<p><a>${messagePart}</a></p>`;
                           return (
-                            <HTMLView
-                              value={htmlContent}
-                              key={`${index}_${idx}`}
-                              stylesheet={isCurrentUser ? styles2 : styles3}
-                            />
+                            <View style={{flexDirection: 'column'}}>
+                              <HTMLView
+                                value={
+                                  expanded
+                                    ? longHtmlContent
+                                    : truncateHtml(longHtmlContent)
+                                }
+                                key={`${index}_${idx}`}
+                                stylesheet={isCurrentUser ? styles2 : styles3}
+                              />
+                              {longHtmlContent.split(' ').length > 50 && (
+                                <TouchableOpacity onPress={toggleExpanded}>
+                                  <Text style={styles.readMore}>
+                                    {expanded ? 'Read Less' : 'Read More'}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+                            </View>
                           );
                         }
                       })
@@ -725,11 +799,12 @@ const ChatSection = ({navigation, route}) => {
                 marginRight: 50,
                 alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
                 marginLeft: !isCurrentUser ? 50 : 0,
+                marginBottom: responsiveWidth(2),
               },
             ]}>
             {isCurrentUser && (
               <Image
-                style={{width: responsiveWidth(5), height: responsiveWidth(5)}}
+                style={{width: responsiveWidth(5), height: responsiveWidth(2)}}
                 source={require('../assets/png/check-double-fill.png')}
               />
             )}
@@ -770,29 +845,16 @@ const ChatSection = ({navigation, route}) => {
         </Modal>
         <View style={styles.chatHead}>
           <View style={styles.chatTop}>
-            {!isPopupVisible && !imgPopupVisible ? (
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Image
-                  style={{
-                    width: responsiveWidth(6),
-                    height: responsiveWidth(6),
-                    tintColor: 'white',
-                  }}
-                  source={require('../assets/png/leftArrow2.png')}
-                />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={handleClosePopup}>
-                <Image
-                  style={{
-                    width: responsiveWidth(6),
-                    height: responsiveWidth(6),
-                    tintColor: 'white',
-                  }}
-                  source={require('../assets/png/optionClose.png')}
-                />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image
+                style={{
+                  width: responsiveWidth(6),
+                  height: responsiveWidth(6),
+                  tintColor: 'white',
+                }}
+                source={require('../assets/png/leftArrow2.png')}
+              />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.userImag}>
               <Image
                 style={{width: '100%', height: '100%', resizeMode: 'cover'}}
@@ -836,85 +898,30 @@ const ChatSection = ({navigation, route}) => {
               </View>
             </View>
           </View>
-          {isPopupVisible ? (
-            <View style={styles.popupOption}>
-              <TouchableOpacity onPress={handleMsgDelete}>
-                <Image
-                  style={{
-                    width: responsiveWidth(5),
-                    height: responsiveWidth(5),
-                  }}
-                  source={require('../assets/png/deleteW.png')}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleEdit}>
-                <Image
-                  style={{
-                    width: responsiveWidth(5),
-                    height: responsiveWidth(5),
-                  }}
-                  source={require('../assets/png/editW.png')}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handlePopSend}>
-                <Image
-                  style={{
-                    width: responsiveWidth(5),
-                    height: responsiveWidth(5),
-                  }}
-                  source={require('../assets/png/forwordW.png')}
-                />
-              </TouchableOpacity>
-            </View>
-          ) : imgPopupVisible ? (
-            <View style={styles.popupOption}>
-              <TouchableOpacity onPress={handleMsgDelete}>
-                <Image
-                  style={{
-                    width: responsiveWidth(5),
-                    height: responsiveWidth(5),
-                  }}
-                  source={require('../assets/png/deleteW.png')}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handlePopSend}>
-                <Image
-                  style={{
-                    width: responsiveWidth(5),
-                    height: responsiveWidth(5),
-                  }}
-                  source={require('../assets/png/forwordW.png')}
-                />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <View style={styles.callSection}>
-                <TouchableOpacity
-                  onPress={() => fetchTokensForCalls('audio', !!tabIndex)}
-                  style={styles.callbtn}>
-                  <Image
-                    style={{
-                      width: responsiveWidth(4),
-                      height: responsiveWidth(4.5),
-                    }}
-                    source={require('../assets/png/whiteCall.png')}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => fetchTokensForCalls('video', !!tabIndex)}
-                  style={styles.callbtn}>
-                  <Image
-                    style={{
-                      width: responsiveWidth(4),
-                      height: responsiveWidth(3),
-                    }}
-                    source={require('../assets/png/whiteVideo.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+          <View style={styles.callSection}>
+            <TouchableOpacity
+              onPress={() => fetchTokensForCalls('audio', !!tabIndex)}
+              style={styles.callbtn}>
+              <Image
+                style={{
+                  width: responsiveWidth(4),
+                  height: responsiveWidth(4.5),
+                }}
+                source={require('../assets/png/whiteCall.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => fetchTokensForCalls('video', !!tabIndex)}
+              style={styles.callbtn}>
+              <Image
+                style={{
+                  width: responsiveWidth(4),
+                  height: responsiveWidth(3),
+                }}
+                source={require('../assets/png/whiteVideo.png')}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Modal visible={openModal}>
@@ -972,63 +979,6 @@ const ChatSection = ({navigation, route}) => {
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-            {/* <View style={styles.emptymsg}>
-                <Image
-                  style={{
-                    width: responsiveWidth(23),
-                    height: responsiveWidth(23),
-                    borderRadius: responsiveWidth(15),
-                  }}
-                  source={
-                    friendPhoto && typeof friendPhoto === 'string'
-                      ? {uri: friendPhoto}
-                      : default_photo
-                  }
-                />
-                <Text
-                  style={{fontSize: responsiveFontSize(2.5), color: 'black'}}>
-                  {friendName}
-                </Text>
-                <Text
-                  style={{fontSize: responsiveFontSize(1.8), color: '#1866B4'}}>
-                  Sr. Data Analyst
-                </Text>
-                <View style={styles.emptymsgCont}>
-                  <Text
-                    style={{fontSize: responsiveFontSize(1.8), color: 'black'}}>
-                    Eager to learn and grow in the field of data science.
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: responsiveWidth(5),
-                      marginTop: responsiveWidth(1),
-                    }}>
-                    <Text
-                      style={{
-                        fontSize: responsiveFontSize(1.8),
-                        color: 'black',
-                      }}>
-                      Joined January 2024
-                    </Text>
-                    <Image
-                      style={{
-                        width: responsiveWidth(3),
-                        height: responsiveWidth(3),
-                      }}
-                      source={require('../assets/png/dott.png')}
-                    />
-                    <Text
-                      style={{
-                        fontSize: responsiveFontSize(1.8),
-                        color: 'black',
-                      }}>
-                      24.5K followers
-                    </Text>
-                  </View>
-                </View>
-              </View> */}
             <View>
               <View style={styles.endToend}>
                 <Image
@@ -1124,10 +1074,53 @@ const ChatSection = ({navigation, route}) => {
             </>
           )}
         </View>
-
+        <Modal
+          transparent={true}
+          visible={isPopupVisible || imgPopupVisible}
+          animationType="slide"
+          onRequestClose={handleClosePopup}>
+          <Pressable
+            style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center'}}
+            onPress={handleClosePopup}>
+            <View style={styles.popup}>
+              <TouchableOpacity style={styles.btn} onPress={handleMsgDelete}>
+                <Image
+                  style={styles.icon}
+                  source={require('../assets/png/delete.png')}
+                />
+                <Text style={styles.btnText}>Delete</Text>
+              </TouchableOpacity>
+              {currMsgType && (
+                <>
+                  <TouchableOpacity style={styles.btn} onPress={handleEdit}>
+                    <Image
+                      style={styles.icon}
+                      source={require('../assets/png/edit.png')}
+                    />
+                    <Text style={styles.btnText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.btn} onPress={handlePopSend}>
+                    <Image
+                      style={styles.icon}
+                      source={require('../assets/png/forward.png')}
+                    />
+                    <Text style={styles.btnText}>Forward</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              <TouchableOpacity style={styles.btn} onPress={handleClosePopup}>
+                <Image
+                  style={styles.icon}
+                  source={require('../assets/png/Cross.png')}
+                />
+                <Text style={styles.btnText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Modal>
         <LongPressPopup
           isVisible={isPopupSend}
-          onClose={handleClosePopup2}
+          onClose={handleClosePopup}
           pressMsg={pressMsg}
           handleClosePopup={handleClosePopup}
         />
@@ -1150,47 +1143,50 @@ const styles1 = StyleSheet.create({
   },
   date: {
     textAlign: 'center',
-    marginTop: 5,
+    marginVertical: responsiveWidth(3),
+    fontSize: responsiveFontSize(1.6),
+    color: 'black',
   },
   longPressed: {
-    backgroundColor: 'lightgreen',
-    fontSize: 16,
-    paddingHorizontal: 10,
+    backgroundColor: '#619EE355',
+    fontSize: responsiveFontSize(1.8),
+    paddingHorizontal: responsiveWidth(2.8),
+    paddingVertical: responsiveWidth(1.8),
     alignSelf: 'flex-end',
-    paddingVertical: 6,
-    color: 'white',
+    color: 'black',
     minWidth: 50,
-    maxWidth: 260,
+    maxWidth: responsiveWidth(60),
+    borderWidth: 1,
+    borderColor: '#B0D5FF',
   },
   sendMsg: {
     backgroundColor: '#1866B4',
-    fontSize: 16,
-    paddingHorizontal: 10,
+    fontSize: responsiveFontSize(1.8),
+    paddingHorizontal: responsiveWidth(2.8),
+    paddingVertical: responsiveWidth(1.8),
     alignSelf: 'flex-end',
-    paddingVertical: 6,
     color: 'black',
     minWidth: 50,
-    maxWidth: 260,
+    maxWidth: responsiveWidth(60),
+    borderWidth: 1,
+    borderColor: '#B0D5FF',
   },
   rcvMsg: {
     backgroundColor: '#EAEAEA',
-    fontSize: 16,
-    paddingHorizontal: 10,
+    paddingHorizontal: responsiveWidth(2.8),
+    paddingVertical: responsiveWidth(1.8),
     alignSelf: 'flex-end',
-    paddingVertical: 6,
     color: 'black',
     minWidth: 50,
-    maxWidth: 260,
+    maxWidth: responsiveWidth(60),
   },
   messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 8,
-    marginHorizontal: 16,
-    maxWidth: '80%',
-    padding: 5,
-    borderRadius: 8,
-    padding: 8,
+    marginVertical: responsiveWidth(1),
+    marginHorizontal: responsiveWidth(2.5),
+    maxWidth: responsiveWidth(60),
+    borderRadius: responsiveWidth(3.5),
     backgroundColor: '#F2F2F2',
   },
   currentUserMessage: {
@@ -1198,13 +1194,13 @@ const styles1 = StyleSheet.create({
     backgroundColor: '#DCF8C6',
   },
   messageText: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.8),
   },
   media: {
-    width: 100,
-    height: 100,
+    width: responsiveWidth(50),
+    height: responsiveWidth(50),
     resizeMode: 'cover',
-    borderRadius: 8,
+    borderRadius: responsiveWidth(2),
   },
   media1: {
     width: 70,
@@ -1239,11 +1235,11 @@ const styles1 = StyleSheet.create({
     backgroundColor: 'white',
   },
   link: {
-    color: 'white',
+    color: 'black',
     textDecorationLine: 'underline',
   },
   messageTime: {
-    fontSize: 12,
+    fontSize: responsiveFontSize(1.6),
     alignSelf: 'flex-end',
     marginRight: 15,
     color: '#999',
@@ -1251,6 +1247,38 @@ const styles1 = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  popup: {
+    backgroundColor: 'white',
+    paddingHorizontal: responsiveWidth(6),
+    paddingVertical: responsiveWidth(4),
+    borderRadius: responsiveWidth(5),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: responsiveWidth(5),
+    width: responsiveWidth(92),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.36,
+    shadowRadius: 6,
+
+    elevation: 5,
+  },
+  btn: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  icon: {
+    width: responsiveWidth(10),
+    height: responsiveWidth(10),
+  },
+  btnText: {
+    fontSize: responsiveFontSize(1.8),
+    fontWeight: '600',
+    color: '#000',
+  },
   container: {
     flex: 1,
   },
@@ -1334,7 +1362,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.8),
     lineHeight: responsiveWidth(5),
     color: '#000',
-    paddingVertical: responsiveWidth(1),
+    paddingVertical: responsiveWidth(2.1),
   },
   sendBtn: {
     backgroundColor: '#1866B4',
@@ -1355,7 +1383,7 @@ const styles = StyleSheet.create({
   recvMsg: {
     backgroundColor: '#EAEAEA',
     borderRadius: 16,
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.8),
     paddingHorizontal: 10,
     paddingVertical: 6,
     color: 'black',
@@ -1363,24 +1391,23 @@ const styles = StyleSheet.create({
   },
   sendMsg: {
     backgroundColor: '#E6EEF7',
-    borderRadius: 16,
-    fontSize: responsiveFontSize(1.8),
-    paddingHorizontal: 10,
+    borderRadius: responsiveWidth(4),
     alignSelf: 'flex-end',
-    paddingVertical: 6,
+    paddingHorizontal: responsiveWidth(2.8),
+    paddingVertical: responsiveWidth(1.8),
     color: '#000',
     minWidth: 50,
-    maxWidth: 260,
+    maxWidth: responsiveWidth(60),
     borderWidth: 1,
     borderColor: '#B0D5FF',
   },
   recvImg: {
-    width: 24,
-    height: 24,
+    width: responsiveWidth(6),
+    height: responsiveWidth(6),
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: 'red',
-    alignSelf: 'center',
+    marginTop: responsiveWidth(2.2),
   },
   recvMsgBox: {
     flexDirection: 'row',
@@ -1388,16 +1415,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginHorizontal: 10,
     marginVertical: 10,
-  },
-  sendMsgBox: {
-    flexDirection: 'row',
-    gap: 10,
-    alignItems: 'flex-end',
-    marginHorizontal: 10,
-    marginVertical: 10,
-    justifyContent: 'flex-end',
-    alignSelf: 'flex-end',
-    backgroundColor: '#DCF8C6',
   },
   img: {
     width: 200,
@@ -1424,7 +1441,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   modalText: {
-    fontSize: 18,
+    fontSize: responsiveFontSize(1.8),
     marginBottom: 10,
   },
   closeButton: {
@@ -1432,7 +1449,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   closeButtonText: {
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.8),
     color: 'blue',
   },
   popupBtn: {
@@ -1486,7 +1503,7 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: responsiveFontSize(1.8),
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
@@ -1500,7 +1517,7 @@ const styles = StyleSheet.create({
   optionText: {
     color: 'white',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.8),
   },
   cancelButton: {
     marginTop: 10,
@@ -1508,19 +1525,26 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#1866B4',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: responsiveFontSize(1.8),
+  },
+  readMore: {
+    fontSize: responsiveFontSize(1.8),
+    fontWeight: '600',
+    color: '#1866B4',
   },
 });
 
 const styles2 = StyleSheet.create({
   a: {
     color: 'black',
+    fontSize: responsiveFontSize(1.8),
   },
 });
 
 const styles3 = StyleSheet.create({
   a: {
     color: 'black',
+    fontSize: responsiveFontSize(1.8),
   },
 });
 
