@@ -30,9 +30,11 @@ export const GroupAttendeeItem = ({attendeeName, muted, meetingDuration}) => {
         source={photoUrl ? {uri: photoUrl} : default_photo}
         style={styles.attendeePhoto}
       />
+      <View>
       <Text style={styles.attendeeName}>{name}</Text>
-      <Text style={styles.attendeeName}>{meetingDuration}</Text>
+      {/* <Text style={styles.attendeeName}>{meetingDuration}</Text> */}
       {muted && <Image source={mutedImg} style={styles.attendeeMuteImage} />}
+    </View>
     </View>
   );
 };
@@ -40,7 +42,7 @@ export const GroupAttendeeItem = ({attendeeName, muted, meetingDuration}) => {
 const styles = StyleSheet.create({
   attendeeContainer: {
     width: '100%',
-    marginTop: responsiveWidth(20),
+    marginTop: 50,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
@@ -51,7 +53,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 0,
   },
   attendeePhoto: {
     width: 100,

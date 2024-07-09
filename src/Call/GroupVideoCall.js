@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -7,19 +7,23 @@ import {
   View,
 } from 'react-native';
 import {GroupVideoMeeting} from '../Meetings/GroupVideoMeeting';
+import {AuthContext} from '../context/AuthContext';
 import {createMeetingRequest} from '../utils/Api';
 import {
   getSDKEventEmitter,
   MobileSDKEvent,
   NativeFunction,
 } from '../utils/Bridge';
+import axios from 'axios';
+import configURL from '../config/config';
 
 const GroupVideoCall = ({navigation, route}) => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
-  const {meetingName, userName} = route.params;
+  const {meetingName, fcmToken, host} = route.params;
+  const {userInfo} = useContext(AuthContext);
 
   useEffect(() => {
     const onMeetingStartSubscription = getSDKEventEmitter().addListener(
@@ -46,7 +50,7 @@ const GroupVideoCall = ({navigation, route}) => {
       },
     );
 
-    initializeMeetingSession(meetingName, userName);
+    initializeMeetingSession(meetingName, userInfo?.id);
 
     return () => {
       onMeetingStartSubscription.remove();
@@ -78,6 +82,17 @@ const GroupVideoCall = ({navigation, route}) => {
       });
   };
 
+  const endCall = async () => {
+    try {
+      await axios.post(configURL.endCallURL, {
+        token: fcmToken,
+        callId: meetingName,
+      });
+    } catch (err) {
+      console.log('Error ending the call ', err);
+    }
+  };
+
   return (
     <>
       <StatusBar />
@@ -91,8 +106,9 @@ const GroupVideoCall = ({navigation, route}) => {
         {isInMeeting && !isLoading && (
           <GroupVideoMeeting
             meetingTitle={meetingTitle}
-            userName={userName}
             selfAttendeeId={selfAttendeeId}
+            endCall={endCall}
+            host={host}
             navigation={navigation}
           />
         )}

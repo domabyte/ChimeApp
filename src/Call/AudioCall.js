@@ -22,7 +22,7 @@ const AudioCall = ({navigation, route}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
-  const {meetingName, userName, fcmToken} = route.params;
+  const {meetingName, fcmToken} = route.params;
   const {userInfo} = useContext(AuthContext);
 
   useEffect(() => {

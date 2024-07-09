@@ -36,7 +36,8 @@ export class GroupVideoMeeting extends React.Component {
       selfVideoEnabled: false,
       screenShareTile: null,
       isMeetingActive: false,
-      isSpeakerActive: false,
+      isSpeakerActive: true,
+      isSwitchCameraActive: false,
     };
     this.timer = null;
     this.meetingTimer = null;
@@ -67,6 +68,13 @@ export class GroupVideoMeeting extends React.Component {
       prevState.attendees.length === 0
     ) {
       this.startOneMinuteTimer();
+      setTimeout(() => {
+        if (this.state.attendees.length === 1) {
+          if (this.props.host !== attendeeNameMap[this.props.selfAttendeeId]) {
+            this.showCallEndedAlert();
+          }
+        }
+      }, 5000);
     } else if (
       this.state.attendees.length === 1 &&
       prevState.attendees.length > 1
@@ -242,6 +250,9 @@ export class GroupVideoMeeting extends React.Component {
     NativeFunction.switchMicrophoneToSpeaker()
       .then(response => {
         console.log(response);
+        this.setState(prevState => ({
+          isSpeakerActive: !prevState.isSpeakerActive,
+        }));
       })
       .catch(error => {
         console.error(error);
@@ -260,6 +271,9 @@ export class GroupVideoMeeting extends React.Component {
     NativeFunction.switchCamera()
       .then(response => {
         console.log(response);
+        this.setState(prevState => ({
+          isSwitchCameraActive: !prevState.isSwitchCameraActive,
+        }));
       })
       .catch(error => {
         console.error(error);
@@ -282,6 +296,21 @@ export class GroupVideoMeeting extends React.Component {
     return true;
   };
 
+  showCallEndedAlert = async () => {
+    await this.endHangUp();
+    Alert.alert(
+      'Call Ended',
+      'The call has ended as there are no other participants.',
+      [
+        {
+          text: 'OK',
+          onPress: () => {},
+        },
+      ],
+      {cancelable: false},
+    );
+  };
+
   render() {
     const currentMuted = this.state.mutedAttendee.includes(
       this.props.selfAttendeeId,
@@ -289,94 +318,75 @@ export class GroupVideoMeeting extends React.Component {
 
     return (
       <SafeAreaView style={styles.container}>
-      <View style={[styles.container, {justifyContent: 'flex-start'}]}>
-        {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
-        {/* <Text style={styles.title}>{this.props.userName}</Text> */}
-        {/* <Text style={styles.title}>Video</Text> */}
-        <View style={[styles.videoContainer,
-        this.state.videoTiles.length>2? styles.flexDirectionRow:''
-        ]}>
-
-            {/* <View
-                style={
-                  styles.threeVideo}>
-                <Text>sdasdfs</Text>
+        <View style={[styles.container, {justifyContent: 'flex-start'}]}>
+          <View
+            style={[
+              styles.videoContainer,
+              this.state.videoTiles.length > 2 ? styles.flexDirectionRow : '',
+            ]}>
+            {this.state.videoTiles.length > 0 ? (
+              this.state.videoTiles.map(tileId => (
+                <RNVideoRenderView
+                  style={
+                    this.state.videoTiles.length == 1
+                      ? styles.oneVideo
+                      : this.state.videoTiles.length == 2
+                      ? styles.twoVideo
+                      : this.state.videoTiles.length == 3
+                      ? styles.threeVideo
+                      : this.state.videoTiles.length == 4
+                      ? styles.threeVideo
+                      : this.state.videoTiles.length == 5
+                      ? styles.manyVideoVideo
+                      : styles.manyVideo
+                  }
+                  key={tileId}
+                  tileId={tileId}
+                  mirror={this.state.isSwitchCameraActive ? false : true}
+                />
+              ))
+            ) : (
+              <Text style={styles.subtitle}>
+                No one is sharing video at this moment
+              </Text>
+            )}
+          </View>
+          {!!this.state.screenShareTile && (
+            <React.Fragment>
+              <Text style={styles.title}>Screen Share</Text>
+              <View style={styles.videoContainer}>
+                <RNVideoRenderView
+                  style={styles.screenShare}
+                  key={this.state.screenShareTile}
+                  tileId={this.state.screenShareTile}
+                />
               </View>
-              <View
-                style={
-                  styles.threeVideo}>
-                <Text>sdasdfs</Text>
-              </View>
-              <View
-                style={
-                  styles.threeVideo}>
-                <Text>sdasdfs</Text>
-              </View>
-              <View
-                style={
-                  styles.threeVideo}>
-                <Text>sdasdfs</Text>
-              </View> */}
-              
-
-
-          {this.state.videoTiles.length > 0 ? (
-            this.state.videoTiles.map(tileId => (
-              <RNVideoRenderView
-                style={
-                  this.state.videoTiles.length==1? styles.oneVideo:
-                  this.state.videoTiles.length==2? styles.twoVideo:
-                  this.state.videoTiles.length==3? styles.threeVideo:
-                  this.state.videoTiles.length==4? styles.threeVideo:
-                  this.state.videoTiles.length==5? styles.manyVideoVideo:
-                  styles.manyVideo}
-                key={tileId}
-                tileId={tileId}
-                mirror={true}
-              />
-            ))
-          ) : (
-            <Text style={styles.subtitle}>
-              No one is sharing video at this moment
-            </Text>
+            </React.Fragment>
           )}
-        </View>
-        {!!this.state.screenShareTile && (
-          <React.Fragment>
-            <Text style={styles.title}>Screen Share</Text>
-            <View style={styles.videoContainer}>
-              <RNVideoRenderView
-                style={styles.screenShare}
-                key={this.state.screenShareTile}
-                tileId={this.state.screenShareTile}
-              />
-            </View>
-          </React.Fragment>
-        )}
 
-<View style={styles.buttonContainer}>
-          <MuteButton
-            muted={currentMuted}
-            onPress={() => NativeFunction.setMute(!currentMuted)}
-          />
-          <SwitchMicrophoneToSpeakerButton
-            onPress={this.switchMicrophoneToSpeaker}
-            isSpeakerActive={this.state.isSpeakerActive}
-          />
-          <CameraButton
-            disabled={this.state.selfVideoEnabled}
-            onPress={() =>
-              NativeFunction.setCameraOn(!this.state.selfVideoEnabled)
-            }
-          />
-          <SwitchCameraButton onPress={this.switchCamera} />
-          <ShareScreenBtn onPress={() => this.startScreenShare(true)} />
-          {/* <SwitchCameraButton onPress={()=> this.startScreenShare(true)} /> */}
-          {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
-          <HangOffButton onPress={this.HangUp} />
-        </View>
+          <View style={styles.buttonContainer}>
+            <MuteButton
+              muted={currentMuted}
+              onPress={() => NativeFunction.setMute(!currentMuted)}
+            />
+            <SwitchMicrophoneToSpeakerButton
+              onPress={this.switchMicrophoneToSpeaker}
+              isSpeakerActive={this.state.isSpeakerActive}
+            />
+            <CameraButton
+              disabled={this.state.selfVideoEnabled}
+              onPress={() =>
+                NativeFunction.setCameraOn(!this.state.selfVideoEnabled)
+              }
+            />
+            <SwitchCameraButton onPress={this.switchCamera} />
+            {/* <ShareScreenBtn onPress={() => this.startScreenShare(true)} /> */}
+            {/* <SwitchCameraButton onPress={()=> this.startScreenShare(true)} /> */}
+            {/* <SwitchCameraButton onPress={this.stopScreenShare} /> */}
+            <HangOffButton onPress={this.HangUp} />
+          </View>
 
-        {/* <Text style={styles.title}>Attendee</Text>
+          {/* <Text style={styles.title}>Attendee</Text>
         <FlatList
           style={styles.attendeeList}
           data={this.state.attendees}
@@ -390,7 +400,7 @@ export class GroupVideoMeeting extends React.Component {
           )}
           keyExtractor={item => item}
         /> */}
-      </View>
+        </View>
       </SafeAreaView>
     );
   }
@@ -401,13 +411,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
-    width:'100%',
+    width: '100%',
     backgroundColor: 'white',
   },
   buttonContainer: {
     position: 'absolute',
-    bottom:15,
-    gap:10,
+    bottom: 15,
+    gap: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -430,16 +440,16 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     flexDirection: 'column',
-    flexWrap:'wrap',
+    flexWrap: 'wrap',
     justifyContent: 'flex-start',
     alignItems: 'top',
     width: '100%',
     height: '100%',
-    minHeight:'100%',
-    gap:5,
+    minHeight: '100%',
+    gap: 5,
   },
-  flexDirectionRow:{
-flexDirection: 'column'
+  flexDirectionRow: {
+    flexDirection: 'column',
   },
   screenShare: {
     width: '90%',
@@ -450,8 +460,8 @@ flexDirection: 'column'
     height: '100%',
   },
   twoVideo: {
-    flex:1,
-    flexDirection:'row',
+    flex: 1,
+    flexDirection: 'row',
     width: '100%',
     height: '50%',
   },

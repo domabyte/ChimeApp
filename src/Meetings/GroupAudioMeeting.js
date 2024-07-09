@@ -6,6 +6,7 @@ import {
   Alert,
   StyleSheet,
   BackHandler,
+  SafeAreaView,
 } from 'react-native';
 import {
   NativeFunction,
@@ -56,6 +57,13 @@ export class GroupAudioMeeting extends React.Component {
       prevState.attendees.length === 0
     ) {
       this.startOneMinuteTimer();
+      setTimeout(() => {
+        if (this.state.attendees.length === 1) {
+          if (this.props.host !== attendeeNameMap[this.props.selfAttendeeId]) {
+            this.showCallEndedAlert();
+          }
+        }
+      }, 5000);
     } else if (
       this.state.attendees.length === 1 &&
       prevState.attendees.length > 1
@@ -187,11 +195,13 @@ export class GroupAudioMeeting extends React.Component {
 
   HangUp = async () => {
     await NativeFunction.stopMeeting();
+    this.props.endCall();
     this.props.navigation.goBack();
   };
 
   endHangUp = async () => {
     await NativeFunction.stopMeeting();
+    this.props.endCall();
     this.props.navigation.goBack();
   };
 
@@ -199,6 +209,9 @@ export class GroupAudioMeeting extends React.Component {
     NativeFunction.switchMicrophoneToSpeaker()
       .then(response => {
         console.log(response);
+        this.setState(prevState => ({
+          isSpeakerActive: !prevState.isSpeakerActive,
+        }));
       })
       .catch(error => {
         console.error(error);
@@ -221,14 +234,33 @@ export class GroupAudioMeeting extends React.Component {
     return true;
   };
 
-  render() {
-    const {selfAttendeeId, userName} = this.props;
-    const currentMuted = this.state.mutedAttendee.includes(selfAttendeeId);
+  showCallEndedAlert = async () => {
+    await this.endHangUp();
+    Alert.alert(
+      'Call Ended',
+      'The call has ended as there are no other participants.',
+      [
+        {
+          text: 'OK',
+          onPress: () => {},
+        },
+      ],
+      {cancelable: false},
+    );
+  };
 
+  render() {
+    const {selfAttendeeId} = this.props;
+    const currentMuted = this.state.mutedAttendee.includes(selfAttendeeId);
     return (
+      <SafeAreaView style={styles.container}>
       <View style={[styles.container, {justifyContent: 'flex-start'}]}>
-        <FlatList
-          style={styles.attendeeList}
+        <View
+          style={[
+            styles.videoContainer,
+            this.state.attendees.length > 2 ? styles.flexDirectionRow : '',
+          ]}>
+          {/* <FlatList
           data={this.state.attendees}
           renderItem={({item}) => (
             <GroupAttendeeItem
@@ -237,8 +269,31 @@ export class GroupAudioMeeting extends React.Component {
             />
           )}
           keyExtractor={item => item}
-        />
-         <View style={styles.buttonContainer}>
+        /> */}
+          {this.state.attendees.length > 0 &&
+            this.state.attendees.map((item, index) => (
+              <View style={
+                this.state.attendees.length == 1
+                  ? styles.oneVideo
+                  : this.state.attendees.length == 2
+                  ? styles.twoVideo
+                  : this.state.attendees.length == 3
+                  ? styles.threeVideo
+                  : this.state.attendees.length == 4
+                  ? styles.threeVideo
+                  : this.state.attendees.length == 5
+                  ? styles.manyVideoVideo
+                  : styles.manyVideo
+              }>
+              <GroupAttendeeItem
+                key={index}
+                attendeeName={attendeeNameMap[item] || item}
+                muted={this.state.mutedAttendee.includes(item)}
+              />
+              </View>
+            ))}
+        </View>
+        <View style={styles.buttonContainer}>
           <MuteButton
             muted={currentMuted}
             onPress={() => NativeFunction.setMute(!currentMuted)}
@@ -250,6 +305,7 @@ export class GroupAudioMeeting extends React.Component {
           <HangOffButton onPress={this.HangUp} />
         </View>
       </View>
+      </SafeAreaView>
     );
   }
 }
@@ -258,56 +314,25 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: '95%',
+    height: '100%',
+    width: '100%',
     backgroundColor: 'white',
   },
   buttonContainer: {
+    position: 'absolute',
+    bottom: 15,
+    gap: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '70%',
   },
-  title: {
-    fontSize: 30,
-    fontWeight: '700',
-  },
-  viewContainer: {
-    width: '90%',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  subtitle: {
-    marginBottom: 25,
-    marginTop: 10,
-    color: 'grey',
-  },
-  videoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    overflow: 'hidden',
-  },
-  video: {
-    width: '100%',
-    margin: '1%',
-    aspectRatio: 16 / 9,
-  },
+
   screenShare: {
     width: '90%',
     margin: '1%',
     aspectRatio: 16 / 9,
   },
-  attendeeList: {
-    flex: 1,
-    width: '80%',
-  },
-  attendeeContainer: {
-    fontSize: 20,
-    margin: 5,
-    padding: 5,
-    height: 30,
-    backgroundColor: '#eee',
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-  },
+
   attendeeMuteImage: {
     resizeMode: 'contain',
     width: 20,
@@ -331,5 +356,40 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 50,
     height: 50,
+  },
+  videoContainer: {
+    flex: 1,
+    width: '100%',
+    flexDirection: 'column',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'top',
+    width: '100%',
+    height: '100%',
+    minHeight: '100%',
+    gap: 5,
+  },
+  flexDirectionRow: {
+    flexDirection: 'column',
+  },
+  oneVideo: {
+    width: '100%',
+    height: '100%',
+  },
+  twoVideo: {
+    flex: 1,
+    
+    flexDirection: 'row',
+    width: '100%',
+    height: '40%',
+  },
+  threeVideo: {
+    marginTop:'2%',
+    width: '50%',
+    height: '45%',
+  },
+  fourVideo: {
+    width: '100%',
+    height: '50%',
   },
 });

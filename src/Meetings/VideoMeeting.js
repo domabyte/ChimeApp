@@ -39,8 +39,9 @@ export class VideoMeeting extends React.Component {
       selfVideoEnabled: false,
       screenShareTile: null,
       isMeetingActive: false,
-      isSpeakerActive: false,
+      isSpeakerActive: true,
       tileVideoId: null,
+      isSwitchCameraActive: false,
     };
     this.sound = null;
     this.timer = null;
@@ -54,6 +55,8 @@ export class VideoMeeting extends React.Component {
     setTimeout(() => {
       NativeFunction.setCameraOn(true);
     }, 1000);
+
+    this.switchMicrophoneToSpeaker();
 
     this.sound = new Sound(ringtone, error => {
       if (error) {
@@ -297,6 +300,9 @@ export class VideoMeeting extends React.Component {
     NativeFunction.switchCamera()
       .then(response => {
         console.log(response);
+        this.setState(prevState => ({
+          isSwitchCameraActive: !prevState.isSwitchCameraActive,
+        }));
       })
       .catch(error => {
         console.error(error);
@@ -332,10 +338,6 @@ export class VideoMeeting extends React.Component {
     return (
       <SafeAreaView>
         <View style={[styles.container]}>
-          {/* <Text style={styles.title}>{this.props.meetingTitle}</Text> */}
-          {/* <Text style={styles.title}>{this.props.userName}</Text> */}
-
-          {/* <Text style={styles.title}>Video</Text> */}
           <View
             style={[
               styles.videoContainer,
@@ -371,6 +373,7 @@ export class VideoMeeting extends React.Component {
                           ]
                     }
                     tileId={tileId}
+                    mirror={this.state.isSwitchCameraActive ? false : true}
                   />
                 </TouchableOpacity>
               ))

@@ -14,13 +14,15 @@ import {
   MobileSDKEvent,
   NativeFunction,
 } from '../utils/Bridge';
+import axios from 'axios';
+import configURL from '../config/config';
 
 const GroupAudioCall = ({navigation, route}) => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
-  const {meetingName, userName} = route.params;
+  const {meetingName, fcmToken, host} = route.params;
   const {userInfo} = useContext(AuthContext);
 
   useEffect(() => {
@@ -80,6 +82,17 @@ const GroupAudioCall = ({navigation, route}) => {
       });
   };
 
+  const endCall = async () => {
+    try {
+      await axios.post(configURL.endCallURL, {
+        token: fcmToken,
+        callId: meetingName,
+      });
+    } catch (err) {
+      console.log('Error ending the call ', err);
+    }
+  };
+
   return (
     <>
       <StatusBar />
@@ -93,8 +106,9 @@ const GroupAudioCall = ({navigation, route}) => {
         {isInMeeting && !isLoading && (
           <GroupAudioMeeting
             meetingTitle={meetingTitle}
-            userName={userName}
             selfAttendeeId={selfAttendeeId}
+            endCall={endCall}
+            host={host}
             navigation={navigation}
           />
         )}
