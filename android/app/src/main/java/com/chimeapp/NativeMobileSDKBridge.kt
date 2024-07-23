@@ -1,18 +1,36 @@
-package com.chimeapp
+package com.chimeapp;
 
 import android.Manifest
+import android.annotation.TargetApi
+import android.app.Activity
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionManager
+import android.os.Handler
+import android.os.IBinder
+import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.chimeapp.RNEventEmitter.Companion.RN_EVENT_ERROR
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import com.amazonaws.services.chime.sdk.meetings.audiovideo.AudioVideoFacade
 import com.amazonaws.services.chime.sdk.meetings.device.MediaDeviceType
-import com.amazonaws.services.chime.sdk.meetings.session.DefaultMeetingSession
-import com.amazonaws.services.chime.sdk.meetings.session.MeetingSession
-import com.amazonaws.services.chime.sdk.meetings.session.MeetingSessionConfiguration
-import com.amazonaws.services.chime.sdk.meetings.session.MeetingSessionCredentials
-import com.amazonaws.services.chime.sdk.meetings.session.MeetingSessionURLs
-import com.amazonaws.services.chime.sdk.meetings.session.defaultUrlRewriter
+import com.amazonaws.services.chime.sdk.meetings.audiovideo.contentshare.ContentShareObserver
+import com.amazonaws.services.chime.sdk.meetings.audiovideo.contentshare.ContentShareStatus
+import com.amazonaws.services.chime.sdk.meetings.audiovideo.video.capture.*
+import com.amazonaws.services.chime.sdk.meetings.audiovideo.video.gl.DefaultEglCoreFactory
+import com.amazonaws.services.chime.sdk.meetings.audiovideo.video.gl.EglCoreFactory
+import com.amazonaws.services.chime.sdk.meetings.session.*
 import com.amazonaws.services.chime.sdk.meetings.utils.logger.ConsoleLogger
 import com.amazonaws.services.chime.sdk.meetings.utils.logger.LogLevel
+import com.chimeapp.RNEventEmitter.Companion.RN_EVENT_ERROR
+import com.chimeapp.RNEventEmitter.Companion.RN_EVENT_MEETING_END
+import com.chimeapp.RNEventEmitter.Companion.RN_EVENT_KEY_VIDEO_IS_SCREEN_SHARE
+import com.chimeapp.device.ScreenShareManager
+import com.chimeapp.service.ScreenCaptureService
+import com.facebook.react.bridge.*
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -25,11 +43,17 @@ import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 
+
 class NativeMobileSDKBridge(
         reactContext: ReactApplicationContext,
         private val eventEmitter: RNEventEmitter,
-        private val meetingObservers: MeetingObservers) : ReactContextBaseJavaModule(reactContext), PermissionListener {
+        private val meetingObservers: MeetingObservers) : ReactContextBaseJavaModule(reactContext) ,PermissionListener, ViewModelStoreOwner, ContentShareObserver {
 
+    private val reContext: ReactApplicationContext? = reactContext
+    private var isBound: Boolean = false
+    private var screenShareManager: ScreenShareManager? = null
+    private var screenshareServiceConnection: ServiceConnection? = null
+    val eglCoreFactory: EglCoreFactory = DefaultEglCoreFactory() // does this needs to be initialize if yes to what should it be initialize
     companion object {
         private const val WEBRTC_PERMISSION_REQUEST_CODE = 1
         private const val TAG = "ChimeReactNativeSDKDemoManager"
@@ -52,17 +76,124 @@ class NativeMobileSDKBridge(
     private val webRtcPermissionPermission = arrayOf(
             Manifest.permission.MODIFY_AUDIO_SETTINGS,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA, Manifest.permission.FOREGROUND_SERVICE,
     )
+    private val SCREEN_CAPTURE_REQUEST_CODE = 1
+
+
 
     override fun getName(): String {
         return "NativeMobileSDKBridge"
     }
 
     @ReactMethod
+    fun startScreenShare(isScreenShared: Boolean) {
+        val mediaProjectionManager = currentActivity?.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        // Show prompt for screen capture permission
+        currentActivity?.startActivityForResult(
+                mediaProjectionManager.createScreenCaptureIntent(),
+                SCREEN_CAPTURE_REQUEST_CODE
+        )
+
+
+    }
+
+    // GET ACTIVTY RESULT HERE
+    private val mActivityEventListener: ActivityEventListener =
+            object : BaseActivityEventListener() {
+                override fun onActivityResult(activity: Activity?, requestCode: Int, resultCode: Int, data: Intent?) {
+
+                    if (SCREEN_CAPTURE_REQUEST_CODE == requestCode) {
+
+                        logger.info("#############", "Code has reached here")
+                        if (resultCode != Activity.RESULT_OK) {
+                            Toast.makeText(currentActivity!!.applicationContext, "Screen share cannot work without permissions", Toast.LENGTH_LONG).show()
+
+                        } else {
+                            Toast.makeText(currentActivity!!.applicationContext, "PERMISSION GRANTED", Toast.LENGTH_LONG).show()                 
+                            data?.let { startScreenShare(resultCode, it, currentActivity!!) }
+                           eventEmitter.sendReactNativeEvent(RN_EVENT_KEY_VIDEO_IS_SCREEN_SHARE, null)
+                        }
+                    }
+                }
+            }
+
+    private fun startScreenShare(resultCode: Int, data: Intent, context: Context) {
+        currentActivity!!.startService(Intent(currentActivity, ScreenCaptureService::class.java))
+        screenshareServiceConnection = object : ServiceConnection {
+            override fun onServiceConnected(className: ComponentName, service: IBinder) {
+
+                val screenCaptureSource = DefaultScreenCaptureSource(
+                        context,
+                        logger,
+                        DefaultSurfaceTextureCaptureSourceFactory(
+                                logger,
+                                eglCoreFactory
+                        ),
+                        resultCode,
+                        data
+                )
+        
+
+                val screenCaptureSourceObserver = object : CaptureSourceObserver {
+                    override fun onCaptureStarted() {
+                        logger.info("#############", "Screen CApture has started")
+                        logger.info("#############", "Screen CApture has started")
+                        logger.info("#############", "Screen CApture has started")
+                        logger.info("#############", "Screen CApture has started")
+                        screenShareManager?.let { source ->
+                            val audioVideo: AudioVideoFacade = meetingSession!!.audioVideo
+                            audioVideo.startContentShare(source)
+                        }
+                    }
+
+                    override fun onCaptureStopped() {
+//                        notifyHandler("Screen capture stopped")
+                    }
+
+                    override fun onCaptureFailed(error: CaptureSourceError) {
+//                        notifyHandler("Screen capture failed with error $error")
+                        meetingSession?.audioVideo?.stopContentShare()
+                    }
+                     }
+
+
+                            screenShareManager = ScreenShareManager(screenCaptureSource, context)
+                            screenShareManager?.screenCaptureConnectionService = screenshareServiceConnection
+                            screenShareManager?.addObserver(screenCaptureSourceObserver)
+                            screenShareManager?.start()
+                            logger.info("#############", "Screen screenShareManager has started")
+
+            }
+
+            override fun onServiceDisconnected(arg0: ComponentName) {
+                isBound = false
+            }
+        }
+
+        context.startService(
+                Intent(
+                        context,
+                        ScreenCaptureService::class.java
+                ).also { intent ->
+                    screenshareServiceConnection?.let {
+                        context?.bindService(
+                                intent,
+                                it,
+                                Context.BIND_AUTO_CREATE
+                        )
+                    }
+                })
+    }
+
+    init {
+    reContext?.addActivityEventListener(mActivityEventListener)
+}
+
+    @ReactMethod
     fun startMeeting(meetingInfo: ReadableMap, attendeeInfo: ReadableMap) {
         logger.info(TAG, "Called startMeeting")
-
+        logger.info("####################", attendeeInfo.toString())
         currentActivity?.let { activity ->
             if (meetingSession != null) {
                 meetingSession?.audioVideo?.stop()
@@ -154,6 +285,7 @@ class NativeMobileSDKBridge(
         logger.info(TAG, "Called stopMeeting")
 
         meetingSession?.audioVideo?.stop()
+        eventEmitter.sendReactNativeEvent(RN_EVENT_MEETING_END, null)
     }
 
     @ReactMethod
@@ -299,7 +431,29 @@ class NativeMobileSDKBridge(
     }
 
     // Required for rn built in EventEmitter Calls.
-    @ReactMethod fun addListener(eventName: String) {}
+    @ReactMethod
+    fun addListener(eventName: String) {
 
-    @ReactMethod fun removeListeners(count: Int) {}
+    }
+
+    @ReactMethod
+    fun removeListeners(count: Int) {
+
+    }
+
+    override fun getViewModelStore(): ViewModelStore {
+        TODO("Not yet implemented")
+    }
+
+    override fun onContentShareStarted() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onContentShareStopped(status: ContentShareStatus) {
+        TODO("Not yet implemented")
+    }
+
+
 }
+
+
