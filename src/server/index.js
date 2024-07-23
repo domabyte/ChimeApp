@@ -1,4 +1,3 @@
-const { log } = require("console");
 const express = require("express");
 const http = require("http");
 const { v4: uuidv4 } = require("uuid");
@@ -59,7 +58,6 @@ io.on("connection", (socket) => {
     try {
       details.meetingId = uuidv4();
       details.roomId = roomId;
-      console.log("Meeting Id is : ", details);
       io.in(roomId).emit("playRingtone", details);
     } catch (err) {
       console.log("Error in initiateAudioCall : ", err);
@@ -67,7 +65,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("callAccepted", (details) => {
-    console.log("Dtais are : ", details);
     const roomId = generateRoomId(details.callerId, details.recipientId);
     try {
       io.in(roomId).emit("accept", details);
@@ -83,16 +80,6 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.log("Error in callRejection : ", err);
     }
-    console.log("Details are end call : ", details);
-  });
-
-  socket.on("leaveRoom", ({ userId, friendId }) => {
-    const roomId = generateRoomId(userId, friendId);
-    socket.leave(roomId, () => {
-      console.log("Left room", roomId);
-    });
-    console.log("connected users after leaving room:", connectedUsers);
-    delete connectedUsers[userId];
   });
 
   socket.on("disconnect", () => {
@@ -108,54 +95,130 @@ io.on("connection", (socket) => {
 
 app.post("/api/call", express.json(), async (req, res) => {
   try {
-    console.log("Inside here ",req.body);
-    let {fcmTokens, friendName, userId, id, token, type} = req.body;
+    let { fcmTokens, friendName, userId, id, token, type, isGroup, meetingId } =
+      req.body;
     userId = String(userId);
     id = String(id);
     token = String(token);
+    isGroup = String(isGroup);
     let fcmtoken = fcmTokens.toString();
-    let callId = uuidv4();
-    // fcmTokens.shift();
-      const message = {
-        tokens: fcmTokens,
-        data: {
-          navigationId: type,
+    let callId = meetingId ? meetingId : uuidv4();
+    const message = {
+      tokens: fcmTokens,
+      data: {
+        navigationId: type,
+        callId,
+        friendName,
+        userId,
+        id,
+        token,
+        fcmtoken,
+        pickUp: "1",
+        isGroup,
+      },
+      notification: {
+        title: "ACTPAL",
+        body: "You have a missed call. Open app to preview.",
+      },
+      android: {
+        priority: "high",
+      },
+      apns: {
+        payload: {
+          aps: {
+            "content-available": 1,
+          },
+        },
+        headers: {
+          "apns-priority": "5",
+        },
+      },
+    };
+    const { responses } = await firebase
+      .messaging()
+      .sendEachForMulticast(message);
+    if (responses[0]?.success) {
+      res
+        .status(201)
+        .json({
+          code: 1,
+          message: "Call sent successfully",
           callId,
-          friendName,
-          userId,
-          id,
+          fcmTokens,
           token,
-          fcmtoken,
-          pickUp: '1',
-        },
-        notification: {
-          title: "ACTPAL",
-          body: "You have a missed call. Open app to preview.",
-        },
-        android: {
-          priority: "high",
-        },
-        apns: {
-          payload: {
-            aps: {
-              "content-available": 1,
-            },
-          },
-          headers: {
-            "apns-priority": "5",
-          },
-        },
-      };
-      const {responses} = await firebase.messaging().sendEachForMulticast(message);
-      console.log("Responses are : ",responses);
-      if (responses[0]?.success){
-        res.status(201).json({ code: 1, message: "Call sent successfully", callId, fcmTokens, token});
-      } else {
-        res.status(500).json({
-          code: 0,
-          error: "Error sending the call",
+          id,
         });
-      }
+    } else {
+      res.status(500).json({
+        code: 0,
+        error: "Error sending the call",
+      });
+    }
+  } catch (err) {
+    console.log("Error sending the calls : ", err);
+    res.status(500).json({
+      code: 0,
+      error: "Internal Server Error",
+    });
+  }
+});
+
+app.post("/api/webCall", express.json(), async (req, res) => {
+  try {
+    let { FcmTokens, CallerName, UserId, Id, Token, Type, CallId } = req.body;
+    UserId = String(UserId);
+    Id = String(Id);
+    Token = String(Token);
+    let fcmtoken = FcmTokens.toString();
+    const message = {
+      tokens: FcmTokens,
+      data: {
+        navigationId: Type,
+        callId: CallId,
+        friendName: CallerName,
+        userId: UserId,
+        id: Id,
+        token: Token,
+        fcmtoken,
+        pickUp: "1",
+      },
+      notification: {
+        title: "ACTPAL",
+        body: "You have a missed call. Open app to preview.",
+      },
+      android: {
+        priority: "high",
+      },
+      apns: {
+        payload: {
+          aps: {
+            "content-available": 1,
+          },
+        },
+        headers: {
+          "apns-priority": "5",
+        },
+      },
+    };
+    const { responses } = await firebase
+      .messaging()
+      .sendEachForMulticast(message);
+    if (responses[0]?.success) {
+      res
+        .status(201)
+        .json({
+          code: 1,
+          message: "Call sent successfully",
+          callId: CallId,
+          fcmTokens: FcmTokens,
+          token: Token,
+        });
+    } else {
+      res.status(500).json({
+        code: 0,
+        error: "Error sending the call",
+      });
+    }
   } catch (err) {
     console.log("Error sending the calls : ", err);
     res.status(500).json({
@@ -167,45 +230,95 @@ app.post("/api/call", express.json(), async (req, res) => {
 
 app.post("/api/endCall", express.json(), async (req, res) => {
   try {
-    let {token, callId} = req.body;
+    let { token, callId } = req.body;
     let fcmTokensArray = [];
 
-    if (typeof token === 'string') {
-      fcmTokensArray = token.split(',').map(token => String(token));
+    if (typeof token === "string") {
+      fcmTokensArray = token.split(",").map((token) => String(token));
     } else if (Array.isArray(token)) {
-      fcmTokensArray = token.map(token => String(token));
+      fcmTokensArray = token.map((token) => String(token));
     }
-    console.log("Bodyyy is : ", fcmTokensArray, callId);
-      const message = {
-        tokens: fcmTokensArray,
-        data: {
-          pickUp: '2',
-          callId,
-        },
-        android: {
-          priority: "high",
-        },
-        apns: {
-          payload: {
-            aps: {
-              "content-available": 1,
-            },
-          },
-          headers: {
-            "apns-priority": "5",
+    const message = {
+      tokens: fcmTokensArray,
+      data: {
+        pickUp: "2",
+        callId,
+      },
+      android: {
+        priority: "high",
+      },
+      apns: {
+        payload: {
+          aps: {
+            "content-available": 1,
           },
         },
-      };
-      const {responses} = await firebase.messaging().sendEachForMulticast(message);
-      console.log("Responses are : ",responses);
-      if (responses[0]?.success){
-        res.status(201).json({ code: 1, message: "Call sent successfully"});
-      } else {
-        res.status(500).json({
-          code: 0,
-          error: "Error sending the call",
-        });
-      }
+        headers: {
+          "apns-priority": "5",
+        },
+      },
+    };
+    const { responses } = await firebase
+      .messaging()
+      .sendEachForMulticast(message);
+    if (responses[0]?.success) {
+      res.status(201).json({ code: 1, message: "Call sent successfully" });
+    } else {
+      res.status(500).json({
+        code: 0,
+        error: "Error sending the call",
+      });
+    }
+  } catch (err) {
+    console.log("Error sending the calls : ", err);
+    res.status(500).json({
+      code: 0,
+      error: "Internal Server Error",
+    });
+  }
+});
+
+app.post("/api/webEndCall", express.json(), async (req, res) => {
+  try {
+    let { Token, CallId } = req.body;
+    let fcmTokensArray = [];
+
+    if (typeof Token === "string") {
+      fcmTokensArray = Token.split(",").map((token) => String(token));
+    } else if (Array.isArray(Token)) {
+      fcmTokensArray = Token.map((token) => String(token));
+    }
+    const message = {
+      tokens: fcmTokensArray,
+      data: {
+        pickUp: "2",
+        callId: CallId,
+      },
+      android: {
+        priority: "high",
+      },
+      apns: {
+        payload: {
+          aps: {
+            "content-available": 1,
+          },
+        },
+        headers: {
+          "apns-priority": "5",
+        },
+      },
+    };
+    const { responses } = await firebase
+      .messaging()
+      .sendEachForMulticast(message);
+    if (responses[0]?.success) {
+      res.status(201).json({ code: 1, message: "Call sent successfully" });
+    } else {
+      res.status(500).json({
+        code: 0,
+        error: "Error sending the call",
+      });
+    }
   } catch (err) {
     console.log("Error sending the calls : ", err);
     res.status(500).json({
