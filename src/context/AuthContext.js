@@ -849,7 +849,16 @@ export const AuthProvider = ({children}) => {
     }
   };
 
-  const doCall = async (tokens, friendName, userId, id, token, type, isGroup, meetingId) => {
+  const doCall = async (
+    tokens,
+    friendName,
+    userId,
+    id,
+    token,
+    type,
+    isGroup,
+    meetingId,
+  ) => {
     try {
       const {data} = await axios.post(configURL.callURL, {
         fcmTokens: tokens,
@@ -866,6 +875,37 @@ export const AuthProvider = ({children}) => {
       }
     } catch (err) {
       console.log('Error in doCall : ', {err});
+    }
+  };
+
+  const doWebCall = async (
+    memberToken,
+    meetingId,
+    userName,
+    callerName,
+    isFriendCircle,
+    callType,
+  ) => {
+    try {
+      const {data} = await axios.post(
+        configURL.webCallURL,
+        {
+          MemberToken: memberToken,
+          MeetingId: meetingId,
+          UserName: userName,
+          CallTo: callerName,
+          IsFriendCircle: isFriendCircle ? 1 : 0,
+          CallType: callType,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log("Data is : ",data);
+    } catch (err) {
+      console.log('Error in doWebcall : ', {err});
     }
   };
 
@@ -985,6 +1025,7 @@ export const AuthProvider = ({children}) => {
         deleteMsg,
         getFCMToken,
         doCall,
+        doWebCall,
         getUserInfo,
         groupCall,
         groupBelong,

@@ -71,6 +71,7 @@ const ChatSection = ({navigation, route}) => {
     getGroupMembers,
     getFCMToken,
     doCall,
+    doWebCall,
     groupCall,
     groupBelong,
   } = useContext(AuthContext);
@@ -100,6 +101,7 @@ const ChatSection = ({navigation, route}) => {
   const [callType, setCallType] = useState(null);
   const [currMsgType, setCurrMsgType] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [pressMsgSenderId, setPressMsgSenderId] = useState(null);
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
@@ -312,6 +314,7 @@ const ChatSection = ({navigation, route}) => {
           false,
           '',
         );
+        // await doWebCall(userInfo?.memberToken, callId.callId, userInfo?.name, friendId, isGroup, type);
         Linking.openURL(
           `actpal://${type}Call?meetingName=${callId.callId}&fcmToken=${callId.fcmTokens}`,
         );
@@ -344,6 +347,14 @@ const ChatSection = ({navigation, route}) => {
           true,
           meetingId,
         );
+        await doWebCall(
+          userInfo?.memberToken,
+          callId.callId,
+          userInfo?.name,
+          friendId,
+          1,
+          callType,
+        );
         Linking.openURL(
           `actpal://group${
             responseCallType === 'voice' ? 'Audio' : 'Video'
@@ -365,9 +376,15 @@ const ChatSection = ({navigation, route}) => {
   };
 
   const handleEdit = () => {
-    setInputValue(pressMsg);
-    setPopupVisible(false);
-    setimgPopupVisible(false);
+    if (pressMsgSenderId === userInfo?.id) {
+      setInputValue(pressMsg);
+      setPopupVisible(false);
+      setimgPopupVisible(false);
+    } else {
+      Alert.alert('Not Allowed', 'You are not allowed to edit this message.', [
+        {text: 'OK', onPress: () => handleClosePopup()},
+      ]);
+    }
   };
 
   const handleReceiveMessage = data => {
@@ -613,6 +630,7 @@ const ChatSection = ({navigation, route}) => {
                     setLongPressedIndex(index);
                     setMsgID(item.Id);
                     setPressMsg(item?.Message);
+                    setPressMsgSenderId(item.SenderID);
                   }}>
                   <View style={{flexDirection: 'row'}}>
                     {isYoutubeUrl(item?.Message) ? (
@@ -1052,26 +1070,19 @@ const ChatSection = ({navigation, route}) => {
               </TouchableOpacity>
             </>
           ) : (
-            <>
-              {isSendingMessage ? (
-                <Image
-                  source={require('../assets/png/mediaLoader.png')}
-                  style={styles.image}
-                />
-              ) : (
                 <TouchableOpacity
-                  style={styles.sendBtn}
-                  onPress={handleSendMessage}>
+                  style={[styles.sendBtn, isSendingMessage && styles.disabledSendBtn]}
+                  onPress={handleSendMessage}
+                  disabled={isSendingMessage}>
                   <Image
                     style={{
                       width: responsiveWidth(5),
                       height: responsiveWidth(5),
+                      opacity: isSendingMessage ? 0.5 : 1
                     }}
                     source={require('../assets/png/SendBtn.png')}
                   />
                 </TouchableOpacity>
-              )}
-            </>
           )}
         </View>
         <Modal
@@ -1092,13 +1103,15 @@ const ChatSection = ({navigation, route}) => {
               </TouchableOpacity>
               {currMsgType && (
                 <>
-                  <TouchableOpacity style={styles.btn} onPress={handleEdit}>
-                    <Image
-                      style={styles.icon}
-                      source={require('../assets/png/edit.png')}
-                    />
-                    <Text style={styles.btnText}>Edit</Text>
-                  </TouchableOpacity>
+                  {pressMsgSenderId === userInfo?.id && (
+                    <TouchableOpacity style={styles.btn} onPress={handleEdit}>
+                      <Image
+                        style={styles.icon}
+                        source={require('../assets/png/edit.png')}
+                      />
+                      <Text style={styles.btnText}>Edit</Text>
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity style={styles.btn} onPress={handlePopSend}>
                     <Image
                       style={styles.icon}
@@ -1371,6 +1384,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 50,
+  },
+  disabledSendBtn: {
+    backgroundColor: '#cccccc',
   },
   emojiBtn: {
     position: 'absolute',
