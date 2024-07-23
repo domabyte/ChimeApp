@@ -223,7 +223,7 @@ export class AudioMeeting extends React.Component {
         );
         break;
       default:
-        Alert.alert('Error', errorType);
+        Alert.alert('Error', `${errorType}. Something is wrong. Please try again`);
         break;
     }
   };

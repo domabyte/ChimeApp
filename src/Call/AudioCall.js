@@ -23,7 +23,7 @@ const AudioCall = ({navigation, route}) => {
   const [meetingTitle, setMeetingTitle] = useState('');
   const [selfAttendeeId, setSelfAttendeeId] = useState('');
   const {meetingName, fcmToken} = route.params;
-  const {userInfo} = useContext(AuthContext);
+  const {userInfo, doWebCall} = useContext(AuthContext);
 
   useEffect(() => {
     const onMeetingStartSubscription = getSDKEventEmitter().addListener(
@@ -62,7 +62,7 @@ const AudioCall = ({navigation, route}) => {
   const initializeMeetingSession = async (meetingName, userName) => {
     setIsLoading(true);
     await createMeetingRequest(meetingName, userName)
-      .then(meetingResponse => {
+      .then(async meetingResponse => {
         setMeetingTitle(meetingName);
         setSelfAttendeeId(
           meetingResponse.JoinInfo.Attendee.Attendee.AttendeeId,
@@ -70,6 +70,14 @@ const AudioCall = ({navigation, route}) => {
         NativeFunction.startMeeting(
           meetingResponse.JoinInfo.Meeting.Meeting,
           meetingResponse.JoinInfo.Attendee.Attendee,
+        );
+        await doWebCall(
+          userInfo?.memberToken,
+          meetingResponse?.JoinInfo.Meeting.Meeting?.MeetingId,
+          'Sonam Sharma',
+          1216,
+          false,
+          'audio',
         );
       })
       .catch(error => {
