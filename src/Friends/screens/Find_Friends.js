@@ -245,7 +245,6 @@ const FindFriends = ({ navigation }) => {
         <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
         <Header navigation={navigation} />
         <View style={styles.container}>
-          <Spinner visible={isLoading} />
           <View
             style={{
               marginHorizontal: 16,
@@ -319,9 +318,6 @@ const FindFriends = ({ navigation }) => {
               )}
               onEndReached={fetchMoreData}
               onEndReachedThreshold={0.5}
-              ListFooterComponent={() =>
-                isLoadingMore && <Spinner visible={true} />
-              }
             />
           )}
         </View>

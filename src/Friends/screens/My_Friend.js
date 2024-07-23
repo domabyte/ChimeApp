@@ -16,7 +16,6 @@ import Header from '../../components/Header';
 import {AuthContext} from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
 const default_photo = require('../../assets/png/default-profile.png');
-import Spinner from 'react-native-loading-spinner-overlay';
 import {useIsFocused} from '@react-navigation/core';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Footer from '../../components/Footer';
@@ -242,7 +241,6 @@ const MyFriends = ({navigation}) => {
         <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
         <Header navigation={navigation} />
         <View style={styles.container}>
-          <Spinner visible={isLoading} />
           <View style={{marginHorizontal: 16, marginVertical: 10}}>
             <FriendHeader
               navigation={navigation}

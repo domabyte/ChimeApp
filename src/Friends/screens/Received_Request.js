@@ -13,7 +13,6 @@ import {
   Keyboard,
   KeyboardAvoidingView
 } from 'react-native';
-import Spinner from 'react-native-loading-spinner-overlay';
 import Header from '../../components/Header';
 import { AuthContext } from '../../context/AuthContext';
 import FriendHeader from '../../components/FriendsHeader';
@@ -264,7 +263,6 @@ const ReceivedRequest = ({ navigation }) => {
         <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
         <Header navigation={navigation} />
         <View style={styles.container}>
-          <Spinner visible={isLoading} />
           <View style={{ marginHorizontal: 16, marginVertical: 10 }}>
             <FriendHeader
               navigation={navigation}

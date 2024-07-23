@@ -11,7 +11,6 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {AuthContext} from '../../context/AuthContext';
-import Spinner from 'react-native-loading-spinner-overlay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 const default_photo = require('../../assets/png/default-profile.png');
@@ -122,7 +121,6 @@ const SuggestedFriends = ({navigation, route}) => {
     <SafeAreaView style={{height: '100%'}}>
       <StatusBar barStyle={'dark-lite'} backgroundColor="#1E293C" />
       <View style={styles.container}>
-        <Spinner visible={isLoading} />
         <View style={styles.head}>
           <View style={styles.leftBtn}>
             {searchButtonClicked && (
