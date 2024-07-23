@@ -6,16 +6,16 @@ import RNCallKeep from 'react-native-callkeep';
 
 const options = {
   ios: {
-    appName: 'ACTPAL',
+    appName: 'ChimeApp',
   },
   android: {
     alertTitle: 'Permissions required',
     alertDescription: 'This application needs to access your phone accounts',
     cancelButton: 'Cancel',
     okButton: 'ok',
-    imageName: 'actpal',
+    imageName: 'ChimeApp',
     foregroundService: {
-      channelId: 'com.actpal',
+      channelId: 'com.chimeapp',
       channelName: 'Foreground service for my app',
       notificationTitle: 'My app is running on background',
       notificationIcon: 'Path to the resource icon of the notification',
